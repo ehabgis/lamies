@@ -1028,7 +1028,86 @@
   margin-top: 8px;
 }
 @media (max-width: 850px) {
-  .map-shell .classroom-workspace > .classroom-guide.mobile-open { max-height: 62%; }
-  .map-shell .classroom-guide.mobile-open .mobile-panel-close { min-height: 32px !important; padding: 3px 8px; font-size: 11px; }
-  .map-shell .site-detail-tabs { margin: 6px 0 10px; }
+  .map-shell .classroom-workspace > .classroom-guide.mobile-open {
+    max-height: 62%;
+  }
+  .map-shell .classroom-guide.mobile-open .mobile-panel-close {
+    min-height: 32px !important;
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+  .map-shell .site-detail-tabs {
+    margin: 6px 0 10px;
+  }
+}
+.map-shell .classroom-workspace.has-site-popup {
+  grid-template-columns: 178px minmax(0, 1fr);
+}
+.map-shell .classroom-workspace.has-site-popup > .classroom-guide {
+  display: none !important;
+}
+.site-map-popup {
+  font-family: "Cairo", sans-serif;
+  color: #12365c;
+}
+.site-map-popup .leaflet-popup-content-wrapper {
+  border-radius: 17px;
+  box-shadow: 0 12px 32px #102b4b33;
+}
+.site-map-popup .leaflet-popup-content {
+  margin: 22px 12px 12px;
+  max-width: calc(100vw - 84px);
+  scrollbar-width: thin;
+  scrollbar-color: #8dbad0 #edf7fc;
+}
+.site-map-popup .leaflet-popup-close-button {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 50%;
+  color: #12365c !important;
+  font-size: 24px !important;
+}
+.map-shell .site-map-popup .classroom-resource {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.map-shell .site-map-popup .classroom-resource h2 {
+  font-size: 19px;
+  margin-top: 0;
+}
+.map-shell .site-map-popup .classroom-resource h3 {
+  font-size: 14px;
+}
+.map-shell .site-map-popup .classroom-resource p {
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 6px 0;
+}
+.map-shell .site-map-popup .classroom-resource .selected-location {
+  padding: 7px;
+  background: #edf7fc;
+  border-radius: 9px;
+}
+.map-shell .site-map-popup .site-detail-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #edf7fc;
+  margin: 8px 0;
+}
+@media (max-width: 850px) {
+  .map-shell .classroom-workspace.has-site-popup {
+    display: flex;
+  }
+}
+@media (max-width: 850px) {
+  .esri-map-surface:has(.site-map-popup) > .esri-map-toolbar,
+  .esri-map-surface:has(.site-map-popup) > .esri-map-zoom {
+    display: none;
+  }
+  .site-map-popup .leaflet-popup-content {
+    margin-top: 32px;
+  }
 }

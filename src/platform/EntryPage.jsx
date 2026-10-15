@@ -6,13 +6,12 @@ import {
   ArrowLeft,
   User,
   Lock,
-  Robot,
   Play,
   Pause,
-  MapPin,
   Sparkle,
 } from "phosphor-react";
 import "./entry-experience.css";
+import RobotGuide from "../components/Map/RobotGuide";
 import { api } from "./api";
 import { useSession } from "./Session";
 export default function EntryPage() {
@@ -53,9 +52,7 @@ export default function EntryPage() {
     >
       <header className="entry-platform-brand">
         <BookOpen size={40} weight="duotone" />
-        <div>
-          الخرائط التعليمية الزكية<small>لميس · رحلة صغيرة… اكتشاف كبير</small>
-        </div>
+        <div>الخرائط التعليمية الذكية</div>
         <button
           className="entry-motion-control"
           aria-pressed={!motion}
@@ -74,18 +71,12 @@ export default function EntryPage() {
             <h2>مغامرتك تبدأ من هنا.</h2>
             <p>اكتشف مصر… موردًا، ومكانًا، وحكاية.</p>
           </div>
-          <span className="entry-map-label" aria-hidden="true">
-            <MapPin size={20} weight="fill" /> هنا مصر!
-          </span>
           <img
             src="/welcome/explorer-globe.webp"
             alt="طفل مستكشف مع كرة أرضية يشير إلى مصر"
           />
-          <div className="explorer-note">
-            <Compass size={28} />
-            <span>
-              مصر مليانة حكايات<strong>افتح خريطتك، وابدأ بالاكتشاف.</strong>
-            </span>
+          <div className="entry-robot-companion">
+            <RobotGuide />
           </div>
           <div className="entry-journey-steps" aria-label="مراحل الرحلة">
             <span>
@@ -102,15 +93,12 @@ export default function EntryPage() {
           </div>
         </section>
         <section className="platform-signin">
-          <span className="welcome-robot">
-            <Robot size={44} weight="duotone" />
-          </span>
           <h1>مرحبًا يا مستكشف!</h1>
           <p>سجّل دخولك لنحفظ اكتشافاتك.</p>
           <Link to="/explore" className="p-button demo-entry-link">
-            <Play size={23} weight="fill" /> اختر رحلتك دون حساب
+            <Play size={23} weight="fill" /> ابدأ المغامرة
           </Link>
-          <p className="p-muted">تجربة غير معتمدة · لا تُحفظ نتائج رسمية</p>
+          <p className="p-muted">دون حساب · تجربة غير معتمدة</p>
           {user ? (
             <div>
               <p>أهلًا {user.name || user.username}، حسابك جاهز.</p>
@@ -198,7 +186,7 @@ export default function EntryPage() {
                   {busy
                     ? "جارٍ فتح رحلتك…"
                     : mode === "login"
-                      ? "ابدأ المغامرة"
+                      ? "سجّل الدخول وابدأ"
                       : "أنشئ حسابك وابدأ"}
                   <ArrowLeft size={22} />
                 </button>

@@ -14,12 +14,13 @@ import { api } from "./api";
 import { useSession } from "./Session";
 import "./journey-workspace.css";
 
-const steps = ["العام والصف", "الفصل والمادة", "الوحدة والدروس"];
+const steps = ["العام والصف", "الفصل الدراسي", "الوحدة والدروس"];
 const emptyProgress = { lessons: [], xp: 0, stars: 0 };
 export default function JourneyPage({ demo = false }) {
   const { user, setUser } = useSession();
   const navigate = useNavigate();
   const [nodes, setNodes] = useState([]);
+  const [sample, setSample] = useState(demo);
   const [selection, setSelection] = useState({});
   const [progress, setProgress] = useState(emptyProgress);
   const [step, setStep] = useState(0);
@@ -43,14 +44,19 @@ export default function JourneyPage({ demo = false }) {
     Promise.all([
       api(demo ? "/demo/catalog" : "/catalog"),
       demo ? Promise.resolve(emptyProgress) : api("/progress"),
+      api("/demo/catalog"),
     ])
-      .then(([catalog, p]) => {
+      .then(([catalog, p, example]) => {
         if (!active) return;
+        const useSample =
+          demo || !catalog.nodes.some((n) => n.kind === "lesson");
+        setSample(useSample);
+        catalog = useSample ? example : catalog;
         setNodes(catalog.nodes);
         setProgress(p);
         const enrolled = user?.enrollment;
         const year =
-          !demo && catalog.nodes.find((n) => n.id === enrolled?.yearId);
+          !useSample && catalog.nodes.find((n) => n.id === enrolled?.yearId);
         setSelection(year ? { ...enrolled, yearTitle: year.title } : {});
         setStep(0);
       })
@@ -87,8 +93,9 @@ export default function JourneyPage({ demo = false }) {
   const subjects = nodes.filter(
     (n) => n.kind === "subject" && n.parentId === year?.id,
   );
+  const subject = subjects[0];
   const units = nodes.filter(
-    (n) => n.kind === "unit" && n.parentId === selection.subjectId,
+    (n) => n.kind === "unit" && n.parentId === subject?.id,
   );
   const lessons = nodes.filter(
     (n) => n.kind === "lesson" && n.parentId === selection.unitId,
@@ -114,13 +121,13 @@ export default function JourneyPage({ demo = false }) {
     step === 0
       ? selection.yearTitle && selection.stageId && selection.gradeId
       : step === 1
-        ? year && selection.subjectId
+        ? year && subject
         : selection.unitId;
   const name = (id) => nodes.find((n) => n.id === id)?.title;
   async function openLesson(lesson) {
-    if (saving) return;
-    if (demo) {
-      navigate(`/demo/${lesson.id}`);
+    if (saving || lesson.available === false) return;
+    if (lesson.demo) {
+      navigate(`/demo/${lesson.demoLessonId || lesson.id}`);
       return;
     }
     setSaving(true);
@@ -178,7 +185,7 @@ export default function JourneyPage({ demo = false }) {
           </p>
         </div>
         <span className="journey-mode">
-          {demo ? (
+          {sample ? (
             "تجربة غير معتمدة"
           ) : (
             <>
@@ -215,7 +222,7 @@ export default function JourneyPage({ demo = false }) {
             {step === 0
               ? "لنبدأ بالسنة والصف"
               : step === 1
-                ? "ما المادة التي تريد استكشافها؟"
+                ? "اختر الفصل الدراسي"
                 : "اختر الوحدة، وابدأ الدرس"}
           </h2>
           {loading ? (
@@ -254,12 +261,10 @@ export default function JourneyPage({ demo = false }) {
                 {step === 1 && (
                   <>
                     {selectField("termId", "الفصل الدراسي", terms)}
-                    {selectField(
-                      "subjectId",
-                      "المادة الدراسية",
-                      subjects,
-                      !year,
-                    )}
+                    <p className="journey-fixed-subject">
+                      <BookOpen size={20} />
+                      المادة: الدراسات الاجتماعية
+                    </p>
                   </>
                 )}
                 {step === 2 && selectField("unitId", "الوحدة", units)}
@@ -294,25 +299,29 @@ export default function JourneyPage({ demo = false }) {
                           </span>
                           <div>
                             <small>
-                              {demo
-                                ? "تجربة · لا تُحفظ نتائج رسمية"
-                                : p?.completed
-                                  ? "درس مكتمل · يمكنك مراجعته"
-                                  : "درس منشور"}
+                              {lesson.available === false
+                                ? "قيد التجهيز · المحتوى لم يُضف بعد"
+                                : lesson.demo
+                                  ? "تجربة · لا تُحفظ نتائج رسمية"
+                                  : p?.completed
+                                    ? "درس مكتمل · يمكنك مراجعته"
+                                    : "درس منشور"}
                             </small>
                             <h3>{lesson.title}</h3>
                             <p>خريطة تفاعلية، استكشاف، وأنشطة.</p>
                           </div>
                           <button
                             className="p-button"
-                            disabled={saving}
+                            disabled={saving || lesson.available === false}
                             onClick={() => openLesson(lesson)}
                           >
-                            {saving
-                              ? "جارٍ فتح الدرس…"
-                              : p?.completed
-                                ? "راجع الدرس"
-                                : "ابدأ الدرس"}
+                            {lesson.available === false
+                              ? "قيد التجهيز"
+                              : saving
+                                ? "جارٍ فتح الدرس…"
+                                : p?.completed
+                                  ? "راجع الدرس"
+                                  : "ابدأ الدرس"}
                             <ArrowLeft size={19} />
                           </button>
                         </article>
@@ -377,7 +386,7 @@ export default function JourneyPage({ demo = false }) {
               {step === 0
                 ? "أهلًا يا مستكشف! اختر عامك الدراسي، ثم مرحلتك وصفّك."
                 : step === 1
-                  ? "خطوة جميلة! اختر الفصل والمادة لنجد وحداتك."
+                  ? "خطوة جميلة! اختر الفصل الدراسي لنجد وحداتك."
                   : "وصلنا! اختر الوحدة، ثم اضغط «ابدأ الدرس»."}
             </p>
           </div>
@@ -394,7 +403,7 @@ export default function JourneyPage({ demo = false }) {
                   selection.yearTitle,
                   name(selection.gradeId),
                   name(selection.termId),
-                  name(selection.subjectId),
+                  subject?.title,
                   name(selection.unitId),
                 ]
                   .filter(Boolean)
@@ -402,9 +411,10 @@ export default function JourneyPage({ demo = false }) {
               </p>
             </div>
           </div>
-          {demo ? (
+          {sample ? (
             <small>
-              الخيارات تخص النسخة التجريبية، ولا تمثل منهجًا معتمدًا.
+              الصفوف والوحدات هيكل تجريبي للتنقل. المحتوى المتاح للصف الخامس
+              فقط، ويُعرض للفصلين كتجربة دون اعتماد منهجي.
             </small>
           ) : (
             <div className="journey-account-shortcuts">

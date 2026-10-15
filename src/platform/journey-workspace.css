@@ -434,3 +434,40 @@
   font-size: 12px;
   min-height: 44px;
 }
+.journey-fixed-subject {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  color: #355873;
+  font-size: 14px;
+}
+.journey-shell .journey-lesson {
+  padding: 10px 0;
+  gap: 10px;
+}
+.journey-shell .journey-lesson h3 {
+  font-size: 17px;
+}
+.journey-shell .journey-lesson p {
+  display: none;
+}
+.journey-shell .journey-lesson .p-button {
+  min-height: 44px;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+@media (max-width: 700px) {
+  .journey-shell .journey-lesson .p-button {
+    width: auto;
+  }
+  .journey-shell .journey-lesson-icon {
+    display: none;
+  }
+  .journey-shell .journey-lesson h3 {
+    font-size: 14px;
+  }
+  .journey-shell .journey-lesson > div {
+    min-width: 160px;
+  }
+}

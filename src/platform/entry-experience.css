@@ -411,5 +411,45 @@
 }
 
 @media (min-width: 701px) and (min-height: 651px) and (max-height: 800px) {
-  .entry-experience .platform-signin { padding-top: 14px; padding-bottom: 14px; }
+  .entry-experience .platform-signin {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+}
+.entry-experience .demo-entry-link {
+  min-height: 56px !important;
+  font-size: 20px;
+  font-weight: 900;
+  box-shadow: 0 7px 18px #9b6d1126;
+}
+.entry-experience .entry-robot-companion {
+  display: flex;
+  justify-content: center;
+  margin-top: -18px;
+}
+.entry-experience .entry-robot-companion .atlas-robot {
+  width: 86px;
+  height: 94px;
+}
+.entry-experience .platform-welcome-art img {
+  height: min(43dvh, 450px);
+}
+@media (max-width: 700px) {
+  .entry-experience .entry-robot-companion {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+  }
+  .entry-experience .entry-robot-companion .atlas-robot {
+    width: 54px;
+    height: 62px;
+  }
+  .entry-experience .platform-welcome-art img {
+    height: 100%;
+  }
+  .entry-experience .demo-entry-link {
+    min-height: 50px !important;
+    font-size: 18px;
+  }
 }

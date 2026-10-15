@@ -15,7 +15,7 @@ export function demoLesson() {
   );
   return {
     id: DEMO_ID,
-    title: seed.title,
+    title: "الثروة المعدنية ومصادر الطاقة",
     kind: "lesson",
     status: "draft",
     demo: true,
@@ -59,50 +59,58 @@ export function demoAnswer(questionId, answer) {
 
 // Public navigation metadata for the bundled sample only; never reads CMS drafts.
 export function demoCatalog() {
-  return [
+  const nodes = [
     {
       id: "demo-primary",
       parentId: null,
       kind: "stage",
       title: "المرحلة الابتدائية",
     },
-    {
-      id: "demo-grade-5",
-      parentId: "demo-primary",
-      kind: "grade",
-      title: "الصف الخامس الابتدائي",
-    },
-    {
-      id: "demo-term-1",
-      parentId: "demo-grade-5",
-      kind: "term",
-      title: "الفصل الدراسي الأول",
-    },
-    {
-      id: "demo-year",
-      parentId: "demo-term-1",
-      kind: "year",
-      title: "2026 / 2027",
-    },
-    {
-      id: "demo-social",
-      parentId: "demo-year",
-      kind: "subject",
-      title: "الدراسات الاجتماعية",
-    },
-    {
-      id: "demo-treasures",
-      parentId: "demo-social",
-      kind: "unit",
-      title: "كنوز مصر",
-    },
-    {
-      id: DEMO_ID,
-      parentId: "demo-treasures",
-      kind: "lesson",
-      title: seed.title,
-      demo: true,
-      status: "draft",
-    },
   ];
+  const grades = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"];
+  const add = (id, parentId, kind, title, extra = {}) =>
+    nodes.push({ id, parentId, kind, title, ...extra });
+  for (let g = 1; g <= 6; g++) {
+    const grade = `demo-grade-${g}`;
+    add(grade, "demo-primary", "grade", `الصف ${grades[g - 1]} الابتدائي`);
+    for (let t = 1; t <= 2; t++) {
+      const term = `${grade}-term-${t}`,
+        year = `${term}-year`,
+        subject = `${year}-social`;
+      add(
+        term,
+        grade,
+        "term",
+        t === 1 ? "الفصل الدراسي الأول" : "الفصل الدراسي الثاني",
+      );
+      add(year, term, "year", "2026 / 2027");
+      add(subject, year, "subject", "الدراسات الاجتماعية");
+      for (let u = 1; u <= 3; u++) {
+        const unit = `${subject}-unit-${u}`;
+        add(
+          unit,
+          subject,
+          "unit",
+          ["الوحدة الأولى", "الوحدة الثانية", "الوحدة الثالثة"][u - 1],
+        );
+        const titles =
+          u === 3
+            ? [
+                "الدرس الأول: الثروة المعدنية ومصادر الطاقة",
+                "الدرس الثاني: موارد المياه",
+                "الدرس الثالث: المشروعات القومية",
+              ]
+            : [`درس الوحدة ${u === 1 ? "الأولى" : "الثانية"}`];
+        titles.forEach((title, i) =>
+          add(`${unit}-lesson-${i + 1}`, unit, "lesson", title, {
+            demo: true,
+            status: "draft",
+            available: g === 5 && u === 3 && i === 0,
+            ...(g === 5 && u === 3 && i === 0 ? { demoLessonId: DEMO_ID } : {}),
+          }),
+        );
+      }
+    }
+  }
+  return nodes;
 }

@@ -21,9 +21,7 @@ export default function Shell({
           <span>
             <BookOpen size={30} weight="duotone" />
           </span>
-          <div>
-            الخرائط التعليمية الزكية<small>لميس · نكتشف مصر معًا</small>
-          </div>
+          <div>الخرائط التعليمية الذكية</div>
         </Link>
         <nav aria-label="تنقل المنصة">
           <Link to={user ? "/journey" : "/"}>

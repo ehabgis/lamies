@@ -26,9 +26,36 @@ test("guest demo grades all eight types without publishing, answer leakage or du
     const catalog = await request("/api/demo/catalog");
     assert.equal(catalog.status, 200);
     assert.equal(catalog.data.demo, true);
-    assert.equal(catalog.data.nodes.length, 7);
-    const publicLesson = catalog.data.nodes.find((n) => n.kind === "lesson");
-    assert.equal(publicLesson.id, "lesson-1");
+    assert.equal(
+      catalog.data.nodes.filter((n) => n.kind === "grade").length,
+      6,
+    );
+    assert.equal(
+      catalog.data.nodes.filter((n) => n.kind === "term").length,
+      12,
+    );
+    assert.equal(
+      catalog.data.nodes.filter((n) => n.kind === "unit").length,
+      36,
+    );
+    const available = catalog.data.nodes.filter(
+      (n) => n.kind === "lesson" && n.available,
+    );
+    assert.equal(available.length, 2);
+    assert(available.every((n) => n.demoLessonId === "lesson-1"));
+    assert(
+      catalog.data.nodes
+        .filter((n) => n.kind === "lesson" && !n.available)
+        .every((n) => !n.demoLessonId),
+    );
+    assert.equal(
+      new Set(catalog.data.nodes.map((n) => n.id)).size,
+      catalog.data.nodes.length,
+    );
+    const publicLesson = catalog.data.nodes.find(
+      (n) => n.kind === "lesson" && n.available,
+    );
+    assert.equal(publicLesson.demoLessonId, "lesson-1");
     assert.equal(publicLesson.demo, true);
     assert.equal(publicLesson.status, "draft");
     assert.equal("content" in publicLesson, false);

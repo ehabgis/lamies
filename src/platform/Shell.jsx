@@ -6,8 +6,7 @@ export default function Shell({
   mapPage = false,
   journeyPage = false,
 }) {
-  const { user, logout } = useSession();
-  const navigate = useNavigate();
+  const { user } = useSession();
   return (
     <div
       className={`lamis-platform ${mapPage ? "map-shell" : ""} ${journeyPage ? "journey-shell" : ""}`}
@@ -16,48 +15,17 @@ export default function Shell({
       <a className="platform-skip" href="#platform-main">
         تخطّ إلى المحتوى
       </a>
-      <header className="platform-header">
-        <Link className="platform-brand" to={user ? "/journey" : "/"}>
-          <span>
-            <BookOpen size={30} weight="duotone" />
-          </span>
-          <div>الخرائط التعليمية الذكية</div>
-        </Link>
-        <nav aria-label="تنقل المنصة">
-          <Link to={user ? "/journey" : "/"}>
-            <Compass size={21} />
-            {user ? "رحلتي" : "صفحة البداية"}
+      {!mapPage && (
+        <header className="platform-header">
+          <Link className="platform-brand" to={user ? "/journey" : "/"}>
+            <span>
+              <BookOpen size={30} weight="duotone" />
+            </span>
+            <div>الخرائط التعليمية الذكية</div>
           </Link>
-          {user && (
-            <Link to="/my-progress">
-              <Star size={21} />
-              إنجازاتي
-            </Link>
-          )}
-          {user &&
-            ["super_admin", "content_admin", "teacher"].includes(user.role) && (
-              <Link to="/admin">
-                <Gear size={21} />
-                الإدارة
-              </Link>
-            )}
-          {user && (
-            <button
-              onClick={async () => {
-                try {
-                  await logout();
-                  navigate("/");
-                } catch (e) {
-                  window.alert(e.message);
-                }
-              }}
-            >
-              <SignOut size={21} />
-              خروج
-            </button>
-          )}
-        </nav>
-      </header>
+          <PlatformNavigation />
+        </header>
+      )}
       <main id="platform-main" tabIndex={-1}>
         {children}
       </main>
@@ -71,5 +39,46 @@ export default function Shell({
         </span>
       </footer>
     </div>
+  );
+}
+
+export function PlatformNavigation() {
+  const { user, logout } = useSession();
+  const navigate = useNavigate();
+  return (
+    <nav aria-label="تنقل المنصة">
+      <Link to={user ? "/journey" : "/"}>
+        <Compass size={21} />
+        {user ? "رحلتي" : "صفحة البداية"}
+      </Link>
+      {user && (
+        <Link to="/my-progress">
+          <Star size={21} />
+          إنجازاتي
+        </Link>
+      )}
+      {user &&
+        ["super_admin", "content_admin", "teacher"].includes(user.role) && (
+          <Link to="/admin">
+            <Gear size={21} />
+            الإدارة
+          </Link>
+        )}
+      {user && (
+        <button
+          onClick={async () => {
+            try {
+              await logout();
+              navigate("/");
+            } catch (e) {
+              window.alert(e.message);
+            }
+          }}
+        >
+          <SignOut size={21} />
+          خروج
+        </button>
+      )}
+    </nav>
   );
 }

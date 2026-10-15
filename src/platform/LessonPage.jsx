@@ -20,7 +20,8 @@ import {
   Minus,
   MapTrifold,
 } from "phosphor-react";
-import Shell from "./Shell";
+import Shell, { PlatformNavigation } from "./Shell";
+import { useSession } from "./Session";
 import { api } from "./api";
 import Modal from "./Modal";
 import EsriLessonMap from "./EsriLessonMap";
@@ -55,10 +56,12 @@ function Photo({ src, label }) {
 }
 export default function LessonPage({ demo = false }) {
   const { id } = useParams();
+  const { user } = useSession();
+  const [unitTitle, setUnitTitle] = useState("");
   const navigate = useNavigate();
   const [lessonOptions, setLessonOptions] = useState([]);
   const [legendOpen, setLegendOpen] = useState(() => window.innerWidth > 850);
-  const [infoOpen, setInfoOpen] = useState(() => window.innerWidth > 850);
+  const [infoOpen, setInfoOpen] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
   const [resetMap, setResetMap] = useState(0);
   const [localPhotos, setLocalPhotos] = useState({});
@@ -74,15 +77,22 @@ export default function LessonPage({ demo = false }) {
         const current = data.nodes.find(
           (n) => n.kind === "lesson" && (n.id === id || n.demoLessonId === id),
         );
-        if (active)
+        if (active) {
+          setUnitTitle(
+            data.nodes.find((n) => n.id === current?.parentId)?.title || "",
+          );
           setLessonOptions(
             data.nodes.filter(
               (n) => n.kind === "lesson" && n.parentId === current?.parentId,
             ),
           );
+        }
       })
       .catch(() => {
-        if (active) setLessonOptions([]);
+        if (active) {
+          setLessonOptions([]);
+          setUnitTitle("اسم الوحدة غير متاح حاليًا");
+        }
       });
     return () => {
       active = false;
@@ -251,7 +261,7 @@ export default function LessonPage({ demo = false }) {
   const current = filtered[index];
   const answered = (id) => setSolved((s) => (s.includes(id) ? s : [...s, id]));
   function pick(r) {
-    if (window.innerWidth <= 850) setLegendOpen(false);
+    setLegendOpen(false);
     setInfoOpen(true);
     setVideoOpen(false);
     setResource(r);
@@ -425,10 +435,6 @@ export default function LessonPage({ demo = false }) {
     <Shell mapPage>
       <h1 className="studio-page-title">{lesson.title}</h1>
       <div className="studio-titlebar">
-        <Link to={demo ? "/explore" : "/journey"} className="studio-back">
-          <ArrowLeft size={19} />
-          الدروس
-        </Link>
         <label className="studio-lesson-select">
           الدرس الحالي
           <select
@@ -458,114 +464,44 @@ export default function LessonPage({ demo = false }) {
             ))}
           </select>
         </label>
-        <span className="studio-status">
-          {demo
-            ? "تجربة · دون نقاط رسمية"
-            : preview
-              ? "معاينة تحريرية"
-              : `${solved.length} / ${questions.length} سؤال متقن`}
-        </span>
-      </div>
-      <div className="studio-commandbar">
-        <div className="studio-panel-buttons">
-          <button
-            id="show-legend"
-            aria-expanded={legendOpen}
-            aria-controls="lesson-legend"
-            onClick={() => setLegendOpen((v) => !v)}
-          >
-            <BookOpen size={19} />
-            مفتاح الخريطة
-          </button>
-          <button
-            id="show-guide"
-            aria-expanded={infoOpen}
-            aria-controls="lesson-guide"
-            onClick={() => setInfoOpen((v) => !v)}
-          >
-            <ChatCircle size={19} />
-            {resource ? "معلومات المورد" : "المعلم الذكي"}
-          </button>
-          <button onClick={showAll}>
-            <Compass size={19} />
-            عرض الجميع
-          </button>
-        </div>
-        <div className="studio-select-tools">
-          <label>
-            وضع الخريطة
-            <select
-              aria-label="وضع الخريطة"
-              value={mode}
-              onChange={(e) => {
-                setMode(e.target.value);
-                showAll();
-              }}
-            >
-              <option value="interactive">الاستكشاف الحر</option>
-              <option value="discover">اكتشف الرموز</option>
-            </select>
-          </label>
-          <label>
-            دليل الدرس
-            <select
-              aria-label="دليل الدرس"
-              value={panel || ""}
-              onChange={(e) => setPanel(e.target.value || null)}
-            >
-              <option value="">الأهداف والمعلومات</option>
-              <option value="objectives">أهداف الدرس</option>
-              <option value="intro">معلومات الدرس</option>
-              <option value="concepts">مفاهيم الدرس</option>
-            </select>
-          </label>
+        <div className="map-header-identity">
+          <span className="map-unit-name">
+            {unitTitle || "الوحدة: جارٍ التحميل…"}
+          </span>
+          <span className="map-student-name">
+            {user?.name || user?.username || "مستكشف زائر"}
+          </span>
         </div>
       </div>
-      {panel && (
-        <section className="classroom-disclosure">
-          <button className="p-close-text" onClick={() => setPanel(null)}>
-            إغلاق ×
-          </button>
-          {panel === "objectives" ? (
-            <>
-              <h2>أهداف الدرس</h2>
-              <ol>
-                {(content.objectives || []).map((o, i) => (
-                  <li key={i}>{o}</li>
-                ))}
-              </ol>
-            </>
-          ) : panel === "concepts" ? (
-            <>
-              <h2>مفاهيم الدرس</h2>
-              {(content.concepts || []).map((c, i) => (
-                <article key={i}>
-                  <h3>{c.term}</h3>
-                  <p>{c.definition}</p>
-                  {c.image && <Photo src={c.image} label={c.term} />}
-                  <button
-                    className="p-secondary"
-                    onClick={() => speak(`${c.term}: ${c.definition}`)}
-                  >
-                    <SpeakerHigh />
-                    استمع للمفهوم
-                  </button>
-                </article>
-              ))}
-            </>
-          ) : (
-            <>
-              <h2>هيا نبدأ الاستكشاف</h2>
-              <p>{content.intro}</p>
-              <h3>ملخص الدرس</h3>
-              <p>{content.summary}</p>
-            </>
-          )}
-        </section>
-      )}
       <div
         className={`classroom-workspace studio-workspace ${videoOpen ? "has-video" : ""} ${legendOpen ? "" : "legend-hidden"} ${infoOpen ? "" : "guide-hidden"}`}
       >
+        <div className="map-sidebar-handles" aria-label="القوائم الجانبية">
+          <button
+            id="show-legend"
+            aria-controls="lesson-legend"
+            aria-expanded={legendOpen}
+            onClick={() => {
+              setLegendOpen((v) => !v);
+              setInfoOpen(false);
+            }}
+          >
+            <BookOpen size={21} />
+            <span>المفتاح والأدوات</span>
+          </button>
+          <button
+            id="show-guide"
+            aria-controls="lesson-guide"
+            aria-expanded={infoOpen}
+            onClick={() => {
+              setInfoOpen((v) => !v);
+              setLegendOpen(false);
+            }}
+          >
+            <ChatCircle size={21} />
+            <span>المعلم والمورد</span>
+          </button>
+        </div>
         <aside
           id="lesson-legend"
           hidden={!legendOpen}
@@ -586,6 +522,81 @@ export default function LessonPage({ demo = false }) {
             <BookOpen />
             مفتاح الخريطة
           </h2>
+          <details className="map-settings" open>
+            <summary>إعدادات العرض ودليل الدرس</summary>
+            <div className="studio-select-tools">
+              <label>
+                وضع الخريطة
+                <select
+                  aria-label="وضع الخريطة"
+                  value={mode}
+                  onChange={(e) => {
+                    setMode(e.target.value);
+                    showAll();
+                  }}
+                >
+                  <option value="interactive">الاستكشاف الحر</option>
+                  <option value="discover">اكتشف الرموز</option>
+                </select>
+              </label>
+              <label>
+                دليل الدرس
+                <select
+                  aria-label="دليل الدرس"
+                  value={panel || ""}
+                  onChange={(e) => setPanel(e.target.value || null)}
+                >
+                  <option value="">الأهداف والمعلومات</option>
+                  <option value="objectives">أهداف الدرس</option>
+                  <option value="intro">معلومات الدرس</option>
+                  <option value="concepts">مفاهيم الدرس</option>
+                </select>
+              </label>
+            </div>
+            {panel && (
+              <section className="classroom-disclosure">
+                <button className="p-close-text" onClick={() => setPanel(null)}>
+                  إغلاق ×
+                </button>
+                {panel === "objectives" ? (
+                  <>
+                    <h2>أهداف الدرس</h2>
+                    <ol>
+                      {(content.objectives || []).map((o, i) => (
+                        <li key={i}>{o}</li>
+                      ))}
+                    </ol>
+                  </>
+                ) : panel === "concepts" ? (
+                  <>
+                    <h2>مفاهيم الدرس</h2>
+                    {(content.concepts || []).map((c, i) => (
+                      <article key={i}>
+                        <h3>{c.term}</h3>
+                        <p>{c.definition}</p>
+                        {c.image && <Photo src={c.image} label={c.term} />}
+                        <button
+                          className="p-secondary"
+                          onClick={() => speak(`${c.term}: ${c.definition}`)}
+                        >
+                          <SpeakerHigh />
+                          استمع للمفهوم
+                        </button>
+                      </article>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <h2>هيا نبدأ الاستكشاف</h2>
+                    <p>{content.intro}</p>
+                    <h3>ملخص الدرس</h3>
+                    <p>{content.summary}</p>
+                  </>
+                )}
+              </section>
+            )}
+          </details>
+          <h3 className="map-menu-heading">الموارد الطبيعية</h3>
           {resources.map((r) => (
             <button
               key={r.id}
@@ -600,8 +611,47 @@ export default function LessonPage({ demo = false }) {
             </button>
           ))}
           <button className="show-map-all" onClick={showAll}>
-            عرض الخريطة كاملة
+            <Compass size={18} />
+            عرض الجميع · إعادة الزوم
           </button>
+          <h3 className="map-menu-heading">تعلّم واختبر</h3>
+          <div className="classroom-bottom">
+            <button
+              onClick={() => {
+                setIndex(0);
+                setModal("questions");
+              }}
+            >
+              <Target />
+              أسئلة الدرس
+            </button>
+            <button
+              onClick={() => {
+                setIndex(0);
+                setModal("activities");
+              }}
+            >
+              <Stack />
+              الأنشطة التفاعلية
+            </button>
+            <button className="p-button" onClick={() => ai("explain", "")}>
+              <ChatCircle />
+              اسأل الخريطة
+            </button>
+            <button
+              disabled={solved.length < questions.length || !questions.length}
+              onClick={finish}
+            >
+              <Star weight="fill" />
+              {completed ? "راجع إنجازك" : "أكملت درسي"}
+            </button>
+          </div>
+          <div className="map-menu-navigation">
+            <Link to={demo ? "/explore" : "/journey"}>
+              اختيار الدروس <ArrowLeft size={16} />
+            </Link>
+            <PlatformNavigation />
+          </div>
         </aside>
         <section className="classroom-map-region" aria-label="خريطة موارد مصر">
           <div className="classroom-map-meta">
@@ -626,7 +676,7 @@ export default function LessonPage({ demo = false }) {
               setLocation(site);
               setInfoOpen(true);
               setVideoOpen(false);
-              if (window.innerWidth <= 850) setLegendOpen(false);
+              setLegendOpen(false);
             }}
             onVideo={(site) => {
               setResource(site.resource);
@@ -658,6 +708,13 @@ export default function LessonPage({ demo = false }) {
           >
             إغلاق المعلومات ×
           </button>
+          <span className="studio-status">
+            {demo
+              ? "تجربة · دون نقاط رسمية"
+              : preview
+                ? "معاينة تحريرية"
+                : `${solved.length} / ${questions.length} سؤال متقن`}
+          </span>
           {!location ? (
             <section className="guide-speech">
               <RobotGuide />
@@ -699,37 +756,6 @@ export default function LessonPage({ demo = false }) {
             استمع للتوجيه
           </button>
         </aside>
-      </div>
-      <div className="classroom-bottom">
-        <button
-          onClick={() => {
-            setIndex(0);
-            setModal("questions");
-          }}
-        >
-          <Target />
-          أسئلة الدرس
-        </button>
-        <button
-          onClick={() => {
-            setIndex(0);
-            setModal("activities");
-          }}
-        >
-          <Stack />
-          الأنشطة التفاعلية
-        </button>
-        <button className="p-button" onClick={() => ai("explain", "")}>
-          <ChatCircle />
-          اسأل الخريطة
-        </button>
-        <button
-          disabled={solved.length < questions.length || !questions.length}
-          onClick={finish}
-        >
-          <Star weight="fill" />
-          {completed ? "راجع إنجازك" : "أكملت درسي"}
-        </button>
       </div>
       {notice && (
         <div className="classroom-notice p-feedback" role="status">

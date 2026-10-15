@@ -71,6 +71,10 @@ export default function EntryPage() {
             <br />
             سجّل دخولك لنحفظ رحلتك.
           </p>
+          <Link to="/demo/lesson-1" className="p-button demo-entry-link">
+            جرّب الدرس دون حساب
+          </Link>
+          <p className="p-muted">تجربة غير معتمدة · لا تُحفظ نتائج رسمية</p>
           {user ? (
             <div>
               <p>أهلًا {user.name || user.username}، حسابك جاهز.</p>

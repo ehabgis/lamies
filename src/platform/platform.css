@@ -1420,3 +1420,49 @@
 .question-site-map {
   direction: ltr;
 }
+.platform-signin .demo-entry-link {
+  margin: 12px 0;
+  background: #e7f2fc;
+  color: #075bab;
+  border-color: #8db9db;
+}
+.demo-entry-link:hover {
+  background: #d4e9fa !important;
+}
+.classroom-heading {
+  background: #0869c4;
+  border-radius: 16px;
+  padding: 17px 22px;
+  color: white;
+}
+.classroom-heading a {
+  color: white;
+}
+.classroom-heading h1 {
+  margin-bottom: 0;
+}
+.classroom-heading .lesson-status {
+  color: #164c7e;
+  flex-shrink: 0;
+}
+.platform-signin .demo-entry-link {
+  background: #ffcc44;
+  color: #163c66;
+  border-color: #e4b133;
+}
+.platform-signin .demo-entry-link:hover {
+  background: #f7bd2d !important;
+}
+.guide-speech .atlas-robot {
+  display: block;
+  width: 130px;
+  height: 145px;
+  margin: 0 auto 10px;
+}
+@media (max-width: 700px) {
+  .guide-speech .atlas-robot {
+    width: 58px;
+    height: 65px;
+    margin: 0;
+  }
+}

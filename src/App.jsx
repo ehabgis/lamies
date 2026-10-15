@@ -62,7 +62,8 @@ function AppContent() {
     location.pathname === "/" || location.pathname === "/legacy";
   const isPlatformRoute =
     ["/", "/journey", "/my-progress", "/admin"].includes(location.pathname) ||
-    location.pathname.startsWith("/classroom/");
+    location.pathname.startsWith("/classroom/") ||
+    location.pathname.startsWith("/demo/");
   const isSimpleHomeRoute = location.pathname === "/home";
   const isFocusedMapRoute =
     location.pathname === "/map" || location.pathname === "/lesson/lesson-1";
@@ -114,6 +115,7 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<EntryPage />} />
             <Route path="/legacy" element={<WelcomeScreen />} />
+            <Route path="/demo/:id" element={<ClassroomPage demo />} />
             <Route element={<AccountGuard />}>
               <Route path="/journey" element={<JourneyPage />} />
               <Route path="/my-progress" element={<StudentProgress />} />

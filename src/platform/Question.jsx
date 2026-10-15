@@ -10,8 +10,10 @@ export default function Question({
   onSolved,
   onHelp,
   preview = false,
+  demo = false,
   presentation,
 }) {
+  const [showHint, setShowHint] = useState(false);
   const [answer, setAnswer] = useState(
       q.type === "order"
         ? [...(q.options || [])].reverse()
@@ -35,10 +37,13 @@ export default function Question({
         });
         return;
       }
-      const result = await api(`/lessons/${lessonId}/answers`, {
-        method: "POST",
-        body: { questionId: q.id, answer },
-      });
+      const result = await api(
+        `${demo ? "/demo" : ""}/lessons/${lessonId}/answers`,
+        {
+          method: "POST",
+          body: { questionId: q.id, answer },
+        },
+      );
       setFeedback(result);
       if (result.correct) onSolved(q.id);
     } catch (e) {
@@ -66,6 +71,11 @@ export default function Question({
   return (
     <form className="p-question" onSubmit={submit}>
       <h3>{q.prompt}</h3>
+      {showHint && (
+        <p className="p-feedback" role="status">
+          تلميح مكتوب: {q.hint || "راجع بطاقة المورد ثم حاول مرة أخرى."}
+        </p>
+      )}
       {solved && !feedback && (
         <p className="p-success">
           <Star weight="fill" />
@@ -331,7 +341,7 @@ export default function Question({
         <button
           type="button"
           className="p-secondary"
-          onClick={() => onHelp(q, answer)}
+          onClick={() => (demo ? setShowHint(true) : onHelp(q, answer))}
         >
           <Lightbulb size={20} />
           ساعدني

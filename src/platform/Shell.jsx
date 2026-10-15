@@ -10,7 +10,7 @@ export default function Shell({ children }) {
         تخطّ إلى المحتوى
       </a>
       <header className="platform-header">
-        <Link className="platform-brand" to="/journey">
+        <Link className="platform-brand" to={user ? "/journey" : "/"}>
           <span>
             <BookOpen size={30} weight="duotone" />
           </span>
@@ -19,14 +19,16 @@ export default function Shell({ children }) {
           </div>
         </Link>
         <nav aria-label="تنقل المنصة">
-          <Link to="/journey">
+          <Link to={user ? "/journey" : "/"}>
             <Compass size={21} />
-            رحلتي
+            {user ? "رحلتي" : "صفحة البداية"}
           </Link>
-          <Link to="/my-progress">
-            <Star size={21} />
-            إنجازاتي
-          </Link>
+          {user && (
+            <Link to="/my-progress">
+              <Star size={21} />
+              إنجازاتي
+            </Link>
+          )}
           {user &&
             ["super_admin", "content_admin", "teacher"].includes(user.role) && (
               <Link to="/admin">
@@ -34,19 +36,21 @@ export default function Shell({ children }) {
                 الإدارة
               </Link>
             )}
-          <button
-            onClick={async () => {
-              try {
-                await logout();
-                navigate("/");
-              } catch (e) {
-                window.alert(e.message);
-              }
-            }}
-          >
-            <SignOut size={21} />
-            خروج
-          </button>
+          {user && (
+            <button
+              onClick={async () => {
+                try {
+                  await logout();
+                  navigate("/");
+                } catch (e) {
+                  window.alert(e.message);
+                }
+              }}
+            >
+              <SignOut size={21} />
+              خروج
+            </button>
+          )}
         </nav>
       </header>
       <main id="platform-main" tabIndex={-1}>
@@ -55,7 +59,11 @@ export default function Shell({ children }) {
       <footer className="platform-footer">
         تعلّم بهدوء، وحاول مرة أخرى دائمًا.{" "}
         <Link to="/legacy">النسخة السابقة</Link>
-        <span>تُحفظ النتائج في حسابك · لا نطلب اسمك الحقيقي</span>
+        <span>
+          {user
+            ? "نتائج الحساب منفصلة عن التجربة · لا نطلب اسمك الحقيقي"
+            : "تجربة دون حساب · لا تُحفظ نتائج رسمية"}
+        </span>
       </footer>
     </div>
   );

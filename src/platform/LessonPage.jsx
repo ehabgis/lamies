@@ -23,6 +23,7 @@ import Governorates from "./Governorates";
 import Question from "./Question";
 import AIAssistant from "./AIAssistant";
 import ResourcePin from "../components/Map/ResourcePin";
+import RobotGuide from "../components/Map/RobotGuide";
 const kindNames = {
   mineral: "خام معدني",
   renewable: "طاقة متجددة",
@@ -45,10 +46,10 @@ function Photo({ src, label }) {
     <p className="media-pending">لم تُضف صورة مرخصة لهذا المورد بعد.</p>
   );
 }
-export default function LessonPage() {
+export default function LessonPage({ demo = false }) {
   const { id } = useParams();
   const [search] = useSearchParams();
-  const preview = search.get("preview") === "1";
+  const preview = !demo && search.get("preview") === "1";
   const [lesson, setLesson] = useState(null),
     [error, setError] = useState(""),
     [resource, setResource] = useState(null),
@@ -74,7 +75,7 @@ export default function LessonPage() {
     setLesson(null);
     setStateReady(false);
     setError("");
-    api(`/lessons/${encodeURIComponent(id)}`)
+    api(`${demo ? "/demo" : ""}/lessons/${encodeURIComponent(id)}`)
       .then((data) => {
         setLesson(data.lesson);
         setSolved(
@@ -96,14 +97,14 @@ export default function LessonPage() {
         setStateReady(true);
       })
       .catch((e) => setError(e.message));
-  }, [id]);
+  }, [id, demo]);
   useEffect(() => {
     if (!pulse) return;
     const t = setTimeout(() => setPulse(false), 2600);
     return () => clearTimeout(t);
   }, [pulse]);
   useEffect(() => {
-    if (!stateReady || !lesson || preview) return;
+    if (!stateReady || !lesson || preview || demo) return;
     const timer = setTimeout(() => {
       api(`/lessons/${encodeURIComponent(id)}/state`, {
         method: "PUT",
@@ -117,7 +118,7 @@ export default function LessonPage() {
       );
     }, 300);
     return () => clearTimeout(timer);
-  }, [stateReady, lesson, id, resource, location, mode, preview]);
+  }, [stateReady, lesson, id, resource, location, mode, preview, demo]);
   useEffect(() => {
     setVideoFailed(false);
   }, [modal, resource?.id]);
@@ -127,7 +128,7 @@ export default function LessonPage() {
         <div className="p-empty">
           <h1>تعذر فتح الدرس</h1>
           <p role="alert">{error}</p>
-          <Link className="p-button" to="/journey">
+          <Link className="p-button" to={demo ? "/" : "/journey"}>
             ارجع إلى دروسك
           </Link>
         </div>
@@ -187,12 +188,23 @@ export default function LessonPage() {
     setPulse(true);
   }
   function ai(mode, message) {
+    if (demo) {
+      setNotice(
+        "المساعد المتصل بـ OpenAI غير مفعّل في التجربة. استخدم تلميحات الأسئلة المكتوبة، فهذه ليست إجابات مولدة.",
+      );
+      return;
+    }
     setAssessment(null);
     setAiMode(mode);
     setAiInitial(message);
     setModal("ai");
   }
   function help(q, answer) {
+    if (demo) {
+      setNotice(q.hint || "راجع بطاقة المورد ثم حاول مرة أخرى.");
+      window.alert(q.hint || "راجع بطاقة المورد ثم حاول مرة أخرى.");
+      return;
+    }
     ai(
       "hint",
       `ساعدني على التفكير في هذا السؤال دون كشف الإجابة: ${q.prompt}. محاولتي: ${JSON.stringify(answer).slice(0, 200)}`,
@@ -204,8 +216,8 @@ export default function LessonPage() {
   }
   async function finish() {
     try {
-      if (preview) {
-        setNotice("هذه معاينة؛ لا تُحفظ نتائج أو مكافآت.");
+      if (preview || demo) {
+        setNotice("هذه تجربة غير معتمدة؛ لا تُحفظ نتائج رسمية أو مكافآت.");
         return;
       }
       const d = await api(`/lessons/${id}/complete`, { method: "POST" });
@@ -238,23 +250,26 @@ export default function LessonPage() {
     <Shell>
       <div className="classroom-heading">
         <div>
-          <Link to="/journey">
-            دروسي <ArrowLeft />
+          <Link to={demo ? "/" : "/journey"}>
+            {demo ? "العودة للبداية" : "دروسي"} <ArrowLeft />
           </Link>
           <h1>{lesson.title}</h1>
         </div>
         <span className="lesson-status">
-          {preview
-            ? "معاينة تحريرية · لا تُحفظ النتائج"
-            : completed
-              ? "درس مكتمل ✓"
-              : `${solved.length} / ${questions.length} سؤال متقن`}
+          {demo
+            ? "تجربة غير معتمدة · النتائج مؤقتة"
+            : preview
+              ? "معاينة تحريرية · لا تُحفظ النتائج"
+              : completed
+                ? "درس مكتمل ✓"
+                : `${solved.length} / ${questions.length} سؤال متقن`}
         </span>
       </div>
-      {preview && (
+      {(preview || demo) && (
         <p className="p-feedback">
-          هذه مسودة من ملف المستخدم، تحتاج مراجعة تربوية وتوثيق المصادر. ليست
-          إثباتًا لمطابقة المنهج الرسمي.
+          {demo
+            ? "نسخة للتجربة تحتاج مراجعة المعلم؛ ليست منهجًا معتمدًا ولا تُحفظ نتائجها."
+            : "مسودة تحتاج مراجعة تربوية وتوثيق المصادر؛ ليست إثباتًا لمطابقة المنهج الرسمي."}
         </p>
       )}
       <div className="classroom-toolbar">
@@ -460,7 +475,7 @@ export default function LessonPage() {
         <aside className="classroom-guide" aria-label="المعلم ومعلومات المورد">
           {!location ? (
             <section className="guide-speech">
-              <Robot size={64} weight="duotone" />
+              <RobotGuide />
               <h2>هيا نستكشف!</h2>
               <p aria-live="polite">{guide}</p>
             </section>
@@ -648,6 +663,7 @@ export default function LessonPage() {
               onSolved={answered}
               onHelp={help}
               preview={preview}
+              demo={demo}
             />
           ) : modal === "video" ? (
             <>
@@ -729,6 +745,7 @@ export default function LessonPage() {
                     onSolved={answered}
                     onHelp={help}
                     preview={preview}
+                    demo={demo}
                   />
                   <div className="p-actions">
                     <button

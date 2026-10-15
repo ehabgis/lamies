@@ -1,3 +1,4 @@
+import { DEMO_ID, demoLesson, demoAnswer } from "./demo.mjs";
 import http from "node:http";
 import {
   randomBytes,
@@ -379,7 +380,11 @@ export function createApp({
         : null;
       if (
         writable &&
-        !["/api/auth/login", "/api/auth/register"].includes(path)
+        ![
+          "/api/auth/login",
+          "/api/auth/register",
+          "/api/demo/lessons/lesson-1/answers",
+        ].includes(path)
       ) {
         if (!user) fail(401, "سجّل الدخول أولًا");
         if (req.headers["x-csrf-token"] !== session.csrf)
@@ -404,6 +409,28 @@ export function createApp({
           `lamis_session=${raw}; HttpOnly; SameSite=Lax; Path=/; Max-Age=604800${process.env.COOKIE_SECURE === "true" ? "; Secure" : ""}`;
         return { user: safeUser(u), csrfToken: csrf };
       };
+      const demoMatch = path.match(
+        /^\/api\/demo\/lessons\/([^/]+)(?:\/(answers))?$/,
+      );
+      if (demoMatch) {
+        if (demoMatch[1] !== DEMO_ID) fail(404, "التجربة غير موجودة");
+        if (method === "GET" && !demoMatch[2])
+          return send({
+            demo: true,
+            lesson: demoLesson(),
+            progress: { answers: [], completed: false, state: {} },
+          });
+        if (method === "POST" && demoMatch[2] === "answers") {
+          rate(`demo:${req.socket.remoteAddress}`, 90);
+          const b = await body(req);
+          if (b.answer === undefined || JSON.stringify(b.answer).length > 20000)
+            fail(400, "الإجابة غير صالحة");
+          const result = demoAnswer(b.questionId, b.answer);
+          if (!result) fail(400, "السؤال غير موجود");
+          return send(result);
+        }
+        fail(405, "العملية غير متاحة في التجربة");
+      }
       if (path === "/api/health" && method === "GET")
         return send({ ok: true, database: true, aiConfigured: !!aiKey });
       if (path === "/api/auth/register" && method === "POST") {

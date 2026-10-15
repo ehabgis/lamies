@@ -1,0 +1,29 @@
+{
+  "name": "ana-khareeta",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "تطبيق الخرائط التعليمية الذكية - تعليم تفاعلي للصف الخامس الابتدائي",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@jvmr/pptx-to-html": "^1.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.22.0",
+    "zustand": "^4.5.0",
+    "framer-motion": "^11.0.3",
+    "phosphor-react": "^1.4.1",
+    "canvas-confetti": "^1.9.2",
+    "howler": "^2.2.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.1.0",
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8.4.35",
+    "autoprefixer": "^10.4.17"
+  }
+}

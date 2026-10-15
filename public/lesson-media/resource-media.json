@@ -1,0 +1,17 @@
+{
+  "basemap": {
+    "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=21.4285714286,19.8333333333,38.5714285714,33.1666666667&bboxSR=4326&imageSR=4326&size=1440,1120&format=jpg&f=image",
+    "credit": "Esri World Imagery · Esri, Maxar, Earthstar Geographics, GIS User Community",
+    "sourceUrl": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer"
+  },
+  "resources": {
+    "iron": {
+      "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Hematite.jpg",
+      "imageCredit": "Wikimedia Commons · Hematite",
+      "videoUrl": "",
+      "videoTitle": "كيف نستخرج الحديد من باطن الأرض؟",
+      "videoCredit": "",
+      "videoLocationId": "iron-bahariya"
+    }
+  }
+}

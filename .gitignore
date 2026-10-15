@@ -1,0 +1,9 @@
+.env
+.env.*
+node_modules/
+dist/
+.vite/
+*.log
+Thumbs.db
+.DS_Store
+NUL.css

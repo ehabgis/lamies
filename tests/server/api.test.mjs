@@ -125,6 +125,31 @@ test("durable server auth, authorization, curriculum, grading and transactional 
     const admin = { cookie: login.cookie, csrf: login.value.csrfToken };
     assert.equal(login.status, 200);
     assert.match(login.cookie, /lamis_session=/);
+    const photo = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j9N8AAAAASUVORK5CYII=",
+      "base64",
+    );
+    const uploadPhoto = (client) =>
+      fetch(base + "/api/admin/media", {
+        method: "POST",
+        headers: {
+          "Content-Type": "image/png",
+          Cookie: client.cookie,
+          "X-CSRF-Token": client.csrf,
+        },
+        body: photo,
+      });
+    assert.equal((await uploadPhoto(student)).status, 403);
+    const uploaded = await uploadPhoto(admin);
+    assert.equal(uploaded.status, 201);
+    const imageUrl = (await uploaded.json()).media.url;
+    assert.equal((await fetch(base + imageUrl)).status, 401);
+    assert.equal(
+      (await fetch(base + imageUrl, { headers: { Cookie: student.cookie } }))
+        .status,
+      403,
+    );
+
     assert.equal(
       (
         await api(
@@ -148,6 +173,15 @@ test("durable server auth, authorization, curriculum, grading and transactional 
       200,
     );
     const content = {
+      resources: [
+        {
+          id: "iron",
+          label: "الحديد",
+          kind: "mineral",
+          locations: [],
+          media: { image: imageUrl },
+        },
+      ],
       reviewRequired: false,
       sources: [{ id: "source", text: "مصدر مراجع للمعلم", approved: true }],
       questions: [
@@ -181,6 +215,17 @@ test("durable server auth, authorization, curriculum, grading and transactional 
       student,
     );
     assert.equal(lesson.status, 200);
+    assert.equal(
+      lesson.value.lesson.content.resources[0].media.image,
+      imageUrl,
+    );
+    const studentPhoto = await fetch(base + imageUrl, {
+      headers: { Cookie: student.cookie },
+    });
+    assert.equal(studentPhoto.status, 200);
+    assert.equal(studentPhoto.headers.get("content-type"), "image/png");
+    assert.deepEqual(Buffer.from(await studentPhoto.arrayBuffer()), photo);
+
     assert.equal(
       (
         await api(

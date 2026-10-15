@@ -1466,3 +1466,5 @@
     margin: 0;
   }
 }
+.lamis-platform .journey-companion-message > .atlas-robot { width:46px; height:52px; flex-shrink:0; }
+.p-modal .atlas-robot, .lamis-platform .ai-assistant > .atlas-robot { width:64px; height:72px; }

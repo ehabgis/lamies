@@ -1,3 +1,4 @@
+import RobotGuide from "./Map/RobotGuide";
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
@@ -213,7 +214,7 @@ export default function GlobalRobotBuddies() {
               {robot.imagePath ? (
                 <img src={robot.imagePath} alt={robot.name} className="w-10 h-10 rounded-xl object-cover" />
               ) : (
-                <span className="text-3xl drop-shadow-sm">{robot.emoji}</span>
+                <RobotGuide style={{width:40,height:45}} />
               )}
               <motion.span
                 className={`absolute -right-1 -top-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br ${robot.ringClass} border border-white text-[10px]`}

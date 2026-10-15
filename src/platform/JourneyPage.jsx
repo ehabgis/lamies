@@ -1,3 +1,4 @@
+import RobotGuide from "../components/Map/RobotGuide";
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -6,7 +7,6 @@ import {
   BookOpen,
   CheckCircle,
   Compass,
-  Robot,
   Star,
 } from "phosphor-react";
 import Shell from "./Shell";
@@ -381,7 +381,7 @@ export default function JourneyPage({ demo = false }) {
         </section>
         <aside className="journey-companion" aria-label="دليل الرحلة">
           <div className="journey-companion-message">
-            <Robot size={38} weight="duotone" />
+            <RobotGuide />
             <p>
               {step === 0
                 ? "أهلًا يا مستكشف! اختر عامك الدراسي، ثم مرحلتك وصفّك."

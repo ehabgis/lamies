@@ -1,3 +1,4 @@
+import RobotGuide from "./RobotGuide";
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildDeclutteredPercentPositions } from '../../utils/markerLayout';
@@ -1999,7 +2000,7 @@ export default function MagicalMap({
                             ease: 'easeInOut'
                         }}
                     >
-                        {mover.emoji}
+                        {mover.emoji === "🤖" ? <RobotGuide style={{width:"1em",height:"1.2em"}} /> : mover.emoji}
                     </motion.span>
                 ))}
 

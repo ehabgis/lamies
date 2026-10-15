@@ -70,7 +70,7 @@ export function demoCatalog() {
   const grades = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"];
   const add = (id, parentId, kind, title, extra = {}) =>
     nodes.push({ id, parentId, kind, title, ...extra });
-  for (let g = 1; g <= 6; g++) {
+  for (let g = 4; g <= 6; g++) {
     const grade = `demo-grade-${g}`;
     add(grade, "demo-primary", "grade", `الصف ${grades[g - 1]} الابتدائي`);
     for (let t = 1; t <= 2; t++) {

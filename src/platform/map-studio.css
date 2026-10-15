@@ -1,0 +1,368 @@
+/* A compact workspace: controls stay visible while the map and panels resize. */
+.map-shell .studio-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  padding: 2px 0 5px;
+}
+.studio-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  text-decoration: none;
+  min-height: 44px;
+}
+.studio-lesson-select {
+  flex: 1;
+  max-width: 650px;
+  font-size: 10px;
+  color: #355873;
+}
+.map-shell .studio-lesson-select select {
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 5px 10px;
+  font-size: 16px;
+  font-weight: 800;
+  background: white;
+}
+.studio-status {
+  font-size: 11px;
+  color: #355873;
+  margin-inline-start: auto;
+  white-space: nowrap;
+}
+.studio-commandbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 10px;
+  border: 1px solid #cbdfe9;
+  background: white;
+  border-radius: 14px;
+  padding: 5px 8px;
+}
+.studio-panel-buttons,
+.studio-select-tools {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.studio-panel-buttons button {
+  border: 0;
+  background: transparent;
+  color: #234e70;
+  font-size: 12px;
+  padding: 6px 9px;
+}
+.studio-panel-buttons button[aria-expanded="true"] {
+  background: #e1f2fc;
+  color: #075fae;
+}
+.studio-select-tools label {
+  font-size: 10px;
+  color: #355873;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.map-shell .studio-select-tools select {
+  min-height: 36px;
+  padding: 4px 6px;
+  margin: 0;
+  font-size: 11px;
+  max-width: 150px;
+}
+.map-shell .studio-workspace {
+  grid-template-columns: 174px minmax(0, 1fr) 286px;
+  gap: 10px;
+}
+.map-shell .studio-workspace.legend-hidden {
+  grid-template-columns: minmax(0, 1fr) 286px;
+}
+.map-shell .studio-workspace.guide-hidden {
+  grid-template-columns: 174px minmax(0, 1fr);
+}
+.map-shell .studio-workspace.legend-hidden.guide-hidden {
+  grid-template-columns: minmax(0, 1fr);
+}
+.map-shell .studio-workspace [hidden] {
+  display: none !important;
+}
+.map-shell .studio-workspace .mobile-panel-close {
+  display: flex !important;
+  align-self: flex-end;
+  justify-content: flex-end;
+  font-size: 10px;
+  min-height: 30px !important;
+  padding: 3px 5px;
+  border: 0;
+  background: transparent;
+  color: #355873;
+}
+.map-shell .studio-workspace .classroom-resource {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.map-shell .classroom-guide {
+  padding: 10px 12px;
+}
+.map-shell .classroom-guide .resource-photo {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin: 8px 0;
+}
+.resource-photo-attach {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #355873;
+  margin: 8px 0;
+}
+.map-shell .resource-photo-attach input {
+  display: block;
+  width: 100%;
+  min-height: 36px;
+  padding: 5px;
+  font-size: 10px;
+  margin: 4px 0;
+}
+.resource-photo-note {
+  display: block;
+  font-size: 10px;
+  color: #355873;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+.map-shell .site-facts {
+  margin-top: 12px;
+}
+.map-shell .resource-video-button {
+  width: 100%;
+  min-height: 44px;
+  font-size: 12px;
+}
+.map-shell .classroom-bottom {
+  display: flex;
+  gap: 0;
+  padding: 4px;
+  background: white;
+  border: 1px solid #cbdfe9;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+.map-shell .classroom-bottom button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  border-radius: 10px;
+  min-height: 42px;
+  font-size: 12px;
+  color: #234e70;
+  gap: 7px;
+}
+.map-shell .classroom-bottom .p-button {
+  background: #0869c4;
+  color: white;
+}
+.map-shell .classroom-map-region {
+  position: relative;
+}
+.map-video-panel {
+  position: absolute;
+  z-index: 1500;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(630px, 92%);
+  max-height: 92%;
+  overflow: auto;
+  background: white;
+  border: 1px solid #b9d3e5;
+  border-radius: 18px;
+  box-shadow: 0 18px 50px #0b244866;
+  direction: rtl;
+  scrollbar-width: thin;
+}
+.map-video-panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  gap: 10px;
+}
+.map-video-panel > header > div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.map-shell .map-video-panel h2 {
+  font-size: 18px;
+  margin: 0;
+}
+.map-shell .map-video-panel header p {
+  margin: 1px 0 0;
+  font-size: 11px;
+  color: #355873;
+}
+.map-video-panel button {
+  min-height: 40px;
+  padding: 6px 10px;
+  background: #edf6fc;
+  border: 0;
+  color: #12365c;
+}
+.map-video-stage {
+  background: #102b45;
+  color: white;
+}
+.map-video-stage video {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  aspect-ratio: 16/9;
+}
+.map-video-placeholder {
+  min-height: 200px;
+  padding: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+}
+.map-shell .map-video-placeholder h3 {
+  color: white;
+  font-size: 19px;
+  margin: 12px 0 4px;
+}
+.map-shell .map-video-placeholder p {
+  color: #dceefb;
+  font-size: 13px;
+  margin: 0;
+}
+.map-video-panel footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 10px;
+  color: #355873;
+}
+.map-video-panel footer button {
+  font-size: 11px;
+}
+.map-shell :focus-visible {
+  outline: 3px solid #0869c4;
+  outline-offset: 3px;
+}
+@media (max-width: 1050px) and (min-width: 851px) {
+  .map-shell .studio-workspace {
+    grid-template-columns: 145px minmax(0, 1fr) 260px;
+  }
+  .studio-select-tools label {
+    font-size: 0;
+  }
+}
+@media (max-width: 850px) {
+  .map-shell .studio-titlebar {
+    gap: 6px;
+  }
+  .studio-status {
+    display: none;
+  }
+  .map-shell .studio-lesson-select select {
+    font-size: 12px;
+    min-height: 42px;
+  }
+  .studio-back {
+    font-size: 10px;
+  }
+  .studio-commandbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 3px;
+    padding: 4px;
+  }
+  .studio-panel-buttons {
+    justify-content: space-between;
+  }
+  .studio-panel-buttons button {
+    font-size: 10px;
+    min-height: 40px;
+    padding: 5px;
+    flex: 1;
+  }
+  .studio-select-tools {
+    justify-content: space-between;
+  }
+  .studio-select-tools label {
+    font-size: 9px;
+    gap: 4px;
+  }
+  .map-shell .studio-select-tools select {
+    font-size: 10px;
+    min-height: 32px;
+    max-width: 140px;
+  }
+  .map-shell .studio-workspace,
+  .map-shell .studio-workspace.legend-hidden,
+  .map-shell .studio-workspace.guide-hidden {
+    display: flex;
+  }
+  .map-shell .studio-workspace > .classroom-guide.mobile-open {
+    max-height: 58%;
+  }
+  .map-shell .classroom-bottom button {
+    font-size: 9px;
+    gap: 3px;
+    min-height: 40px;
+    padding: 3px;
+  }
+  .map-shell .classroom-bottom button svg {
+    width: 17px;
+    height: 17px;
+  }
+  .map-video-panel > header {
+    padding: 8px 10px;
+  }
+  .map-shell .map-video-panel h2 {
+    font-size: 15px;
+  }
+  .map-video-placeholder {
+    min-height: 150px;
+    padding: 16px;
+  }
+  .map-video-panel footer {
+    padding: 6px;
+  }
+  .map-video-panel footer > span {
+    max-width: 50%;
+  }
+}
+@media (max-height: 560px) and (min-width: 851px) {
+  .studio-lesson-select {
+    font-size: 0;
+  }
+  .studio-titlebar {
+    padding: 0;
+  }
+  .studio-commandbar {
+    padding: 2px 6px;
+  }
+}
+@media (max-width: 850px) {
+  .map-shell .studio-workspace.has-video > .classroom-guide {
+    visibility: hidden;
+  }
+}
+.map-shell .studio-page-title { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }

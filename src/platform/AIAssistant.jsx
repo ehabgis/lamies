@@ -1,5 +1,6 @@
+import RobotGuide from "../components/Map/RobotGuide";
 import { useState } from "react";
-import { Robot, PaperPlaneTilt } from "phosphor-react";
+import { PaperPlaneTilt } from "phosphor-react";
 import { api } from "./api";
 export default function AIAssistant({
   lessonId,
@@ -45,7 +46,7 @@ export default function AIAssistant({
   }
   return (
     <section className="ai-assistant">
-      <Robot size={45} weight="duotone" />
+      <RobotGuide />
       <p>
         اسأل عن الدرس{resource ? ` أو ${resource.label}` : ""}. يُرسل السؤال
         وسياق الدرس إلى OpenAI، دون اسمك أو نتائجك.

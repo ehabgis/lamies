@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { renderToStaticMarkup } from "react-dom/server";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -49,8 +48,8 @@ export default function EsriLessonMap({
   showNames,
   onSelect,
   onVideo,
-  siteContent,
-  onCloseSite,
+  resetKey = 0,
+  onReset,
 }) {
   const host = useRef(null),
     mapRef = useRef(null),
@@ -58,7 +57,6 @@ export default function EsriLessonMap({
     galleryButton = useRef(null),
     focusSite = useRef(null),
     [ready, setReady] = useState(false),
-    [popupHost, setPopupHost] = useState(null),
     [basemap, setBasemap] = useState(readBasemap),
     [gallery, setGallery] = useState(false),
     [governorates, setGovernorates] = useState(false),
@@ -71,8 +69,8 @@ export default function EsriLessonMap({
     [notice, setNotice] = useState("");
   const chosen = BASEMAPS.find((b) => b.id === basemap) || BASEMAPS[0];
   const usingLocal = basemap === "local" || status === "error";
-  const callback = useRef({ onSelect, onVideo, onCloseSite });
-  callback.current = { onSelect, onVideo, onCloseSite };
+  const callback = useRef({ onSelect, onVideo });
+  callback.current = { onSelect, onVideo };
   useEffect(() => {
     const map = L.map(host.current, {
       zoomControl: false,
@@ -322,71 +320,20 @@ export default function EsriLessonMap({
     document.addEventListener("keydown", escape);
     return () => document.removeEventListener("keydown", escape);
   }, [gallery]);
-  const selectedSite = sites.find((site) => site.id === selectedLocationId);
   useEffect(() => {
-    if (!ready || !selectedSite) {
-      setPopupHost(null);
-      return;
-    }
-    const container = document.createElement("div");
-    container.setAttribute("role", "dialog");
-    container.setAttribute("aria-label", `تفاصيل الموقع: ${selectedSite.name}`);
-    container.dir = "rtl";
-    const popup = L.popup({
-      className: "site-map-popup",
-      maxWidth: 340,
-      minWidth: Math.min(285, window.innerWidth - 80),
-      maxHeight: Math.max(
-        120,
-        Math.min(320, mapRef.current.getSize().y * 0.55),
-      ),
-      autoPan: true,
-      autoPanPadding: [15, 18],
-      closeOnClick: false,
-      offset: [0, -38],
-    })
-      .setLatLng([selectedSite.lat, selectedSite.lng])
-      .setContent(container);
-    let active = true;
-    popup.on("remove", () => {
-      if (active) {
-        focusSite.current = selectedSite.id;
-        mapRef.current?.panTo([selectedSite.lat, selectedSite.lng], {
-          animate: false,
-        });
-        callback.current.onCloseSite?.();
-      }
+    if (!ready) return;
+    mapRef.current.stop();
+    mapRef.current.fitBounds(EGYPT_BOUNDS, {
+      padding: [24, 36],
+      animate: false,
     });
-    popup.on("add", () => {
-      const close = popup
-        .getElement()
-        ?.querySelector(".leaflet-popup-close-button");
-      close?.setAttribute("aria-label", "إغلاق تفاصيل الموقع");
-      close?.setAttribute("title", "إغلاق تفاصيل الموقع");
-    });
-    popup.openOn(mapRef.current);
-    setPopupHost(container);
-    const size = new ResizeObserver(() => popup.update());
-    size.observe(container);
-    const resizePopup = () => {
-      popup.options.maxHeight = Math.max(
-        120,
-        Math.min(320, mapRef.current.getSize().y * 0.55),
-      );
-      popup.update();
-    };
-    mapRef.current.on("resize", resizePopup);
-    return () => {
-      mapRef.current?.off("resize", resizePopup);
-      active = false;
-      size.disconnect();
-      popup.remove();
-    };
-  }, [ready, selectedLocationId, selectedSite?.lat, selectedSite?.lng]);
+    setSelectedGovernorate("");
+  }, [ready, resetKey]);
   function focusLocation(site) {
     const map = mapRef.current;
     const zoom = Math.max(map.getZoom(), 8);
     const point = map.project([site.lat, site.lng], zoom);
+    if (window.innerWidth <= 850) point.y += map.getSize().y * 0.24;
     map.stop();
     map.setView(map.unproject(point, zoom), zoom, {
       animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -428,7 +375,6 @@ export default function EsriLessonMap({
       className={`esri-map-surface ${usingLocal ? "has-local-basemap" : ""}`}
       aria-label="خريطة موارد مصر"
     >
-      {popupHost && siteContent && createPortal(siteContent, popupHost)}
       <div
         ref={host}
         className="esri-leaflet-host"
@@ -473,6 +419,7 @@ export default function EsriLessonMap({
               animate: false,
             });
             setSelectedGovernorate("");
+            onReset?.();
           }}
         >
           <Compass size={22} />

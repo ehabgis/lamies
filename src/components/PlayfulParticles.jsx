@@ -1,3 +1,4 @@
+import RobotGuide from "./Map/RobotGuide";
 import { useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
@@ -64,7 +65,7 @@ export default function PlayfulParticles({
             delay: p.delay
           }}
         >
-          {p.emoji}
+          {p.emoji === "🤖" ? <RobotGuide style={{width:"1em",height:"1.2em"}} /> : p.emoji}
         </motion.div>
       ))}
     </div>

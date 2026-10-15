@@ -28,15 +28,12 @@ test("guest demo grades all eight types without publishing, answer leakage or du
     assert.equal(catalog.data.demo, true);
     assert.equal(
       catalog.data.nodes.filter((n) => n.kind === "grade").length,
-      6,
+      3,
     );
-    assert.equal(
-      catalog.data.nodes.filter((n) => n.kind === "term").length,
-      12,
-    );
+    assert.equal(catalog.data.nodes.filter((n) => n.kind === "term").length, 6);
     assert.equal(
       catalog.data.nodes.filter((n) => n.kind === "unit").length,
-      36,
+      18,
     );
     const available = catalog.data.nodes.filter(
       (n) => n.kind === "lesson" && n.available,

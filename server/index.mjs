@@ -1,4 +1,4 @@
-import { DEMO_ID, demoLesson, demoAnswer } from "./demo.mjs";
+import { DEMO_ID, demoLesson, demoAnswer, demoCatalog } from "./demo.mjs";
 import http from "node:http";
 import {
   randomBytes,
@@ -409,6 +409,8 @@ export function createApp({
           `lamis_session=${raw}; HttpOnly; SameSite=Lax; Path=/; Max-Age=604800${process.env.COOKIE_SECURE === "true" ? "; Secure" : ""}`;
         return { user: safeUser(u), csrfToken: csrf };
       };
+      if (path === "/api/demo/catalog" && method === "GET")
+        return send({ nodes: demoCatalog(), demo: true });
       const demoMatch = path.match(
         /^\/api\/demo\/lessons\/([^/]+)(?:\/(answers))?$/,
       );

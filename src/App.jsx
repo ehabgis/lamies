@@ -61,7 +61,9 @@ function AppContent() {
   const isWelcomeRoute =
     location.pathname === "/" || location.pathname === "/legacy";
   const isPlatformRoute =
-    ["/", "/journey", "/my-progress", "/admin"].includes(location.pathname) ||
+    ["/", "/explore", "/journey", "/my-progress", "/admin"].includes(
+      location.pathname,
+    ) ||
     location.pathname.startsWith("/classroom/") ||
     location.pathname.startsWith("/demo/");
   const isSimpleHomeRoute = location.pathname === "/home";
@@ -114,6 +116,7 @@ function AppContent() {
         <Suspense fallback={<RouteLoader />}>
           <Routes>
             <Route path="/" element={<EntryPage />} />
+            <Route path="/explore" element={<JourneyPage demo />} />
             <Route path="/legacy" element={<WelcomeScreen />} />
             <Route path="/demo/:id" element={<ClassroomPage demo />} />
             <Route element={<AccountGuard />}>

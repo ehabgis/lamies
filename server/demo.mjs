@@ -56,3 +56,53 @@ export function demoAnswer(questionId, answer) {
     awarded: 0,
   };
 }
+
+// Public navigation metadata for the bundled sample only; never reads CMS drafts.
+export function demoCatalog() {
+  return [
+    {
+      id: "demo-primary",
+      parentId: null,
+      kind: "stage",
+      title: "المرحلة الابتدائية",
+    },
+    {
+      id: "demo-grade-5",
+      parentId: "demo-primary",
+      kind: "grade",
+      title: "الصف الخامس الابتدائي",
+    },
+    {
+      id: "demo-term-1",
+      parentId: "demo-grade-5",
+      kind: "term",
+      title: "الفصل الدراسي الأول",
+    },
+    {
+      id: "demo-year",
+      parentId: "demo-term-1",
+      kind: "year",
+      title: "2026 / 2027",
+    },
+    {
+      id: "demo-social",
+      parentId: "demo-year",
+      kind: "subject",
+      title: "الدراسات الاجتماعية",
+    },
+    {
+      id: "demo-treasures",
+      parentId: "demo-social",
+      kind: "unit",
+      title: "كنوز مصر",
+    },
+    {
+      id: DEMO_ID,
+      parentId: "demo-treasures",
+      kind: "lesson",
+      title: seed.title,
+      demo: true,
+      status: "draft",
+    },
+  ];
+}

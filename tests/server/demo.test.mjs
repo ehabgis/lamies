@@ -23,6 +23,33 @@ test("guest demo grades all eight types without publishing, answer leakage or du
     return { status: response.status, data: await response.json() };
   };
   try {
+    const catalog = await request("/api/demo/catalog");
+    assert.equal(catalog.status, 200);
+    assert.equal(catalog.data.demo, true);
+    assert.equal(catalog.data.nodes.length, 7);
+    const publicLesson = catalog.data.nodes.find((n) => n.kind === "lesson");
+    assert.equal(publicLesson.id, "lesson-1");
+    assert.equal(publicLesson.demo, true);
+    assert.equal(publicLesson.status, "draft");
+    assert.equal("content" in publicLesson, false);
+    // Metadata describes the bundled example, never arbitrary CMS drafts.
+    assert(!catalog.data.nodes.some((n) => n.id === "egypt-treasures"));
+    const byId = new Map(catalog.data.nodes.map((n) => [n.id, n]));
+    let branch = publicLesson;
+    const ancestry = [];
+    while (branch) {
+      ancestry.unshift(branch.kind);
+      branch = byId.get(branch.parentId);
+    }
+    assert.deepEqual(ancestry, [
+      "stage",
+      "grade",
+      "term",
+      "year",
+      "subject",
+      "unit",
+      "lesson",
+    ]);
     const demo = await request("/api/demo/lessons/lesson-1");
     assert.equal(demo.status, 200);
     assert.equal(demo.data.lesson.demo, true);

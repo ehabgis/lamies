@@ -1,0 +1,436 @@
+.journey-shell {
+  height: 100dvh;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+.journey-shell .platform-header {
+  padding: 12px 28px;
+  flex-shrink: 0;
+}
+.journey-shell > #platform-main {
+  width: 100%;
+  max-width: 1400px;
+  padding: 20px 28px 12px;
+  margin: 0 auto;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.journey-shell .platform-footer {
+  padding: 7px 28px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.journey-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.journey-heading h1 {
+  font-size: clamp(24px, 2.5vw, 34px);
+  margin: 0;
+}
+.journey-heading p {
+  font-size: 14px;
+  color: #355873;
+  margin: 3px 0 12px;
+}
+.journey-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  background: #fff2c4;
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: #624d12;
+  white-space: nowrap;
+}
+.journey-stepper {
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid #cbdfe9;
+  border-radius: 16px;
+  background: white;
+  margin-bottom: 18px;
+  flex-shrink: 0;
+}
+.journey-stepper button {
+  flex: 1;
+  color: #355873;
+  border: 0;
+  background: none;
+  font-size: 14px;
+}
+.journey-stepper button[aria-current] {
+  background: #0869c4;
+  color: white;
+}
+.journey-stepper button > span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.journey-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(270px, 1fr);
+  gap: 26px;
+  min-height: 0;
+  flex: 1;
+}
+.journey-picker {
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+  border: 1px solid #cbdfe9;
+  border-radius: 22px;
+  background: white;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #8dbad0 #edf7fc;
+}
+.journey-picker h2 {
+  font-size: 23px;
+  margin-bottom: 20px;
+}
+.journey-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.journey-field {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+}
+.journey-shell .journey-field select {
+  width: 100%;
+  margin: 5px 0 0;
+  min-height: 48px;
+  background-color: #f7fbff;
+  border-color: #9cbdd5;
+}
+.journey-field small {
+  display: block;
+  font-size: 12px;
+  color: #355873;
+}
+.journey-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 18px;
+}
+.journey-actions .p-button {
+  margin-inline-start: auto;
+}
+.journey-companion {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  justify-content: center;
+}
+.journey-companion-message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: #dff4fc;
+  border-radius: 18px;
+}
+.journey-companion-message svg {
+  flex-shrink: 0;
+  color: #0869c4;
+}
+.journey-companion-message p {
+  font-size: 14px;
+  margin: 0;
+}
+.journey-companion > img {
+  width: 100%;
+  object-fit: contain;
+  min-height: 0;
+  height: min(32dvh, 310px);
+  margin: 12px 0;
+}
+.journey-selection-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-top: 1px solid #b9d8e8;
+  padding-top: 12px;
+  font-size: 13px;
+}
+.journey-selection-summary > svg {
+  flex-shrink: 0;
+  color: #0869c4;
+}
+.journey-selection-summary p {
+  font-size: 12px;
+  color: #355873;
+  margin: 3px 0 6px;
+}
+.journey-companion > small,
+.journey-companion > a {
+  font-size: 11px;
+  color: #355873;
+  margin-top: 6px;
+}
+.journey-companion > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  color: #0869c4;
+}
+.journey-lesson-list {
+  margin-top: 20px;
+}
+.journey-lesson {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 0;
+  border-block: 1px solid #d2e3ef;
+}
+.journey-lesson-icon {
+  padding: 12px;
+  background: #e1f3fc;
+  color: #0869c4;
+  border-radius: 15px;
+}
+.journey-lesson > div {
+  flex: 1;
+  min-width: 180px;
+}
+.journey-lesson small {
+  font-size: 11px;
+  color: #355873;
+}
+.journey-lesson h3 {
+  margin: 4px 0;
+  font-size: 20px;
+}
+.journey-lesson p {
+  font-size: 13px;
+  color: #355873;
+  margin: 0;
+}
+.journey-lesson .p-button {
+  margin-inline-start: auto;
+}
+.journey-inline-help {
+  color: #355873;
+  font-size: 14px;
+  padding: 16px 0;
+}
+.journey-shell :focus-visible {
+  outline: 3px solid #0869c4;
+  outline-offset: 3px;
+}
+.journey-shell ::selection {
+  background: #ffdc70;
+  color: #12365c;
+}
+@media (max-width: 700px) {
+  .journey-shell .platform-header {
+    padding: 8px 14px;
+    gap: 8px;
+  }
+  .journey-shell .platform-brand {
+    font-size: 15px;
+    gap: 7px;
+  }
+  .journey-shell .platform-brand > span {
+    width: 36px;
+    height: 36px;
+  }
+  .journey-shell .platform-brand small {
+    font-size: 10px;
+  }
+  .journey-shell .platform-header nav {
+    gap: 3px;
+  }
+  .journey-shell .platform-header nav a,
+  .journey-shell .platform-header nav button {
+    font-size: 11px;
+    padding: 6px;
+    min-height: 44px;
+  }
+  .journey-shell .platform-header nav svg {
+    display: none;
+  }
+  .journey-shell > #platform-main {
+    padding: 12px 14px;
+  }
+  .journey-heading {
+    align-items: flex-start;
+  }
+  .journey-heading h1 {
+    font-size: 23px;
+  }
+  .journey-heading p {
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+  .journey-mode {
+    font-size: 10px;
+    padding: 4px 7px;
+  }
+  .journey-stepper {
+    gap: 2px;
+    margin-bottom: 10px;
+    padding: 3px;
+  }
+  .journey-stepper button {
+    font-size: 11px;
+    padding: 6px 3px;
+    gap: 4px;
+  }
+  .journey-stepper button > span {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+  }
+  .journey-workspace {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+  .journey-companion {
+    flex-shrink: 0;
+  }
+  .journey-companion > img,
+  .journey-companion .journey-selection-summary,
+  .journey-companion > small {
+    display: none;
+  }
+  .journey-companion-message {
+    padding: 9px 12px;
+    gap: 8px;
+  }
+  .journey-companion-message p {
+    font-size: 12px;
+  }
+  .journey-companion-message svg {
+    width: 28px;
+  }
+  .journey-companion > a {
+    margin: 0;
+    min-height: 30px;
+    font-size: 11px;
+  }
+  .journey-picker {
+    padding: 16px;
+    flex: 1;
+  }
+  .journey-picker h2 {
+    font-size: 19px;
+    margin-bottom: 12px;
+  }
+  .journey-fields {
+    gap: 8px;
+  }
+  .journey-field {
+    font-size: 12px;
+  }
+  .journey-shell .journey-field select {
+    min-height: 44px;
+  }
+  .journey-shell .platform-footer {
+    display: none;
+  }
+  .journey-lesson-list {
+    margin-top: 12px;
+  }
+  .journey-lesson {
+    gap: 10px;
+    padding: 12px 0;
+  }
+  .journey-lesson h3 {
+    font-size: 17px;
+  }
+  .journey-lesson-icon {
+    padding: 7px;
+  }
+  .journey-lesson .p-button {
+    width: 100%;
+  }
+}
+@media (max-height: 620px) and (min-width: 701px) {
+  .journey-shell .platform-header {
+    padding-block: 6px;
+  }
+  .journey-shell > #platform-main {
+    padding-top: 8px;
+  }
+  .journey-heading p,
+  .journey-companion > img {
+    display: none;
+  }
+  .journey-stepper {
+    margin-bottom: 8px;
+  }
+  .journey-picker {
+    padding: 14px 20px;
+  }
+  .journey-fields {
+    gap: 5px;
+  }
+  .journey-shell .platform-footer {
+    display: none;
+  }
+}
+.journey-picker #journey-step-title:focus {
+  outline: none;
+}
+@media (max-width: 700px) {
+  .journey-shell .platform-header {
+    flex-direction: row;
+  }
+  .journey-shell .platform-header nav {
+    width: auto;
+  }
+  .journey-shell .platform-brand {
+    font-size: 14px;
+  }
+  .journey-shell .platform-header nav a,
+  .journey-shell .platform-header nav button {
+    font-size: 10px;
+  }
+  .journey-shell .journey-picker {
+    line-height: 1.6;
+  }
+  .journey-shell .journey-field select {
+    padding: 7px 10px;
+  }
+  .journey-actions button {
+    min-height: 44px;
+    padding: 7px 12px;
+  }
+}
+.journey-account-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+.journey-account-shortcuts a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  min-height: 44px;
+}

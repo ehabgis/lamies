@@ -107,8 +107,8 @@ export default function EntryPage() {
           </span>
           <h1>مرحبًا يا مستكشف!</h1>
           <p>سجّل دخولك لنحفظ اكتشافاتك.</p>
-          <Link to="/demo/lesson-1" className="p-button demo-entry-link">
-            <Play size={23} weight="fill" /> جرّب الدرس دون حساب
+          <Link to="/explore" className="p-button demo-entry-link">
+            <Play size={23} weight="fill" /> اختر رحلتك دون حساب
           </Link>
           <p className="p-muted">تجربة غير معتمدة · لا تُحفظ نتائج رسمية</p>
           {user ? (

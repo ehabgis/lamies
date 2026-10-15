@@ -1,11 +1,18 @@
 import { Link, useNavigate } from "react-router-dom";
 import { BookOpen, Compass, SignOut, Star, Gear } from "phosphor-react";
 import { useSession } from "./Session";
-export default function Shell({ children, mapPage = false }) {
+export default function Shell({
+  children,
+  mapPage = false,
+  journeyPage = false,
+}) {
   const { user, logout } = useSession();
   const navigate = useNavigate();
   return (
-    <div className={`lamis-platform ${mapPage ? "map-shell" : ""}`} dir="rtl">
+    <div
+      className={`lamis-platform ${mapPage ? "map-shell" : ""} ${journeyPage ? "journey-shell" : ""}`}
+      dir="rtl"
+    >
       <a className="platform-skip" href="#platform-main">
         تخطّ إلى المحتوى
       </a>

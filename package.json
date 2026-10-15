@@ -4,26 +4,36 @@
   "type": "module",
   "description": "تطبيق الخرائط التعليمية الذكية - تعليم تفاعلي للصف الخامس الابتدائي",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev.mjs",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server": "node --env-file-if-exists=.env server/index.mjs",
+    "bootstrap": "node --env-file-if-exists=.env server/bootstrap.mjs",
+    "test": "node --test tests/server/*.test.mjs",
+    "check": "node --check server/index.mjs && node --check server/db.mjs",
+    "start": "node --env-file-if-exists=.env server/index.mjs",
+    "dev:client": "vite"
   },
   "dependencies": {
+    "@fontsource/cairo": "^5.3.0",
     "@jvmr/pptx-to-html": "^1.0.0",
+    "canvas-confetti": "^1.9.2",
+    "framer-motion": "^11.0.3",
+    "howler": "^2.2.3",
+    "phosphor-react": "^1.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.22.0",
-    "zustand": "^4.5.0",
-    "framer-motion": "^11.0.3",
-    "phosphor-react": "^1.4.1",
-    "canvas-confetti": "^1.9.2",
-    "howler": "^2.2.3"
+    "react-router-dom": "^7.18.4",
+    "zustand": "^4.5.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.1",
-    "vite": "^5.1.0",
-    "tailwindcss": "^3.4.1",
+    "@vitejs/plugin-react": "^5.2.0",
+    "autoprefixer": "^10.4.17",
     "postcss": "^8.4.35",
-    "autoprefixer": "^10.4.17"
+    "tailwindcss": "^3.4.1",
+    "vite": "^7.3.7"
+  },
+  "engines": {
+    "node": ">=24.0.0"
   }
 }

@@ -7,3 +7,8 @@ dist/
 Thumbs.db
 .DS_Store
 NUL.css
+
+server/data/
+*.sqlite
+*.sqlite-*
+!.env.example

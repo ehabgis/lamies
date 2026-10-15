@@ -1,20 +1,23 @@
 @echo off
-title Smart Educational Map - V3
 cd /d "%~dp0"
-where npm >nul 2>&1
+where node >nul 2>nul
 if errorlevel 1 (
-  echo Please install Node.js LTS from https://nodejs.org and reopen this file.
+  echo Install Node.js 24 LTS, then reopen this window.
   pause
   exit /b 1
 )
-if not exist "node_modules\.bin\vite.cmd" (
-  echo Installing project dependencies...
+node -e "if(!(Number(process.versions.node.split('.')[0])>=24))process.exit(1)"
+if errorlevel 1 (
+  echo Node.js 24 or newer is required.
+  pause
+  exit /b 1
+)
+if not exist node_modules\.bin\vite.cmd (
   call npm ci
   if errorlevel 1 (
-    echo Installation failed. Copy the error message for support.
     pause
     exit /b 1
   )
 )
-call npm run dev -- --port 3010 --open
+call npm run dev -- --open
 pause

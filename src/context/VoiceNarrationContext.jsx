@@ -140,7 +140,7 @@ const VoiceNarrationContext = createContext(null);
 export function VoiceNarrationProvider({ children }) {
     const [enabled, setEnabledState] = useState(() => {
         if (typeof window === 'undefined') return true;
-        return localStorage.getItem(VOICE_ENABLED_KEY) !== '0';
+        return localStorage.getItem(VOICE_ENABLED_KEY) === '1';
     });
     const [preferredProfile, setPreferredProfile] = useState(() => {
         if (typeof window === 'undefined') return 'child';

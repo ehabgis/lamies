@@ -1,11 +1,30 @@
-import { Suspense, lazy, useEffect, useRef } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import MagicalNavbar from './components/MagicalNavbar';
-import ScrollToTop from './components/ScrollToTop';
-import GlobalVoiceToggleButton from './components/GlobalVoiceToggleButton';
-import { VoiceNarrationProvider, useVoiceNarration } from './context/VoiceNarrationContext';
-import { preloadLikelyNextRoutes, routeLoaders } from './utils/routePreload';
-import './styles/index.css';
+import { Suspense, lazy, useEffect, useRef } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import MagicalNavbar from "./components/MagicalNavbar";
+import ScrollToTop from "./components/ScrollToTop";
+import GlobalVoiceToggleButton from "./components/GlobalVoiceToggleButton";
+import {
+  VoiceNarrationProvider,
+  useVoiceNarration,
+} from "./context/VoiceNarrationContext";
+import { preloadLikelyNextRoutes, routeLoaders } from "./utils/routePreload";
+import "./styles/index.css";
+import "./platform/platform.css";
+import { SessionProvider, AccountGuard, useSession } from "./platform/Session";
+import Shell from "./platform/Shell";
+const EntryPage = lazy(() => import("./platform/EntryPage"));
+const JourneyPage = lazy(() => import("./platform/JourneyPage"));
+const ClassroomPage = lazy(() => import("./platform/LessonPage"));
+const StudentProgress = lazy(() => import("./platform/ProgressPage"));
+const AdminPage = lazy(() => import("./platform/AdminPage"));
+function AdminRoute() {
+  const { user } = useSession();
+  return (
+    <Shell>
+      <AdminPage user={user} />
+    </Shell>
+  );
+}
 
 const WelcomeScreen = lazy(routeLoaders.welcome);
 const HomePage = lazy(routeLoaders.home);
@@ -15,14 +34,14 @@ const LessonDashboard = lazy(routeLoaders.lesson);
 const AwardsPage = lazy(routeLoaders.awards);
 const QuizPage = lazy(routeLoaders.quiz);
 
-const getRouteGreeting = (pathname = '/') => {
-  if (pathname === '/map' || pathname.startsWith('/map/')) {
-    return 'أهلا بيك في الخريطة. اختار أي مكان وأنا أحكيلك عنه.';
+const getRouteGreeting = (pathname = "/") => {
+  if (pathname === "/map" || pathname.startsWith("/map/")) {
+    return "أهلا بيك في الخريطة. اختار أي مكان وأنا أحكيلك عنه.";
   }
-  if (pathname === '/lessons' || pathname.startsWith('/lesson/')) {
-    return 'أهلا بيك في الدروس. اختار درس وأنا أشرح لك ببساطة.';
+  if (pathname === "/lessons" || pathname.startsWith("/lesson/")) {
+    return "أهلا بيك في الدروس. اختار درس وأنا أشرح لك ببساطة.";
   }
-  return 'أهلا بيك يا بطل. أنا معاك خطوة بخطوة.';
+  return "أهلا بيك يا بطل. أنا معاك خطوة بخطوة.";
 };
 
 function RouteLoader() {
@@ -38,32 +57,42 @@ function RouteLoader() {
 function AppContent() {
   const location = useLocation();
   const { setRoutePathname, speak, speechSupported } = useVoiceNarration();
-  const announcedPathRef = useRef('');
-  const isWelcomeRoute = location.pathname === '/';
-  const isSimpleHomeRoute = location.pathname === '/home';
-  const isFocusedMapRoute = location.pathname === '/map' || location.pathname === '/lesson/lesson-1';
-  const isQuietRoute = isWelcomeRoute || isSimpleHomeRoute || isFocusedMapRoute;
+  const announcedPathRef = useRef("");
+  const isWelcomeRoute =
+    location.pathname === "/" || location.pathname === "/legacy";
+  const isPlatformRoute =
+    ["/", "/journey", "/my-progress", "/admin"].includes(location.pathname) ||
+    location.pathname.startsWith("/classroom/");
+  const isSimpleHomeRoute = location.pathname === "/home";
+  const isFocusedMapRoute =
+    location.pathname === "/map" || location.pathname === "/lesson/lesson-1";
+  const isQuietRoute =
+    isWelcomeRoute || isSimpleHomeRoute || isFocusedMapRoute || isPlatformRoute;
 
   useEffect(() => {
     setRoutePathname(location.pathname);
   }, [location.pathname, setRoutePathname]);
 
   useEffect(() => {
-    document.body.classList.toggle('quiet-fullscreen-route', isQuietRoute);
-    return () => document.body.classList.remove('quiet-fullscreen-route');
+    document.body.classList.toggle("quiet-fullscreen-route", isQuietRoute);
+    return () => document.body.classList.remove("quiet-fullscreen-route");
   }, [isQuietRoute]);
 
-  useEffect(() => preloadLikelyNextRoutes(location.pathname), [location.pathname]);
+  useEffect(
+    () => preloadLikelyNextRoutes(location.pathname),
+    [location.pathname],
+  );
 
   useEffect(() => {
-    if (isWelcomeRoute || isFocusedMapRoute) return undefined;
+    if (isWelcomeRoute || isFocusedMapRoute || isPlatformRoute)
+      return undefined;
     if (announcedPathRef.current === location.pathname) return undefined;
 
     announcedPathRef.current = location.pathname;
     const timer = window.setTimeout(() => {
       speak(getRouteGreeting(location.pathname), {
-        channel: 'page-greeting',
-        profile: 'child'
+        channel: "page-greeting",
+        profile: "child",
       });
     }, 420);
 
@@ -72,28 +101,50 @@ function AppContent() {
 
   return (
     <div className="relative">
-      {!speechSupported && (
+      {!speechSupported && !isPlatformRoute && (
         <div className="fixed top-0 left-0 w-full bg-red-200 text-red-800 text-center p-2 z-[14000] font-bold">
-          عذرًا، المتصفح لا يدعم تشغيل الصوت. حاول متصفحًا آخر لميزة الترجمة الصوتية.
+          عذرًا، المتصفح لا يدعم تشغيل الصوت. حاول متصفحًا آخر لميزة الترجمة
+          الصوتية.
         </div>
       )}
-      {!isWelcomeRoute && !isFocusedMapRoute && <GlobalVoiceToggleButton />}
+      {!isQuietRoute && <GlobalVoiceToggleButton />}
       <ScrollToTop />
       <div className="relative z-10">
         <Suspense fallback={<RouteLoader />}>
           <Routes>
-            <Route path="/" element={<WelcomeScreen />} />
+            <Route path="/" element={<EntryPage />} />
+            <Route path="/legacy" element={<WelcomeScreen />} />
+            <Route element={<AccountGuard />}>
+              <Route path="/journey" element={<JourneyPage />} />
+              <Route path="/my-progress" element={<StudentProgress />} />
+              <Route path="/classroom/:id" element={<ClassroomPage />} />
+            </Route>
+            <Route element={<AccountGuard admin />}>
+              <Route path="/admin" element={<AdminRoute />} />
+            </Route>
+            <Route
+              path="*"
+              element={
+                <main dir="rtl" className="platform-loading">
+                  <h1>الصفحة غير موجودة</h1>
+                  <a href="/">العودة إلى البداية</a>
+                </main>
+              }
+            />
             <Route path="/home" element={<HomePage />} />
             <Route path="/map" element={<MapExplorer />} />
             <Route path="/lessons" element={<LessonsPage />} />
             <Route path="/lesson/lesson-1" element={<MapExplorer />} />
-            <Route path="/lesson/:lessonId/details" element={<LessonDashboard />} />
+            <Route
+              path="/lesson/:lessonId/details"
+              element={<LessonDashboard />}
+            />
             <Route path="/lesson/:lessonId" element={<LessonDashboard />} />
             <Route path="/awards" element={<AwardsPage />} />
             <Route path="/quiz/:locationId" element={<QuizPage />} />
           </Routes>
         </Suspense>
-        <MagicalNavbar />
+        {!isPlatformRoute && <MagicalNavbar />}
       </div>
     </div>
   );
@@ -101,11 +152,15 @@ function AppContent() {
 
 function App() {
   return (
-    <VoiceNarrationProvider>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <AppContent />
-      </BrowserRouter>
-    </VoiceNarrationProvider>
+    <SessionProvider>
+      <VoiceNarrationProvider>
+        <BrowserRouter
+          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        >
+          <AppContent />
+        </BrowserRouter>
+      </VoiceNarrationProvider>
+    </SessionProvider>
   );
 }
 

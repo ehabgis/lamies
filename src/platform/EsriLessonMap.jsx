@@ -154,7 +154,7 @@ export default function EsriLessonMap({
           color: f.properties.color,
           weight: 3,
           fillColor: f.properties.color,
-          fillOpacity: 0.3,
+          fillOpacity: 0.18,
         }),
         attribution:
           'Water areas © Natural Earth · <a href="https://www.naturalearthdata.com/about/terms-of-use/" target="_blank" rel="noopener noreferrer">Public domain</a>',
@@ -294,9 +294,9 @@ export default function EsriLessonMap({
       if (selectedLocationId === site.id)
         L.circleMarker([site.lat, site.lng], {
           radius: 24,
-          color: "#ffb12b",
+          color: site.resource.kind === "mineral" ? "#ffb12b" : "#0789d9",
           weight: 3,
-          fillColor: "#ffc14d",
+          fillColor: site.resource.kind === "mineral" ? "#ffc14d" : "#74d7ff",
           fillOpacity: 0.18,
           interactive: false,
           className: "selected-site-ring",
@@ -337,6 +337,7 @@ export default function EsriLessonMap({
         String(selectedLocationId === site.id),
       );
       element.dataset.siteId = site.id;
+      element.dataset.resourceKind = site.resource.kind;
       if (focusSite.current === site.id) {
         element.focus({ preventScroll: true });
         focusSite.current = null;

@@ -18,6 +18,10 @@ import {
   Plus,
   Minus,
   MapTrifold,
+  CaretDown,
+  CaretUp,
+  Drop,
+  Waves,
 } from "phosphor-react";
 import Shell, { PlatformNavigation } from "./Shell";
 import { useSession } from "./Session";
@@ -26,6 +30,7 @@ import LearningDrawer from "./LearningDrawer";
 import EsriLessonMap from "./EsriLessonMap";
 import "./map-workspace.css";
 import "./map-studio.css";
+import "./map-design.css";
 import MapVideoPanel from "./MapVideoPanel";
 import Question from "./Question";
 import AIAssistant from "./AIAssistant";
@@ -63,6 +68,7 @@ export default function LessonPage({ demo = false }) {
   const [lessonOptions, setLessonOptions] = useState([]);
   const [legendOpen, setLegendOpen] = useState(() => window.innerWidth > 850);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [sheetExpanded, setSheetExpanded] = useState(false);
   const [showLocationNames, setShowLocationNames] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
   const [resetMap, setResetMap] = useState(0);
@@ -121,6 +127,8 @@ export default function LessonPage({ demo = false }) {
   function showAll() {
     setResource(null);
     setLocation(null);
+    setInfoOpen(false);
+    setSheetExpanded(false);
     setFull(true);
     setVideoOpen(false);
     setFocusRequest(null);
@@ -281,7 +289,9 @@ export default function LessonPage({ demo = false }) {
   const current = filtered[index];
   const answered = (id) => setSolved((s) => (s.includes(id) ? s : [...s, id]));
   function pick(r) {
-    setLegendOpen(false);
+    setSheetExpanded(false);
+    setPanel(null);
+    setLegendOpen(window.innerWidth > 850);
     setInfoOpen(true);
     setVideoOpen(false);
     setResource(r);
@@ -370,11 +380,15 @@ export default function LessonPage({ demo = false }) {
         {resource.locationNote && (
           <p className="resource-photo-note">{resource.locationNote}</p>
         )}
+        <div className="resource-visual">
         <Photo
           key={localPhotos[resource.id] || resource.media?.image || resource.id}
           src={localPhotos[resource.id] || resource.media?.image}
           label={`صورة ${resource.label}`}
         />
+        </div>
+        <button className="p-button resource-video-button" onClick={() => setVideoOpen(true)}><VideoCamera size={20} />افتح الفيديو على الخريطة</button>
+        <div className="resource-information-body" id="resource-information-body">
         <label className="resource-photo-attach">
           إرفاق صورة للمعاينة
           <input
@@ -412,13 +426,6 @@ export default function LessonPage({ demo = false }) {
         <p>{resource.description}</p>
         <h3>أهميته</h3>
         <p>{resource.importance}</p>
-        <button
-          className="p-button resource-video-button"
-          onClick={() => setVideoOpen(true)}
-        >
-          <VideoCamera size={20} />
-          افتح الفيديو على الخريطة
-        </button>
         {resource.legacyDetails && (
           <details className="site-lesson-summary">
             <summary>معلومات من النسخة القديمة</summary>
@@ -477,12 +484,14 @@ export default function LessonPage({ demo = false }) {
         <button className="p-text-link" onClick={showAll}>
           العودة إلى جميع الموارد
         </button>
+        </div>
       </section>
     );
   return (
     <Shell mapPage>
       <h1 className="studio-page-title">{lesson.title}</h1>
-      <div className="studio-titlebar">
+      <div className="studio-titlebar approved-map-header">
+        <div className="map-design-brand"><span><BookOpen size={30} weight="duotone" /></span><strong>الخرائط التعليمية الذكية</strong></div>
         <div className="map-top-button-cluster">
         <nav className="lesson-number-buttons" aria-label="دروس الوحدة">
           {[0, 1, 2].map((i) => {
@@ -532,6 +541,7 @@ export default function LessonPage({ demo = false }) {
             );
           })}
         </nav>
+        <p className="map-current-lesson"><span className="map-mobile-unit">{unitTitle} · </span>{lesson.title.replace(/^الدرس[^:：]*[:：]\s*/, "")}</p>
         <div className="lesson-top-actions" aria-label="تفاصيل الدرس">
           {[
             ["objectives", "أهداف الدرس", Target],
@@ -564,7 +574,7 @@ export default function LessonPage({ demo = false }) {
         </div>
       </div>
       <div
-        className={`classroom-workspace studio-workspace ${videoOpen ? "has-video" : ""} ${legendOpen ? "" : "legend-hidden"} ${infoOpen ? "" : "guide-hidden"}`}
+        className={`classroom-workspace studio-workspace ${videoOpen ? "has-video" : ""} ${legendOpen ? "" : "legend-hidden"} ${infoOpen ? "has-resource-sheet" : "guide-hidden"}`}
       >
         {panel && (
           <section
@@ -685,7 +695,7 @@ export default function LessonPage({ demo = false }) {
             aria-expanded={legendOpen}
             onClick={() => {
               setLegendOpen((v) => !v);
-              setInfoOpen(false);
+              if (window.innerWidth <= 850) setInfoOpen(false);
             }}
           >
             <BookOpen size={21} />
@@ -705,7 +715,7 @@ export default function LessonPage({ demo = false }) {
             aria-expanded={infoOpen}
             onClick={() => {
               setInfoOpen((v) => !v);
-              setLegendOpen(false);
+              if (window.innerWidth <= 850) setLegendOpen(false);
             }}
           >
             <ChatCircle size={21} />
@@ -733,7 +743,7 @@ export default function LessonPage({ demo = false }) {
             <BookOpen />
             مفتاح الخريطة
           </h2>
-          <details className="map-settings" open>
+          <details className="map-settings">
             <summary>إعدادات العرض</summary>
             <div className="studio-select-tools">
               <label>
@@ -752,19 +762,19 @@ export default function LessonPage({ demo = false }) {
               </label>
             </div>
           </details>
-          <h3 className="map-menu-heading">الموارد الطبيعية</h3>
-          {resources.map((r) => (
-            <button
-              key={r.id}
-              aria-pressed={resource?.id === r.id}
-              onClick={() => pick(r)}
-            >
-              <ResourcePin resource={r} />
-              <span>
-                {r.label}
-                <small>{kindNames[r.kind]}</small>
-              </span>
-            </button>
+          {(resources.every(r => r.kind === "water") ? [
+            { title: "مياه عذبة", icon: Drop, items: resources.filter(r => !["mediterranean-sea", "red-sea", "desalination"].includes(r.id)) },
+            { title: "مياه البحر والتحلية", icon: Waves, items: resources.filter(r => ["mediterranean-sea", "red-sea", "desalination"].includes(r.id)) },
+          ] : [
+            { title: resources.some(r => r.kind === "project") ? "المشروعات القومية" : "الخامات المعدنية", icon: MapTrifold, items: resources.filter(r => !["renewable", "nonrenewable"].includes(r.kind)) },
+            { title: "مصادر الطاقة", icon: Drop, items: resources.filter(r => ["renewable", "nonrenewable"].includes(r.kind)) },
+          ]).filter(group => group.items.length).map(group => (
+            <section className="map-resource-group" key={group.title}>
+              <h3><group.icon size={19} />{group.title}</h3>
+              {group.items.map(r => <button key={r.id} aria-pressed={resource?.id === r.id} onClick={() => pick(r)}>
+                <ResourcePin resource={r} /><span>{r.label}</span><CaretDown size={14} className="resource-row-chevron" />
+              </button>)}
+            </section>
           ))}
           {user && <div className="map-menu-navigation"><PlatformNavigation hideHome /></div>}
         </aside>
@@ -789,13 +799,14 @@ export default function LessonPage({ demo = false }) {
             waterLesson={demo && id === "lesson-2"}
             onReset={showAll}
             onSelect={(site) => {
+              setSheetExpanded(false);
               setModal(null);
               setResource(site.resource);
               setLocation(site);
               setPanel(null);
               setInfoOpen(true);
               setVideoOpen(false);
-              setLegendOpen(false);
+              setLegendOpen(window.innerWidth > 850);
             }}
             onVideo={(site) => {
               setResource(site.resource);
@@ -815,7 +826,7 @@ export default function LessonPage({ demo = false }) {
         <aside
           id="lesson-guide"
           hidden={!infoOpen}
-          className={`classroom-guide ${infoOpen ? "mobile-open" : ""}`}
+          className={`classroom-guide ${infoOpen ? "mobile-open" : ""} ${sheetExpanded ? "resource-sheet-expanded" : ""} ${resourceDetails ? "has-resource-details" : ""}`}
           aria-label="المعلم ومعلومات المورد"
         >
           <button
@@ -828,6 +839,10 @@ export default function LessonPage({ demo = false }) {
           >
             إغلاق المعلومات ×
           </button>
+          {resourceDetails && <button className="resource-sheet-toggle" aria-expanded={sheetExpanded} aria-controls="resource-information-body" onClick={() => setSheetExpanded(v => !v)}>
+            {sheetExpanded ? <CaretDown size={20} /> : <CaretUp size={20} />}
+            {sheetExpanded ? "طي بطاقة المورد" : "توسيع بطاقة المورد"}
+          </button>}
           <span className="studio-status">
             {demo
               ? "تجربة · دون نقاط رسمية"
@@ -876,6 +891,9 @@ export default function LessonPage({ demo = false }) {
             استمع للتوجيه
           </button>
         </aside>
+        {!infoOpen && !modal && !videoOpen && <button className="map-robot-companion" aria-label="افتح توجيه المعلم الذكي" onClick={() => { setInfoOpen(true); setLegendOpen(false); }}>
+          <RobotGuide /><span><strong>المعلم الذكي</strong><span>{resource ? "اختر أحد المواقع المضيئة" : "اختر موردًا لنبدأ الاستكشاف"}</span></span>
+        </button>}
         <div className="floating-learning-dock">
           <button
             aria-controls="lesson-learning-drawer"

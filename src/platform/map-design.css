@@ -1,165 +1,242 @@
-/* Approved desktop/mobile concepts: a map-first learning surface. */
-.map-shell { --atlas-navy: #12365c; --atlas-blue: #0869c4; --atlas-teal: #007f91; background: #f3f9fd; }
-.map-shell > main { padding: 0 8px 8px; gap: 8px; }
-.map-shell .approved-map-header { display: grid; grid-template-columns: 240px minmax(0, 1fr) 170px; align-items: center; min-height: 112px; padding: 8px 12px; gap: 12px; background: white; border-bottom: 1px solid #d6e5ef; }
-.map-design-brand { display: flex; align-items: center; gap: 9px; color: #12365c; font-size: 17px; line-height: 1.6; }
-.map-design-brand > span { display: grid; place-items: center; width: 44px; height: 48px; border-radius: 11px; background: #e6f3ff; color: #0869c4; flex-shrink: 0; }
-.map-shell .map-top-button-cluster { display: flex; flex-direction: column; width: 100%; gap: 4px; }
-.map-shell .lesson-number-buttons { width: 100%; justify-content: center; gap: 7px; }
-.map-shell .lesson-button-wrap button { min-height: 44px; font-size: 14px; padding: 7px 18px; border-radius: 10px; }
-.map-shell .lesson-color-2 { --lesson-active: #007f91; --lesson-bg: #def5f5; --lesson-ink: #005f6d; --lesson-border: #8acacc; }
-.map-shell .map-current-lesson { margin: 0; color: #234e70; font-size: 11px; line-height: 1.5; text-align: center; }
-.map-shell .lesson-top-actions { justify-content: center; gap: 6px; width: 100%; }
-.map-shell .lesson-top-actions button { min-height: 34px; font-size: 11px; padding: 4px 10px; border-radius: 20px; background: #f0f7fd; border: 1px solid #d1e4f3; }
-.map-shell .lesson-top-actions button[aria-expanded="true"] { color: white; background: #0869c4; border-color: #0869c4; }
-.map-shell .map-header-identity { position: static; width: auto; max-width: none; margin: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; order: initial; font-size: 12px; }
-.map-shell .map-unit-name { font-weight: 700; }
-.map-shell .map-student-name { padding: 6px 14px; background: #eef7ff; border: 1px solid #d5e7f4; }
-.map-shell .map-sidebar-handles { top: 10px; left: 12px; right: 12px; }
-.map-shell .map-sidebar-handles button { border-radius: 10px; box-shadow: 0 3px 8px #12365c16; min-height: 44px; }
-.map-shell .map-sidebar-handles .map-reset-all { background: #0869c4; color: white; border-color: #0869c4; }
-.map-shell .studio-workspace > .classroom-legend { width: 214px; top: 64px; bottom: 166px; padding: 10px; border-radius: 14px; gap: 8px; }
-.map-shell .classroom-legend h2 { font-size: 16px; margin: 0; }
-.map-shell .map-settings { order: 5; margin: 0; font-size: 11px; border-top: 1px solid #d6e5ef; padding-top: 7px; }
-.map-settings summary { min-height: 36px; cursor: pointer; padding: 6px 0; }
-.map-shell .map-resource-group { direction: rtl; }
-.map-shell .map-resource-group h3 { display: flex; align-items: center; gap: 7px; color: #12365c; font-size: 13px; margin: 4px 0 8px; }
-.map-resource-group h3 svg { color: #007f91; }
-.map-shell .map-resource-group > button { display: flex; align-items: center; justify-content: flex-start; gap: 8px; width: 100%; min-height: 44px; padding: 4px 7px; margin: 0 0 3px; background: #f7fbfe; border: 1px solid #d6e5ef; border-radius: 9px; color: #12365c; font-size: 12px; text-align: right; }
-.map-shell .map-resource-group > button[aria-pressed="true"] { background: #e0f4f6; border-color: #278a97; color: #005e6b; }
-.map-resource-group .resource-row-chevron { margin-inline-start: auto; flex-shrink: 0; transform: rotate(90deg); }
-.map-shell .map-resource-group .resource-pin { width: 28px; height: 36px; flex-shrink: 0; }
-.map-shell .studio-workspace > .classroom-guide { top: 64px; bottom: 108px; width: 300px; padding: 12px; border-radius: 14px; gap: 6px; }
-.map-shell .classroom-guide .studio-status { font-size: 10px; padding: 5px 8px; margin: 0 0 6px; }
-.map-shell .classroom-guide .mobile-panel-close { margin: 0; min-height: 32px; align-self: flex-end; }
-.map-shell .classroom-resource { padding: 0; background: none; border: 0; }
-.map-shell .classroom-resource h2 { font-size: 21px; display: flex; align-items: center; gap: 8px; line-height: 1.5; }
-.map-shell .classroom-resource .selected-location { padding: 5px 0; font-size: 11px; color: #245e87; margin: 0 0 5px; }
-.map-shell .resource-visual { margin: 5px 0 10px; }
-.map-shell .resource-visual .resource-photo { width: 100%; max-height: 155px; object-fit: cover; border-radius: 10px; }
-.map-shell .resource-visual .media-pending { font-size: 11px; padding: 10px 8px; background: #f1f7fb; color: #355873; border-radius: 9px; }
-.map-shell .resource-video-button { min-height: 44px; margin: 4px 0 10px; border-radius: 9px; font-size: 12px; }
-.map-shell .resource-information-body { border-top: 1px solid #d6e5ef; padding-top: 8px; }
-.map-shell .resource-photo-attach { font-size: 11px; padding: 7px; }
-.map-shell .site-facts { background: #f2f8fc; border-radius: 9px; padding: 8px; }
-.resource-sheet-toggle { display: none !important; }
-.map-shell .map-robot-companion { position: absolute; z-index: 1150; right: 12px; bottom: 110px; display: flex; align-items: center; gap: 5px; padding: 0; border: 0; background: transparent; color: #12365c; text-align: right; max-width: 275px; }
-.map-robot-companion .atlas-robot { width: 78px; height: 88px; flex: 0 0 78px; }
-.map-robot-companion > span { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; background: white; border: 1px solid #b6d5e7; border-radius: 12px; box-shadow: 0 5px 14px #12365c26; }
-.map-robot-companion strong { font-size: 13px; }
-.map-robot-companion span span { font-size: 11px; line-height: 1.7; }
-.map-shell .esri-map-toolbar { top: auto; right: auto; bottom: 112px; left: 12px; width: 214px; display: flex; flex-direction: row; gap: 6px; }
-.map-shell .esri-map-toolbar button { width: auto; flex: 1; min-height: 44px; font-size: 10px; padding: 6px 8px; gap: 5px; justify-content: center; border-radius: 10px; white-space: normal; }
-.map-shell .esri-map-toolbar button svg { width: 18px; flex-shrink: 0; }
+/* The approved reference is the visual authority; map data stays in Leaflet. */
+.map-shell {
+  --atlas-navy: #082e69;
+  --atlas-blue: #076bda;
+  --atlas-teal: #009eae;
+  --atlas-paper: #fff;
+  --atlas-line: #d2e5f4;
+  --atlas-soft: #eff7ff;
+  --atlas-shadow: 0 7px 22px #12365c26;
+  background: var(--atlas-paper);
+  color: var(--atlas-navy);
+}
+.map-shell > main { padding: 0 0 5px; gap: 0; }
+.map-shell .approved-map-header { display: grid; grid-template-columns: 330px minmax(0, 1fr) 240px; align-items: center; min-height: 120px; padding: 8px 18px 5px; gap: 14px; background: var(--atlas-paper); border: 0; }
+.map-design-brand { display: flex; align-items: center; gap: 8px; font-size: 23px; color: var(--atlas-navy); line-height: 1.5; }
+.atlas-book-logo { width: 76px; height: 76px; flex: 0 0 76px; }
+.map-design-brand strong { font-weight: 800; display: block; white-space: nowrap; font-size: 20px; }
+.map-design-brand small { display: block; color: #355873; font-size: 11px; font-weight: 600; }
+.map-shell .map-top-button-cluster { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 3px; }
+.map-shell .lesson-number-buttons { display: flex; justify-content: center; gap: 6px; width: 100%; }
+.map-shell .lesson-button-wrap button { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 48px; padding: 7px 16px; font-size: 17px; font-weight: 800; border-radius: 10px; }
+.map-shell .lesson-color-1 { --lesson-bg: #deedff; --lesson-ink: #0759b5; --lesson-border: #bcdbfa; --lesson-active: #087df5; }
+.map-shell .lesson-color-2 { --lesson-bg: #dff7f6; --lesson-ink: #006979; --lesson-border: #a3dfdf; --lesson-active: #007d8d; }
+.map-shell .lesson-color-3 { --lesson-bg: #eee3fe; --lesson-ink: #6530a5; --lesson-border: #d3bcf4; --lesson-active: #7637c1; }
+.map-shell .map-current-lesson { margin: 0; font-size: 11px; font-weight: 700; line-height: 1.5; text-align: center; color: var(--atlas-navy); }
 .map-mobile-unit { display: none; }
-.map-shell .esri-resource-marker[data-resource-kind="water"].is-highlighted .resource-pin, .map-shell .esri-resource-marker[data-resource-kind="project"].is-highlighted .resource-pin { filter: drop-shadow(0 2px 4px #0789d9) drop-shadow(0 0 2px white); }
+.map-shell .lesson-top-actions { display: flex; justify-content: center; gap: 6px; width: 100%; }
+.map-shell .lesson-top-actions button { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 5px 10px; font-size: 12px; font-weight: 700; background: var(--atlas-soft); color: var(--atlas-navy); border: 1px solid var(--atlas-line); border-radius: 24px; }
+.map-shell .lesson-top-actions button[aria-expanded="true"] { color: white; background: var(--atlas-blue); }
+.map-shell .map-header-identity { display: flex; flex-direction: row-reverse; justify-content: flex-start; align-items: center; gap: 7px; position: static; margin: 0; width: auto; max-width: none; order: initial; font-size: 13px; }
+.map-shell .map-unit-name, .map-shell .map-student-name { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 11px; border: 1px solid var(--atlas-line); border-radius: 12px; background: #f7fbff; color: var(--atlas-navy); font-weight: 800; white-space: nowrap; }
+.map-shell .map-unit-name svg, .map-shell .map-student-name svg { color: #0867ce; flex-shrink: 0; }
+.map-shell .studio-workspace { border-radius: 0 0 16px 16px; }
+.map-shell .map-sidebar-handles { top: 12px; left: 16px; right: 16px; gap: 8px; }
+.map-handle-group { display: flex; align-items: center; gap: 7px; pointer-events: auto; }
+.map-shell .map-sidebar-handles button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 13px; border-radius: 10px; font-size: 14px; font-weight: 800; background: white; color: var(--atlas-navy); box-shadow: 0 3px 8px #12365c18; }
+.map-shell .map-sidebar-handles .map-reset-all, .map-shell .map-sidebar-handles button[aria-pressed="true"] { color: white; background: var(--atlas-blue); border-color: var(--atlas-blue); }
+.map-shell .studio-workspace > .classroom-legend { top: 68px; left: 16px; right: auto; bottom: 112px; width: 234px; padding: 15px; border-radius: 13px; gap: 9px; background: white; box-shadow: var(--atlas-shadow); }
+.map-shell .classroom-legend h2 { margin: 0 0 3px; font-size: 22px; line-height: 1.5; color: var(--atlas-navy); }
+.map-shell .classroom-legend h2 > svg { display: none; }
+.map-shell .classroom-legend > .mobile-panel-close { align-self: end; display: inline-flex; justify-content: center; min-width: 44px; width: 44px; min-height: 44px; padding: 8px; margin: -8px -7px -36px 0; z-index: 1; }
+.map-shell .map-resource-group { direction: rtl; }
+.map-shell .map-resource-group h3 { display: flex; align-items: center; gap: 8px; font-size: 17px; margin: 9px 0 10px; line-height: 1.5; color: var(--atlas-navy); }
+.map-resource-group h3 svg, .legend-water-icon { color: #05b2d9; flex-shrink: 0; }
+.map-shell .map-resource-group > button, .map-shell .more-map-resources button { display: flex; align-items: center; justify-content: flex-start; text-align: right; gap: 10px; width: 100%; min-height: 52px; padding: 9px 10px; margin: 0 0 7px; border: 1px solid #dce8f1; border-radius: 8px; background: #fbfdff; color: var(--atlas-navy); font-size: 14px; font-weight: 700; }
+.map-shell .map-resource-group > button[aria-pressed="true"], .map-shell .more-map-resources button[aria-pressed="true"] { background: #e2f5ff; border-color: #159ed6; }
+.map-resource-group .resource-row-chevron { margin-inline-start: auto; flex-shrink: 0; transform: rotate(90deg); }
+.map-shell .map-resource-group .resource-pin { width: 27px; height: 35px; flex-shrink: 0; }
+.map-shell .map-settings { order: 6; margin: 0; border-top: 1px solid var(--atlas-line); padding-top: 5px; font-size: 12px; }
+.map-settings summary, .more-map-resources summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-size: 12px; font-weight: 700; padding: 7px 0; }
+.more-map-resources { border-top: 1px solid var(--atlas-line); }
+.legend-tools-slot { margin-top: auto; border-top: 1px solid var(--atlas-line); padding-top: 7px; }
+.map-shell .esri-map-toolbar { top: auto; left: 16px; right: auto; bottom: 110px; width: 234px; display: flex; flex-direction: column; gap: 5px; }
+.map-shell .esri-map-toolbar button { display: inline-flex; min-height: 44px; gap: 8px; width: 100%; justify-content: flex-start; padding: 7px 8px; color: var(--atlas-navy); background: white; font-size: 14px; border-radius: 8px; }
+.map-shell .legend-tools-slot .esri-map-toolbar { position: static; width: 100%; }
+.map-shell .legend-tools-slot .esri-map-toolbar button { border: 0; box-shadow: none; }
+.map-shell .legend-tools-slot .water-source-key { position: static; width: 100%; border: 0; box-shadow: none; padding: 7px 3px; }
+.map-shell .legend-tools-slot .water-source-key > div { display: none; }
+.map-shell .legend-tools-slot .water-source-key label { font-size: 11px; min-height: 32px; }
+.map-shell .water-source-key { top: 68px; right: 16px; max-width: 235px; padding: 9px; }
+.map-shell .water-source-key > div { display: none; }
+.map-shell .has-resource-sheet .water-source-key:not(.legend-tools-slot .water-source-key) { right: 330px; }
+.map-shell .studio-workspace > .classroom-guide { top: 68px; right: 16px; left: auto; width: 292px; bottom: auto; height: auto; max-height: calc(100% - 270px); border-radius: 13px; background: white; padding: 15px; gap: 5px; box-shadow: var(--atlas-shadow); }
+.map-shell .classroom-guide > .mobile-panel-close { display: inline-flex; align-self: end; width: 44px; min-width: 44px; min-height: 44px; justify-content: center; padding: 8px; margin: -7px -6px -36px 0; z-index: 1; }
+.map-shell .classroom-guide .studio-status { font-size: 9px; padding: 4px 7px; margin: 0 40px 7px 0; background: #fff8df; color: #6a4b0a; }
+.map-shell .classroom-resource { border: 0; padding: 0; background: none; flex-shrink: 0; }
+.map-shell .classroom-resource h2 { display: flex; align-items: center; gap: 5px; padding-left: 34px; font-size: 24px; line-height: 1.6; margin: 0 0 8px; color: var(--atlas-navy); }
+.map-shell .classroom-resource h2 > .resource-pin { display: none; }
+.map-shell .resource-visual { margin: 0 0 8px; }
+.map-shell .resource-visual .resource-photo { width: 100%; height: 134px; max-height: none; object-fit: cover; border-radius: 8px; }
+.map-shell .resource-visual .media-pending { min-height: 90px; padding: 20px 10px; background: #f1f7fb; font-size: 12px; border-radius: 8px; }
+.map-shell .classroom-resource .selected-location { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #07569f; padding: 3px 0; margin: 0 0 5px; background: none; }
+.map-shell .resource-lead { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; font-weight: 700; line-height: 1.7; margin-bottom: 8px; }
+.resource-fact-row { display: flex; align-items: center; gap: 9px; padding: 8px 9px; min-height: 44px; border: 1px solid #deebf3; border-radius: 7px; margin-bottom: 6px; font-size: 12px; font-weight: 700; }
+.resource-fact-row svg { color: #06ace4; flex: 0 0 25px; }
+.resource-fact-row + .resource-fact-row svg { color: #278b4c; }
+.resource-fact-row span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.map-shell .resource-video-button { min-height: 44px; width: 100%; margin: 6px 0 5px; font-size: 16px; font-weight: 800; border-radius: 8px; background: var(--atlas-blue); }
+.map-shell .classroom-resource .resource-photo-credit { font-size: 9px; line-height: 1.5; margin: 0; color: #355873; }
+.resource-photo-credit a { color: #075b9e; text-decoration: underline; text-underline-offset: 2px; }
+.resource-information-body { border-top: 1px solid var(--atlas-line); margin-top: 5px; }
+.resource-extended-details > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: #075b9e; font-size: 11px; font-weight: 700; }
+.resource-sheet-toggle, .resource-teacher-note { display: none !important; }
+.map-shell img.atlas-robot { object-fit: contain; }
+.map-shell .map-robot-companion { position: absolute; z-index: 1150; right: 16px; bottom: 90px; display: flex; flex-direction: row; align-items: center; gap: 4px; padding: 0; border: 0; background: transparent; color: var(--atlas-navy); max-width: 285px; text-align: right; }
+.map-robot-companion .atlas-robot { width: 95px; height: 142px; flex: 0 0 95px; }
+.map-robot-companion > span { display: flex; flex-direction: column; gap: 5px; padding: 12px; background: white; border: 1px solid var(--atlas-line); border-radius: 10px; box-shadow: var(--atlas-shadow); }
+.map-robot-companion strong { font-size: 15px; }
+.map-robot-companion span span { font-size: 12px; line-height: 1.7; }
+.map-shell .esri-map-zoom, .map-shell .studio-workspace:not(.legend-hidden) .esri-map-zoom { top: auto; bottom: 110px; left: 16px; }
+.map-shell .studio-workspace:not(.legend-hidden) .esri-map-zoom { left: 266px; }
+.map-shell .esri-map-zoom button { width: 44px; min-width: 44px; height: 44px; min-height: 44px; border-radius: 10px; }
+.map-shell .esri-resource-marker .resource-pin { width: 44px !important; height: 56px !important; }
+.map-shell .esri-resource-marker[data-resource-kind="water"].is-highlighted .resource-pin, .map-shell .esri-resource-marker[data-resource-kind="project"].is-highlighted .resource-pin { filter: drop-shadow(0 3px 4px #006eaa80); }
 .map-shell .esri-resource-marker[data-resource-kind="water"].is-selected, .map-shell .esri-resource-marker[data-resource-kind="project"].is-selected { outline-color: white; }
-.map-shell .esri-map-zoom { top: auto; bottom: 235px; left: 12px; }
-.map-shell .studio-workspace:not(.legend-hidden) .esri-map-zoom { left: 238px; bottom: 112px; }
-.map-shell .water-source-key { top: 64px; right: 12px; max-width: 235px; padding: 9px 11px; }
-.map-shell .has-resource-sheet .water-source-key { right: 324px; }
-.map-shell .water-source-key small { font-size: 10px; }
-.map-shell .basemap-gallery, .map-shell .esri-governorates-picker { left: 240px; right: auto; top: 64px; max-width: calc(100% - 264px); }
-.map-shell .floating-learning-dock { bottom: 12px; border-radius: 15px; gap: 5px; padding: 6px; box-shadow: 0 6px 18px #12365c26; }
-.map-shell .floating-learning-dock button { border-radius: 10px; min-height: 52px; font-size: 12px; padding: 7px 16px; }
-.map-shell .floating-learning-dock button[aria-expanded="true"] { background: #0869c4; color: white; }
-.map-shell .floating-learning-dock button.p-button { background: #e3f4ef; color: #0c6347; }
-.map-shell .floating-learning-dock button.p-button[aria-expanded="true"] { background: #0c6347; color: white; }
+.map-shell .leaflet-tooltip.resource-map-label { font-size: 13px; font-weight: 800; background: var(--atlas-navy); color: white; border: 2px solid white; border-radius: 8px; padding: 4px 8px; }
+.map-shell .basemap-gallery, .map-shell .esri-governorates-picker { z-index: 1550; top: 68px; left: 266px; right: auto; max-width: calc(100% - 290px); }
+.map-shell .floating-learning-dock { bottom: 12px; border-radius: 14px; padding: 5px; gap: 0; box-shadow: var(--atlas-shadow); background: white; }
+.map-shell .floating-learning-dock button { min-height: 60px; flex-direction: column; font-size: 13px; padding: 7px 18px; border-radius: 0; background: white; color: var(--atlas-navy); border-left: 1px solid var(--atlas-line); }
+.map-shell .floating-learning-dock button:last-child { border-left: 0; }
+.map-shell .floating-learning-dock button[aria-expanded="true"], .map-shell .floating-learning-dock button.p-button { background: #e9f5ff; color: #0758ba; border-radius: 10px; }
+.map-shell .floating-learning-dock button.p-button[aria-expanded="true"] { background: #0758ba; color: white; }
+.map-shell .floating-learning-dock button .atlas-robot { width: 32px; height: 34px; }
+.map-shell .floating-learning-dock small { display: none; }
 .map-shell .leaflet-control-attribution { max-width: 420px; font-size: 8px; }
+.map-shell .esri-map-surface { isolation: auto; }
+.map-shell .studio-workspace:fullscreen { width: 100vw; height: 100dvh; background: white; }
 .map-shell .esri-map-surface, .map-shell .esri-leaflet-host { touch-action: none; }
-.map-shell button:focus-visible, .map-shell summary:focus-visible { outline: 3px solid #edb223; outline-offset: 3px; }
-.map-shell ::selection { background: #b8e2ff; color: #12365c; }
-@media (max-width: 1100px) {
-  .map-shell .approved-map-header { grid-template-columns: 175px minmax(0, 1fr) 130px; gap: 8px; }
-  .map-design-brand { font-size: 14px; }
-  .map-shell .lesson-button-wrap button { padding: 7px 10px; font-size: 12px; }
-  .map-shell .lesson-top-actions button { padding: 4px 6px; font-size: 10px; }
-  .map-shell .has-resource-sheet .water-source-key { right: 12px; top: auto; bottom: 110px; }
+.map-shell button:focus-visible, .map-shell summary:focus-visible, .map-shell a:focus-visible { outline: 3px solid #e4a70f; outline-offset: 3px; }
+.map-shell ::selection { background: #b8e2ff; color: var(--atlas-navy); }
+@media (max-width: 1200px) {
+  .map-shell .approved-map-header { grid-template-columns: 265px minmax(0, 1fr) 155px; gap: 8px; padding-inline: 12px; }
+  .map-design-brand { font-size: 17px; }
+  .map-design-brand strong { font-size: 17px; }
+  .atlas-book-logo { width: 60px; height: 66px; flex-basis: 60px; }
+  .map-shell .map-header-identity { flex-direction: column; gap: 3px; font-size: 11px; }
+  .map-shell .map-unit-name, .map-shell .map-student-name { padding: 4px 8px; }
+  .map-shell .lesson-button-wrap button { padding: 7px 9px; font-size: 14px; }
+  .map-shell .lesson-top-actions button { font-size: 10px; padding: 5px 8px; }
 }
 @media (max-width: 850px) {
-  .map-shell > main { padding: 0 5px 5px; gap: 5px; }
-  .map-shell .approved-map-header { grid-template-columns: minmax(0, 1fr) auto; min-height: 0; padding: 6px 5px; gap: 5px; }
-  .map-design-brand { font-size: 13px; gap: 5px; }
-  .map-design-brand > span { width: 28px; height: 30px; border-radius: 7px; }
-  .map-design-brand svg { width: 24px; }
-  .map-shell .map-header-identity { grid-column: 2; grid-row: 1; gap: 0; font-size: 9px; width: auto; }
-  .map-shell .map-student-name { padding: 3px 7px; max-width: 105px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .map-shell > main { padding: 0; gap: 0; }
+  .map-shell .approved-map-header { grid-template-columns: minmax(0, 1fr) auto; min-height: 0; padding: 6px 9px; gap: 4px; }
+  .map-design-brand { font-size: 16px; gap: 5px; }
+  .map-design-brand strong { font-size: 16px; }
+  .atlas-book-logo { width: 42px; height: 42px; flex-basis: 42px; }
+  .map-design-brand small { display: none; }
+  .map-shell .map-header-identity { grid-column: 2; grid-row: 1; font-size: 11px; width: auto; }
+  .map-shell .map-student-name { max-width: 96px; padding: 5px 6px; gap: 3px; border-radius: 10px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .map-shell .map-student-name svg { width: 23px; }
   .map-shell .map-unit-name { display: none; }
   .map-mobile-unit { display: inline; }
   .map-shell .map-top-button-cluster { grid-column: 1 / -1; grid-row: 2; gap: 3px; }
   .map-shell .lesson-number-buttons { width: 100%; gap: 5px; }
   .map-shell .lesson-button-wrap { flex: 1; }
-  .map-shell .lesson-button-wrap button { width: 100%; font-size: 12px; min-height: 44px; padding: 4px; }
-  .map-shell .map-current-lesson { font-size: 10px; line-height: 1.6; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .map-shell .lesson-button-wrap button { width: 100%; min-height: 44px; padding: 5px 3px; font-size: 14px; gap: 3px; }
+  .map-shell .lesson-button-wrap button svg { width: 18px; }
+  .map-shell .map-current-lesson { font-size: 10px; line-height: 1.5; max-width: 100%; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
   .map-shell .lesson-top-actions { gap: 5px; }
-  .map-shell .lesson-top-actions button { font-size: 10px; min-height: 34px; padding: 4px 8px; }
-  .map-shell .lesson-top-actions button svg { width: 14px; }
-  .map-shell .map-sidebar-handles { top: 8px; left: 7px; right: 7px; gap: 3px; }
-  .map-shell .map-handle-group { gap: 3px; }
-  .map-shell .map-sidebar-handles button { padding: 5px 6px; gap: 3px; font-size: 9px; min-height: 44px; }
-  .map-shell .map-sidebar-handles button svg { width: 15px; }
-  .map-shell .studio-workspace > .classroom-legend { top: 60px; bottom: 102px; width: min(264px, calc(100% - 20px)); left: 8px; padding: 10px; }
-  .map-shell .studio-workspace > .classroom-guide { top: auto; bottom: 92px; left: 8px; right: 8px; width: auto; height: auto; max-height: calc(100% - 154px); padding: 10px 12px; gap: 3px; border-radius: 18px 18px 10px 10px; }
-  .map-shell .classroom-guide.has-resource-details { min-height: 150px; }
-  .map-shell .classroom-guide.has-resource-details:not(.resource-sheet-expanded) { height: 168px; overflow: hidden; }
-  .map-shell .resource-sheet-toggle { display: inline-flex !important; position: absolute; left: 10px; top: 7px; min-height: 32px; padding: 3px 7px; font-size: 10px; background: #edf6fd; border: 1px solid #cfdfec; border-radius: 8px; align-items: center; gap: 3px; color: #12365c; }
-  .map-shell .classroom-guide.has-resource-details .mobile-panel-close { position: absolute; top: 7px; right: 10px; min-height: 32px; padding: 3px 7px; font-size: 10px; }
+  .map-shell .lesson-top-actions button { width: auto; flex: 1; min-height: 44px; padding: 4px; font-size: 10px; gap: 3px; }
+  .map-shell .lesson-top-actions button svg { width: 16px; }
+  .map-shell .map-sidebar-handles { top: 9px; left: 8px; right: 8px; gap: 5px; }
+  .map-shell .map-handle-group { gap: 4px; }
+  .map-shell .map-sidebar-handles button { min-height: 44px; padding: 5px 8px; font-size: 11px; gap: 4px; }
+  .map-shell .map-sidebar-handles button svg { width: 18px; }
+  .map-shell .map-sidebar-handles button { white-space: nowrap; }
+  .map-shell #show-legend > span { font-size: 0; }
+  .map-shell #show-legend > span::after { content: "المفتاح"; font-size: 11px; }
+  .map-shell #show-guide > span { font-size: 0; }
+  .map-shell #show-guide > span::after { content: "المعلم"; font-size: 11px; }
+  .map-shell #show-guide > svg { display: none; }
+  .map-shell #show-guide::before { content: ""; width: 24px; height: 29px; background: url('/media/reference/smart-teacher.webp') center / contain no-repeat; }
+  .map-shell .studio-workspace > .classroom-legend { top: 62px; bottom: 94px; left: 8px; width: min(275px, calc(100% - 16px)); padding: 14px; }
+  .map-shell .classroom-legend h2 { font-size: 21px; }
+  .map-shell .studio-workspace > .classroom-guide { top: auto; bottom: 88px; right: 8px; left: 8px; width: auto; max-height: calc(100% - 150px); height: auto; padding: 10px 12px; gap: 3px; border-radius: 20px 20px 10px 10px; }
+  .map-shell .classroom-guide.has-resource-details:not(.resource-sheet-expanded) { min-height: 254px; height: 254px; overflow: hidden; }
+  .map-shell .classroom-guide.has-resource-details .mobile-panel-close { position: absolute; right: 7px; top: 5px; min-height: 44px; width: 44px; margin: 0; }
+  .map-shell .resource-sheet-toggle { display: inline-flex !important; position: absolute; top: 5px; left: 7px; min-height: 44px; padding: 5px 9px; border: 0; border-radius: 9px; background: var(--atlas-soft); color: var(--atlas-navy); font-size: 11px; align-items: center; gap: 4px; }
   .map-shell .classroom-guide.has-resource-details .studio-status { display: none; }
-  .map-shell .classroom-guide.has-resource-details .classroom-resource { padding-top: 35px; }
-  .map-shell .classroom-resource h2 { font-size: 19px; margin: 0; padding: 0; }
-  .map-shell .classroom-resource h2 .resource-pin { width: 27px; height: 34px; }
-  .map-shell .classroom-resource .selected-location { font-size: 10px; margin: 0; padding: 2px 0; }
+  .map-shell .classroom-guide.has-resource-details .classroom-resource { padding-top: 41px; }
+  .map-shell .classroom-guide:not(.resource-sheet-expanded) .classroom-resource { display: grid; grid-template-columns: 95px minmax(0, 1fr); column-gap: 10px; align-items: start; }
+  .map-shell .classroom-guide:not(.resource-sheet-expanded) .classroom-resource h2 { grid-column: 2; grid-row: 1; font-size: 22px; line-height: 1.4; margin: 0; padding: 0; }
+  .map-shell .classroom-guide:not(.resource-sheet-expanded) .resource-visual { grid-column: 1; grid-row: 1 / 4; margin: 0; }
+  .map-shell .classroom-guide:not(.resource-sheet-expanded) .resource-visual .resource-photo { width: 95px; height: 104px; }
+  .map-shell .classroom-guide:not(.resource-sheet-expanded) .resource-visual .media-pending { min-height: 100px; margin: 0; padding: 15px 6px; font-size: 10px; }
+  .map-shell .classroom-guide:not(.resource-sheet-expanded) .resource-card-summary { grid-column: 2; grid-row: 2; }
+  .map-shell .classroom-guide:not(.resource-sheet-expanded) .selected-location { font-size: 9px; margin: 0; line-height: 1.4; padding: 1px 0; }
+  .map-shell .classroom-guide:not(.resource-sheet-expanded) .selected-location svg { display: none; }
+  .map-shell .classroom-guide:not(.resource-sheet-expanded) .resource-lead { font-size: 11px; line-height: 1.5; margin: 1px 0; -webkit-line-clamp: 1; }
+  .map-shell .classroom-guide:not(.resource-sheet-expanded) .resource-fact-row,
   .map-shell .classroom-guide:not(.resource-sheet-expanded) .resource-information-body,
-  .map-shell .classroom-guide:not(.resource-sheet-expanded) .resource-photo-note,
-  .map-shell .classroom-guide:not(.resource-sheet-expanded) > .p-secondary,
-  .map-shell .classroom-guide:not(.resource-sheet-expanded) .resource-visual { display: none; }
-  .map-shell .classroom-guide:not(.resource-sheet-expanded) .resource-video-button { min-height: 37px; margin: 5px 0 0; font-size: 11px; padding: 5px 9px; }
-  .map-shell .classroom-guide.resource-sheet-expanded { top: 60px; max-height: none; }
-  .map-shell .map-robot-companion { right: 8px; bottom: 98px; max-width: 215px; }
-  .map-robot-companion .atlas-robot { width: 56px; height: 64px; flex-basis: 56px; }
-  .map-robot-companion > span { padding: 7px 9px; }
-  .map-robot-companion strong { font-size: 11px; }
-  .map-robot-companion span span { font-size: 10px; }
-  .map-shell .esri-map-toolbar { left: 8px; right: auto; top: 60px; bottom: auto; flex-direction: row; gap: 4px; width: auto; }
-  .map-shell .esri-map-toolbar button { width: 42px; height: 42px; padding: 9px; font-size: 0; gap: 0; min-height: 42px; }
-  .map-shell .esri-map-toolbar button svg { width: 21px; }
-  .map-shell .esri-map-zoom, .map-shell .studio-workspace:not(.legend-hidden) .esri-map-zoom { left: 8px; bottom: 110px; top: auto; }
-  .map-shell .has-resource-sheet .esri-map-zoom { bottom: 270px; }
-  .map-shell .water-source-key, .map-shell .has-resource-sheet .water-source-key { top: 60px; bottom: auto; right: 8px; width: 175px; padding: 7px; font-size: 9px; }
-  .map-shell .water-source-key > div { display: none; }
-  .map-shell .water-source-key label { font-size: 9px; }
-  .map-shell .basemap-gallery, .map-shell .esri-governorates-picker { left: 8px; right: 8px; width: auto; top: 110px; max-width: none; max-height: calc(100% - 218px); overflow: auto; }
-  .map-shell .floating-learning-dock { left: 8px; right: 8px; bottom: 8px; transform: none; max-width: none; width: auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 5px; gap: 3px; }
-  .map-shell .floating-learning-dock button { padding: 5px 2px; min-height: 64px; font-size: 9px; gap: 3px; }
-  .map-shell .floating-learning-dock button svg { width: 21px; height: 21px; }
-  .map-shell .floating-learning-dock button.p-button { gap: 0; }
-  .map-shell .floating-learning-dock button .atlas-robot { width: 26px; height: 28px; }
-  .map-shell .floating-learning-dock small { display: none; }
-  .map-shell .studio-workspace > .learning-drawer { bottom: 94px; }
-  .map-shell .leaflet-control-attribution { max-width: calc(100vw - 85px); font-size: 6px; }
-  .map-shell .has-resource-sheet .leaflet-control-attribution { margin-bottom: 262px; }
+  .map-shell .classroom-guide:not(.resource-sheet-expanded) > .p-secondary { display: none; }
+  .map-shell .classroom-guide:not(.resource-sheet-expanded) .resource-video-button { grid-column: 2; grid-row: 3; min-height: 44px; font-size: 13px; margin: 3px 0 0; padding: 5px; }
+  .map-shell .classroom-guide:not(.resource-sheet-expanded) .resource-photo-credit { grid-column: 1 / -1; grid-row: 4; margin-top: 4px; font-size: 8px; line-height: 1.5; }
+  .map-shell .resource-teacher-note { display: flex !important; align-items: center; gap: 9px; border-top: 1px solid var(--atlas-line); padding-top: 4px; margin-top: 5px; min-height: 48px; }
+  .resource-teacher-note .atlas-robot { width: 40px; height: 48px; flex: 0 0 40px; }
+  .map-shell .resource-teacher-note p { font-size: 12px; margin: 0; padding: 7px 10px; background: var(--atlas-soft); border-radius: 10px; }
+  .map-shell .classroom-guide.resource-sheet-expanded { top: 62px; max-height: none; }
+  .map-shell .classroom-guide.resource-sheet-expanded .resource-visual .resource-photo { height: 155px; }
+  .map-shell .classroom-resource h2 { padding: 0; }
+  .map-shell .map-robot-companion { right: 8px; bottom: 94px; max-width: 225px; }
+  .map-shell .map-robot-companion.beside-resource, .map-shell .studio-workspace:not(.legend-hidden) .map-robot-companion { display: none; }
+  .map-robot-companion .atlas-robot { width: 63px; height: 94px; flex-basis: 63px; }
+  .map-robot-companion > span { padding: 9px; }
+  .map-robot-companion strong { font-size: 13px; }
+  .map-robot-companion span span { font-size: 11px; }
+  .map-shell .esri-map-toolbar { display: none; }
+  .map-shell .legend-tools-slot .esri-map-toolbar { display: flex; }
+  .map-shell .water-source-key { display: none; }
+  .map-shell .legend-tools-slot .water-source-key { display: block; }
+  .map-shell .esri-map-zoom, .map-shell .studio-workspace:not(.legend-hidden) .esri-map-zoom { top: auto; bottom: 104px; left: 8px; }
+  .map-shell .has-resource-sheet .esri-map-zoom { bottom: 352px; }
+  .map-shell .basemap-gallery, .map-shell .esri-governorates-picker { left: 8px; right: 8px; width: auto; max-width: none; top: 62px; max-height: calc(100% - 158px); overflow: auto; }
+  .map-shell .floating-learning-dock { bottom: 8px; left: 8px; right: 8px; transform: none; width: auto; max-width: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 5px; }
+  .map-shell .floating-learning-dock button { min-height: 64px; font-size: 10px; padding: 5px 2px; gap: 3px; }
+  .map-shell .floating-learning-dock button svg { width: 23px; height: 23px; }
+  .map-shell .floating-learning-dock button .atlas-robot { width: 30px; height: 34px; }
+  .map-shell .studio-workspace > .learning-drawer { bottom: 90px; }
+  .map-shell .has-resource-sheet .leaflet-control-attribution { margin-bottom: 348px; }
+  .map-shell .leaflet-control-attribution { max-width: calc(100vw - 60px); font-size: 8px; }
   .map-shell .has-resource-sheet .esri-basemap-state, .map-shell .has-resource-sheet .classroom-map-meta { display: none; }
 }
+@media (max-width: 370px) {
+  .map-shell .map-sidebar-handles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  .map-shell .map-handle-group { display: contents; }
+  .map-shell .map-sidebar-handles button { min-width: 0; width: 100%; padding-inline: 3px; }
+
+  .map-design-brand { font-size: 14px; }
+  .map-design-brand strong { font-size: 14px; }
+  .atlas-book-logo { width: 35px; flex-basis: 35px; }
+  .map-shell .map-student-name { max-width: 82px; font-size: 9px; }
+  .map-shell .lesson-button-wrap button { font-size: 12px; }
+  .map-shell .map-sidebar-handles button { padding: 5px 3px; font-size: 10px; gap: 3px; }
+  .map-shell .map-sidebar-handles button svg { width: 15px; }
+}
 @media (max-height: 500px) and (min-width: 650px) {
-  .map-shell .approved-map-header { grid-template-columns: 130px minmax(0, 1fr) 105px; min-height: 0; padding: 3px 5px; gap: 7px; }
-  .map-design-brand { font-size: 10px; }
-  .map-design-brand > span { width: 25px; height: 30px; }
+  .map-shell .approved-map-header { grid-template-columns: 160px minmax(0, 1fr) 110px; min-height: 0; padding: 3px 7px; gap: 7px; }
+  .map-design-brand { font-size: 11px; }
+  .map-design-brand strong { font-size: 11px; }
+  .atlas-book-logo { width: 30px; height: 34px; flex-basis: 30px; }
+  .map-design-brand small { display: none; }
   .map-shell .map-top-button-cluster { grid-column: 2; grid-row: 1; flex-direction: row; gap: 5px; }
   .map-shell .map-current-lesson { display: none; }
   .map-shell .lesson-number-buttons, .map-shell .lesson-top-actions { width: auto; gap: 3px; }
-  .map-shell .lesson-button-wrap button, .map-shell .lesson-top-actions button { min-height: 40px; padding: 4px 5px; font-size: 9px; }
-  .map-shell .lesson-top-actions button svg { display: none; }
-  .map-shell .map-header-identity { grid-column: 3; grid-row: 1; font-size: 9px; }
-  .map-shell .floating-learning-dock { width: max-content; left: 50%; right: auto; transform: translateX(-50%); display: flex; }
-  .map-shell .floating-learning-dock button { flex-direction: row; padding: 4px 9px; min-height: 40px; }
-  .map-shell .studio-workspace > .classroom-guide { left: auto; right: 8px; bottom: 70px; width: 295px; max-height: calc(100% - 130px); }
-  .map-shell .classroom-guide.resource-sheet-expanded { top: 60px; }
-  .map-shell .classroom-guide.has-resource-details:not(.resource-sheet-expanded) { height: 168px; }
-  .map-shell .studio-workspace > .learning-drawer { bottom: 70px; }
-  .map-shell .studio-workspace > .classroom-legend { bottom: 70px; }
-  .map-shell .map-robot-companion { bottom: 75px; }
-  .map-shell .esri-map-zoom, .map-shell .studio-workspace:not(.legend-hidden) .esri-map-zoom, .map-shell .has-resource-sheet .esri-map-zoom { top: 112px; bottom: auto; left: 8px; display: grid; grid-template-columns: repeat(2, 40px); gap: 4px; }
-  .map-shell .esri-map-zoom button { width: 40px; height: 40px; min-height: 40px; }
+  .map-shell .lesson-button-wrap button, .map-shell .lesson-top-actions button { min-height: 44px; padding: 4px; font-size: 9px; }
+  .map-shell .lesson-button-wrap button svg, .map-shell .lesson-top-actions button svg { display: none; }
+  .map-shell .map-header-identity { grid-column: 3; grid-row: 1; }
+  .map-shell .map-student-name { max-width: 100px; }
+  .map-shell .map-unit-name { display: none; }
+  .map-shell .floating-learning-dock { left: 50%; right: auto; transform: translateX(-50%); width: max-content; display: flex; }
+  .map-shell .floating-learning-dock button { min-height: 44px; flex-direction: row; padding: 4px 10px; }
+  .map-shell .studio-workspace > .classroom-guide { left: auto; right: 8px; bottom: 72px; width: 315px; max-height: calc(100% - 134px); }
+  .map-shell .classroom-guide.has-resource-details:not(.resource-sheet-expanded) { height: auto; min-height: 0; }
+  .map-shell .resource-teacher-note { display: none !important; }
+  .map-shell .classroom-guide.resource-sheet-expanded { top: 62px; }
+  .map-shell .studio-workspace > .classroom-legend, .map-shell .studio-workspace > .learning-drawer { bottom: 72px; }
+  .map-shell .map-robot-companion { bottom: 76px; }
+  .map-shell .esri-map-zoom, .map-shell .studio-workspace:not(.legend-hidden) .esri-map-zoom, .map-shell .has-resource-sheet .esri-map-zoom { top: auto; bottom: 80px; left: 8px; display: grid; grid-template-columns: repeat(2, 44px); gap: 4px; }
+  .map-shell .has-resource-sheet .leaflet-control-attribution { margin-bottom: 0; max-width: 300px; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .map-shell .map-resource-group > button, .map-shell .lesson-button-wrap button { transition: background-color .18s ease-out, border-color .18s ease-out; }

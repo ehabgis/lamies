@@ -1,5 +1,5 @@
-import { useId } from "react";
-export default function RobotGuide({ style } = {}) {
+import { useId, useState } from "react";
+function VectorRobot({ style } = {}) {
   const id = useId().replace(/:/g, "");
   return (
     <svg
@@ -99,4 +99,9 @@ export default function RobotGuide({ style } = {}) {
       />
     </svg>
   );
+}
+
+export default function RobotGuide({ style } = {}) {
+  const [failed, setFailed] = useState(false);
+  return failed ? <VectorRobot style={style} /> : <img className="atlas-robot" src="/media/reference/smart-teacher.webp" width="160" height="180" alt="المعلم الذكي" decoding="async" style={style} onError={() => setFailed(true)} />;
 }

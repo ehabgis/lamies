@@ -1,0 +1,166 @@
+[
+  {
+    "viewport": [
+      1440,
+      900
+    ],
+    "overflow": [
+      false,
+      false
+    ],
+    "brandFont": "17px",
+    "lessonFont": "14px",
+    "smallTouch": [
+      {
+        "name": "أهداف الدرس",
+        "w": 114,
+        "h": 34
+      },
+      {
+        "name": "مفاهيم الدرس",
+        "w": 121,
+        "h": 34
+      },
+      {
+        "name": "معلومات الدرس",
+        "w": 127,
+        "h": 34
+      },
+      {
+        "name": "إغلاق مفتاح الخريطة",
+        "w": 192,
+        "h": 30
+      }
+    ],
+    "missingNames": 0,
+    "unlabeledImages": 0,
+    "robotSvg": true,
+    "headerHeight": 120
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "overflow": [
+      false,
+      false
+    ],
+    "brandFont": "13px",
+    "lessonFont": "12px",
+    "smallTouch": [
+      {
+        "name": "أهداف الدرس",
+        "w": 120,
+        "h": 34
+      },
+      {
+        "name": "مفاهيم الدرس",
+        "w": 120,
+        "h": 34
+      },
+      {
+        "name": "معلومات الدرس",
+        "w": 120,
+        "h": 34
+      },
+      {
+        "name": "معرض الخرائط",
+        "w": 42,
+        "h": 42
+      },
+      {
+        "name": "المحافظات",
+        "w": 42,
+        "h": 42
+      },
+      {
+        "name": "تكبير الخريطة",
+        "w": 40,
+        "h": 40
+      },
+      {
+        "name": "تصغير الخريطة",
+        "w": 40,
+        "h": 40
+      },
+      {
+        "name": "عرض مصر كاملة",
+        "w": 40,
+        "h": 40
+      },
+      {
+        "name": "ملء الشاشة",
+        "w": 40,
+        "h": 40
+      }
+    ],
+    "missingNames": 0,
+    "unlabeledImages": 0,
+    "robotSvg": true,
+    "headerHeight": 148
+  },
+  {
+    "viewport": [
+      320,
+      740
+    ],
+    "overflow": [
+      false,
+      false
+    ],
+    "brandFont": "13px",
+    "lessonFont": "12px",
+    "smallTouch": [
+      {
+        "name": "أهداف الدرس",
+        "w": 97,
+        "h": 34
+      },
+      {
+        "name": "مفاهيم الدرس",
+        "w": 97,
+        "h": 34
+      },
+      {
+        "name": "معلومات الدرس",
+        "w": 97,
+        "h": 34
+      },
+      {
+        "name": "معرض الخرائط",
+        "w": 42,
+        "h": 42
+      },
+      {
+        "name": "المحافظات",
+        "w": 42,
+        "h": 42
+      },
+      {
+        "name": "تكبير الخريطة",
+        "w": 40,
+        "h": 40
+      },
+      {
+        "name": "تصغير الخريطة",
+        "w": 40,
+        "h": 40
+      },
+      {
+        "name": "عرض مصر كاملة",
+        "w": 40,
+        "h": 40
+      },
+      {
+        "name": "ملء الشاشة",
+        "w": 40,
+        "h": 40
+      }
+    ],
+    "missingNames": 0,
+    "unlabeledImages": 0,
+    "robotSvg": true,
+    "headerHeight": 148
+  }
+]

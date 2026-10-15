@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { createPortal } from "react-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
@@ -13,7 +14,7 @@ import {
   Stack,
   CornersOut,
 } from "phosphor-react";
-import ResourcePin from "../components/Map/ResourcePin";
+import MapResourceSymbol from "../components/Map/MapResourceSymbol";
 import { BASEMAPS, EGYPT_BOUNDS, readBasemap } from "./mapBasemaps";
 const textNode = (text) => {
   const node = document.createElement("span");
@@ -43,6 +44,7 @@ function GalleryThumbnail({ basemap }) {
 }
 export default function EsriLessonMap({
   sites,
+  toolsHost = null,
   activeResourceId,
   selectedLocationId,
   showNames,
@@ -308,10 +310,10 @@ export default function EsriLessonMap({
         opacity: dim ? 0.2 : 1,
         icon: L.divIcon({
           className: `esri-resource-marker ${highlighted ? "is-highlighted" : ""} ${selectedLocationId === site.id ? "is-selected" : ""}`,
-          html: renderToStaticMarkup(<ResourcePin resource={site.resource} />),
-          iconSize: [38, 48],
-          iconAnchor: [19, 45],
-          tooltipAnchor: [0, -35],
+          html: renderToStaticMarkup(<MapResourceSymbol resource={site.resource} />),
+          iconSize: [44, 56],
+          iconAnchor: [22, 53],
+          tooltipAnchor: [0, -42],
         }),
       });
       marker.on("click", () => {
@@ -321,7 +323,7 @@ export default function EsriLessonMap({
         callback.current.onSelect(site);
       });
       marker.bindTooltip(textNode(site.name), {
-        permanent: showNames || selectedLocationId === site.id,
+        permanent: showNames === true || selectedLocationId === site.id || (showNames === null && !activeResourceId && ["nile-river", "mediterranean-sea", "red-sea"].includes(site.resource.id)),
         direction: "top",
         className: "resource-map-label",
       });
@@ -425,24 +427,13 @@ export default function EsriLessonMap({
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
       else if (root.current.requestFullscreen)
-        await root.current.requestFullscreen();
+        await (root.current.closest(".studio-workspace") || root.current).requestFullscreen();
       else setNotice("ملء الشاشة غير متاح في هذا المتصفح.");
     } catch {
       setNotice("تعذّر فتح ملء الشاشة.");
     }
   }
-  return (
-    <section
-      ref={root}
-      className={`esri-map-surface ${usingLocal ? "has-local-basemap" : ""}`}
-      aria-label="خريطة موارد مصر"
-    >
-      <div
-        ref={host}
-        className="esri-leaflet-host"
-        aria-label="خريطة مصر؛ استخدم أزرار التكبير أو اسحب الخريطة"
-      />
-      <div className="esri-map-toolbar">
+  const toolbar = (<div className="esri-map-toolbar">
         <button
           ref={galleryButton}
           aria-expanded={gallery}
@@ -459,7 +450,48 @@ export default function EsriLessonMap({
           <Stack size={20} />
           المحافظات
         </button>
-      </div>
+      </div>);
+  const waterKey = waterLesson && (
+        <div className="water-source-key">
+          <label>
+            <input
+              type="checkbox"
+              checked={waterHighlights}
+              onChange={(e) => setWaterHighlights(e.target.checked)}
+            />
+            إبراز مصادر المياه
+          </label>
+          {waterHighlights && (
+            <div>
+              <span>
+                <i className="nile-water-swatch" />
+                نهر النيل · مياه عذبة
+              </span>
+              <span>
+                <i className="med-water-swatch" />
+                البحر المتوسط · مياه مالحة
+              </span>
+              <span>
+                <i className="red-water-swatch" />
+                البحر الأحمر · مياه مالحة
+              </span>
+              <small>مياه البحر تحتاج إلى التحلية للشرب.</small>
+            </div>
+          )}
+        </div>
+      );
+  return (
+    <section
+      ref={root}
+      className={`esri-map-surface ${usingLocal ? "has-local-basemap" : ""}`}
+      aria-label="خريطة موارد مصر"
+    >
+      <div
+        ref={host}
+        className="esri-leaflet-host"
+        aria-label="خريطة مصر؛ استخدم أزرار التكبير أو اسحب الخريطة"
+      />
+      {toolsHost ? createPortal(toolbar, toolsHost) : toolbar}
       <div className="esri-map-zoom" aria-label="أدوات الخريطة">
         <button
           aria-label="تكبير الخريطة"
@@ -490,35 +522,7 @@ export default function EsriLessonMap({
           <CornersOut size={21} />
         </button>
       </div>
-      {waterLesson && (
-        <div className="water-source-key">
-          <label>
-            <input
-              type="checkbox"
-              checked={waterHighlights}
-              onChange={(e) => setWaterHighlights(e.target.checked)}
-            />
-            إبراز مصادر المياه
-          </label>
-          {waterHighlights && (
-            <div>
-              <span>
-                <i className="nile-water-swatch" />
-                نهر النيل · مياه عذبة
-              </span>
-              <span>
-                <i className="med-water-swatch" />
-                البحر المتوسط · مياه مالحة
-              </span>
-              <span>
-                <i className="red-water-swatch" />
-                البحر الأحمر · مياه مالحة
-              </span>
-              <small>مياه البحر تحتاج إلى التحلية للشرب.</small>
-            </div>
-          )}
-        </div>
-      )}
+      {toolsHost ? createPortal(waterKey, toolsHost) : waterKey}
       <div className="esri-basemap-state" role="status">
         {usingLocal
           ? "الخريطة التعليمية المحلية"

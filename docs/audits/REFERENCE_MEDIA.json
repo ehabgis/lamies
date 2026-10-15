@@ -1,0 +1,21 @@
+{
+  "nile": {
+    "title": "File:Nile River, Aswan, Egypt.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Nile_River%2C_Aswan%2C_Egypt.jpg",
+    "sourcePage": "https://commons.wikimedia.org/wiki/File:Nile_River,_Aswan,_Egypt.jpg",
+    "author": "Vyacheslav Argenberg",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "usage": "Illustrative photo of the Nile at Aswan, not a photograph of the selected map coordinate.",
+    "localFile": "public/media/reference/nile-aswan.jpg",
+    "downloadedThumbnail": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Nile_River%2C_Aswan%2C_Egypt.jpg/960px-Nile_River%2C_Aswan%2C_Egypt.jpg",
+    "display": "CSS cover crop inside the photo frame; original thumbnail file retained.",
+    "sha256": "c6fad92121ad0b452226cb4cfbdcb0b23b64257a83975e6dd66156b44c430b2b"
+  },
+  "robot": {
+    "source": "AI-generated asset recreated from the user-approved concept",
+    "usage": "Decorative guide, no data encoding; optimized WebP encoding of generated PNG.",
+    "localFile": "public/media/reference/smart-teacher.webp",
+    "sha256": "16ab14b7a521c43fa1cc560341a21a113ca3ad4c515775b90482112edbf062cb"
+  }
+}

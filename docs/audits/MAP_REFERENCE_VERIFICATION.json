@@ -1,0 +1,62 @@
+[
+  {
+    "viewport": [
+      1440,
+      900
+    ],
+    "brandFont": "23px",
+    "lessonFont": "17px",
+    "overflow": false,
+    "buttonsUnder44": []
+  },
+  {
+    "viewport": [
+      1366,
+      768
+    ],
+    "brandFont": "23px",
+    "lessonFont": "17px",
+    "overflow": false,
+    "buttonsUnder44": []
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "brandFont": "16px",
+    "lessonFont": "14px",
+    "overflow": false,
+    "buttonsUnder44": []
+  },
+  {
+    "viewport": [
+      360,
+      740
+    ],
+    "brandFont": "14px",
+    "lessonFont": "12px",
+    "overflow": false,
+    "buttonsUnder44": []
+  },
+  {
+    "viewport": [
+      320,
+      740
+    ],
+    "brandFont": "14px",
+    "lessonFont": "12px",
+    "overflow": false,
+    "buttonsUnder44": []
+  },
+  {
+    "viewport": [
+      844,
+      390
+    ],
+    "brandFont": "11px",
+    "lessonFont": "9px",
+    "overflow": false,
+    "buttonsUnder44": []
+  }
+]

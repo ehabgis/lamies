@@ -1,4 +1,4 @@
-import { legacyContent } from "./legacy-content.mjs";
+import { legacyContent, legacyResourceMedia } from "./legacy-content.mjs";
 import { readFileSync } from "node:fs";
 const seed = JSON.parse(
   readFileSync(new URL("./seed-content.json", import.meta.url), "utf8"),
@@ -21,6 +21,12 @@ function fullContent(id) {
     sources: [...seed.sources, ...old.sources],
     resources: seed.resources.map((r) => ({
       ...structuredClone(r),
+      media: {
+        ...r.media,
+        ...Object.fromEntries(
+          Object.entries(legacyResourceMedia(r.id)).filter(([, v]) => v),
+        ),
+      },
       legacyDetails: old.resources.find((l) => l.id.startsWith(`${r.id}-`))
         ?.legacyDetails,
     })),

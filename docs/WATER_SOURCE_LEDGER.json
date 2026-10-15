@@ -1,0 +1,45 @@
+{
+  "retrieved": "2026-10-16",
+  "coordinateSystem": "WGS84 / EPSG:4326",
+  "displayProjection": "Web Mercator / EPSG:3857",
+  "license": "Natural Earth public domain",
+  "sources": [
+    "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_geography_marine_polys.geojson",
+    "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_rivers_lake_centerlines.geojson"
+  ],
+  "method": "Marine source rings clipped to [24,21.7,37.5,34.5]; Nile layer retains earlier Nile features and adds the two named Delta branches without moving source coordinates. Generalized educational geometry; marine locator pins are representative labels, not freshwater intakes.",
+  "files": [
+    {
+      "path": "public/geodata/egypt-seas.geojson",
+      "sha256": "4945ad8db05ef7353ee95faedac9e4952ce25d2a95279a8bb331ec74861e5c8c",
+      "features": [
+        {
+          "id": "red-sea",
+          "name": "البحر الأحمر"
+        },
+        {
+          "id": "mediterranean-sea",
+          "name": "البحر المتوسط"
+        }
+      ]
+    },
+    {
+      "path": "public/geodata/egypt-nile.geojson",
+      "sha256": "257da6848eb4f84d89dcee88265d8304d0562bef396a6248d53d03dc0832fd79",
+      "features": [
+        {
+          "name": "Nile"
+        },
+        {
+          "name": "Nile"
+        },
+        {
+          "name": "Rosetta Branch"
+        },
+        {
+          "name": "Damietta Branch"
+        }
+      ]
+    }
+  ]
+}

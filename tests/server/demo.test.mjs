@@ -147,7 +147,29 @@ test("guest demo grades all eight types without publishing, answer leakage or du
       const imported = await request(`/api/demo/lessons/${id}`);
       assert.equal(imported.status, 200);
       assert.equal(imported.data.lesson.content.reviewRequired, true);
-      assert.equal(imported.data.lesson.content.resources.length, 6);
+      assert(
+        imported.data.lesson.content.questions.some((q) => q.type === "match"),
+      );
+      assert(
+        imported.data.lesson.content.questions.some((q) => q.type === "map"),
+      );
+      if (id === "lesson-2") {
+        assert(
+          imported.data.lesson.content.resources.some(
+            (r) => r.id === "mediterranean-sea",
+          ),
+        );
+        assert(
+          imported.data.lesson.content.resources.some(
+            (r) => r.id === "red-sea",
+          ),
+        );
+      }
+
+      assert.equal(
+        imported.data.lesson.content.resources.length,
+        id === "lesson-2" ? 8 : 6,
+      );
       assert(imported.data.lesson.content.sources.every((s) => !s.approved));
       assert(
         imported.data.lesson.content.questions.every(

@@ -112,3 +112,8 @@ Source: Natural Earth ne_50m_rivers_lake_centerlines, filtered by name=Nile.
 https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_rivers_lake_centerlines.geojson
 Public domain under the Natural Earth terms above. Geometry retained without simplification.
 Educational local fallback only; not a surveyed or official river boundary.
+
+Additional water teaching layer (2026-10-16):
+Marine polygons: https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_geography_marine_polys.geojson
+Nile and named Rosetta/Damietta branches: https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_rivers_lake_centerlines.geojson
+Natural Earth public domain. Marine geometry clipped to the Egypt teaching region.

@@ -49,6 +49,8 @@ export default function EsriLessonMap({
   onSelect,
   onVideo,
   resetKey = 0,
+  focusRequest,
+  waterLesson = false,
   onReset,
 }) {
   const host = useRef(null),
@@ -62,6 +64,8 @@ export default function EsriLessonMap({
     [governorates, setGovernorates] = useState(false),
     [features, setFeatures] = useState(null),
     [river, setRiver] = useState(null),
+    [seas, setSeas] = useState(null),
+    [waterHighlights, setWaterHighlights] = useState(true),
     [dataError, setDataError] = useState(""),
     [selectedGovernorate, setSelectedGovernorate] = useState(""),
     [status, setStatus] = useState("loading"),
@@ -119,6 +123,57 @@ export default function EsriLessonMap({
       .catch(() => {});
     return () => controller.abort();
   }, []);
+  useEffect(() => {
+    if (!waterLesson) return;
+    const controller = new AbortController();
+    fetch("/geodata/egypt-seas.geojson", { signal: controller.signal })
+      .then((r) => {
+        if (!r.ok) throw Error();
+        return r.json();
+      })
+      .then(setSeas)
+      .catch((e) => {
+        if (e.name !== "AbortError")
+          setNotice("تعذّر تحميل طبقة البحار؛ علامات المواقع ما زالت متاحة.");
+      });
+    return () => controller.abort();
+  }, [waterLesson]);
+  useEffect(() => {
+    if (!ready || !waterLesson || !waterHighlights) return;
+    const map = mapRef.current;
+    if (!map.getPane("water-highlights")) {
+      map.createPane("water-highlights");
+      map.getPane("water-highlights").style.zIndex = "450";
+    }
+    const group = L.layerGroup().addTo(map);
+    if (seas)
+      L.geoJSON(seas, {
+        pane: "water-highlights",
+        interactive: false,
+        style: (f) => ({
+          color: f.properties.color,
+          weight: 3,
+          fillColor: f.properties.color,
+          fillOpacity: 0.3,
+        }),
+        attribution:
+          'Water areas © Natural Earth · <a href="https://www.naturalearthdata.com/about/terms-of-use/" target="_blank" rel="noopener noreferrer">Public domain</a>',
+      }).addTo(group);
+    if (river) {
+      L.geoJSON(river, {
+        pane: "water-highlights",
+        interactive: false,
+        style: { color: "white", weight: 9, opacity: 0.85 },
+      }).addTo(group);
+      L.geoJSON(river, {
+        pane: "water-highlights",
+        interactive: false,
+        style: { color: "#0983ff", weight: 5, opacity: 1 },
+        attribution: "Nile geometry · Natural Earth",
+      }).addTo(group);
+    }
+    return () => map.removeLayer(group);
+  }, [ready, waterLesson, waterHighlights, river, seas]);
   useEffect(() => {
     if (!ready) return;
     const map = mapRef.current;
@@ -329,9 +384,15 @@ export default function EsriLessonMap({
     });
     setSelectedGovernorate("");
   }, [ready, resetKey]);
+  useEffect(() => {
+    if (!ready || !focusRequest) return;
+    const site = sites.find((s) => s.id === focusRequest.siteId);
+    if (site) focusLocation(site);
+  }, [ready, focusRequest]);
   function focusLocation(site) {
     const map = mapRef.current;
-    const zoom = Math.max(map.getZoom(), 8);
+    const marine = ["mediterranean-sea", "red-sea"].includes(site.resource.id);
+    const zoom = marine ? 6 : Math.max(map.getZoom(), 8);
     const point = map.project([site.lat, site.lng], zoom);
     if (window.innerWidth <= 850) point.y += map.getSize().y * 0.24;
     map.stop();
@@ -428,6 +489,35 @@ export default function EsriLessonMap({
           <CornersOut size={21} />
         </button>
       </div>
+      {waterLesson && (
+        <div className="water-source-key">
+          <label>
+            <input
+              type="checkbox"
+              checked={waterHighlights}
+              onChange={(e) => setWaterHighlights(e.target.checked)}
+            />
+            إبراز مصادر المياه
+          </label>
+          {waterHighlights && (
+            <div>
+              <span>
+                <i className="nile-water-swatch" />
+                نهر النيل · مياه عذبة
+              </span>
+              <span>
+                <i className="med-water-swatch" />
+                البحر المتوسط · مياه مالحة
+              </span>
+              <span>
+                <i className="red-water-swatch" />
+                البحر الأحمر · مياه مالحة
+              </span>
+              <small>مياه البحر تحتاج إلى التحلية للشرب.</small>
+            </div>
+          )}
+        </div>
+      )}
       <div className="esri-basemap-state" role="status">
         {usingLocal
           ? "الخريطة التعليمية المحلية"

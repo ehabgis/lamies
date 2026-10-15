@@ -885,3 +885,360 @@
 .map-shell .lesson-floating-information ol li {
   margin-bottom: 10px;
 }
+.floating-learning-dock {
+  position: absolute;
+  z-index: 1800;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px;
+  background: #fffffff5;
+  border: 1px solid #bfd8e8;
+  border-radius: 20px;
+  box-shadow: 0 8px 28px #16375133;
+  max-width: calc(100% - 24px);
+  width: max-content;
+}
+.map-shell .floating-learning-dock button {
+  border: 0;
+  background: #edf5fc;
+  color: #174766;
+  min-height: 50px;
+  padding: 8px 16px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.map-shell .floating-learning-dock button[aria-expanded="true"] {
+  background: #0869c4;
+  color: white;
+}
+.map-shell .floating-learning-dock button.p-button {
+  background: #e7f5ef;
+  color: #14563c;
+  gap: 9px;
+}
+.floating-learning-dock button small {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+}
+.map-shell .studio-workspace > .classroom-legend,
+.map-shell .studio-workspace > .classroom-guide {
+  bottom: 91px;
+}
+.map-shell .classroom-map-meta {
+  bottom: 100px;
+}
+.learning-drawer {
+  position: absolute;
+  z-index: 1700;
+  top: 62px;
+  right: 12px;
+  bottom: 95px;
+  width: min(440px, calc(100% - 24px));
+  background: white;
+  border: 1px solid #b8d4e6;
+  border-radius: 18px;
+  box-shadow: 0 14px 40px #13345133;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  direction: rtl;
+}
+.learning-drawer > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid #d2e3ee;
+  background: #f4faff;
+}
+.map-shell .learning-drawer header h2 {
+  font-size: 20px;
+  margin: 0;
+}
+.learning-drawer header span {
+  font-size: 10px;
+  color: #355873;
+}
+.learning-drawer header button {
+  background: white;
+  color: #12365c;
+  border: 1px solid #cbdfe9;
+  min-height: 40px;
+  padding: 6px;
+}
+.learning-drawer-body {
+  padding: 16px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #8dbad0 #edf7fc;
+  min-height: 0;
+}
+.learning-drawer .p-question h3 {
+  font-size: 17px;
+}
+.learning-drawer .question-options {
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+.learning-drawer .question-options button {
+  font-size: 13px;
+  min-height: 44px;
+}
+.learning-drawer .p-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.learning-drawer .p-actions button {
+  flex: 1;
+  font-size: 12px;
+  min-height: 44px;
+}
+.learning-drawer .activity-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.learning-drawer .activity-selector button {
+  min-height: 38px;
+  padding: 6px 9px;
+  font-size: 11px;
+}
+.learning-progress-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11px;
+  color: #355873;
+  margin-bottom: 7px;
+}
+.learning-drawer progress {
+  width: 100%;
+  height: 7px;
+  accent-color: #0869c4;
+  margin-bottom: 16px;
+}
+.smart-teacher-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.smart-teacher-heading .atlas-robot {
+  width: 72px;
+  height: 81px;
+  flex-shrink: 0;
+}
+.smart-teacher-heading h3 {
+  margin: 0;
+}
+.smart-teacher-heading span {
+  font-size: 11px;
+  color: #355873;
+}
+.learning-drawer .ai-assistant p {
+  font-size: 12px;
+  line-height: 1.8;
+}
+.learning-drawer .ai-assistant textarea {
+  width: 100%;
+  min-height: 90px;
+}
+.learning-drawer .ai-assistant article {
+  padding: 10px 0;
+  border-bottom: 1px solid #d2e3ee;
+}
+@media (max-width: 850px) {
+  .floating-learning-dock {
+    bottom: 12px;
+    gap: 3px;
+    padding: 5px;
+    width: calc(100% - 20px);
+    border-radius: 16px;
+  }
+  .map-shell .floating-learning-dock button {
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    padding: 5px 3px;
+    min-height: 58px;
+    font-size: 9px;
+  }
+  .map-shell .floating-learning-dock button svg {
+    width: 20px;
+    height: 20px;
+  }
+  .map-shell .floating-learning-dock .atlas-robot {
+    width: 27px !important;
+    height: 30px !important;
+  }
+  .floating-learning-dock button small {
+    font-size: 8px;
+  }
+  .learning-drawer {
+    right: 10px;
+    top: 62px;
+    bottom: 94px;
+    width: calc(100% - 20px);
+  }
+  .learning-drawer-body {
+    padding: 12px;
+  }
+  .map-shell .learning-drawer header h2 {
+    font-size: 17px;
+  }
+  .map-shell .classroom-map-meta {
+    bottom: 105px;
+    font-size: 9px;
+  }
+}
+.water-source-key {
+  position: absolute;
+  z-index: 950;
+  left: 75px;
+  top: 65px;
+  background: #fffffff0;
+  border: 1px solid #c3deea;
+  border-radius: 12px;
+  padding: 9px 12px;
+  color: #12365c;
+  max-width: 245px;
+  font-size: 11px;
+}
+.water-source-key label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 800;
+  min-height: 32px;
+  cursor: pointer;
+}
+.water-source-key input {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  min-height: 0;
+  accent-color: #0869c4;
+}
+.water-source-key span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 3px 0;
+}
+.water-source-key i {
+  width: 20px;
+  height: 5px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.nile-water-swatch {
+  background: #0983ff;
+}
+.med-water-swatch {
+  background: #18aaff;
+}
+.red-water-swatch {
+  background: #1bceba;
+}
+.water-source-key small {
+  display: block;
+  font-size: 10px;
+  color: #355873;
+  margin-top: 5px;
+}
+@media (max-width: 850px) {
+  .water-source-key {
+    top: 118px;
+    left: 12px;
+    font-size: 10px;
+    padding: 6px 8px;
+    max-width: 210px;
+  }
+  .water-source-key span {
+    font-size: 9px;
+  }
+  .water-source-key label {
+    min-height: 30px;
+  }
+}
+.water-source-key {
+  left: auto;
+  right: 12px;
+  top: 118px;
+}
+@media (max-width: 850px) {
+  .water-source-key {
+    left: auto;
+    right: 12px;
+    top: 118px;
+  }
+}
+.map-shell .studio-workspace > .learning-drawer {
+  width: min(440px, calc(100% - 24px));
+  left: auto;
+}
+@media (max-width: 850px) {
+  .map-shell .studio-workspace > .learning-drawer {
+    width: calc(100% - 20px);
+    left: auto;
+  }
+}
+.map-shell .floating-learning-dock .atlas-robot {
+  flex: 0 0 auto !important;
+  min-height: 0;
+}
+.map-shell .floating-learning-dock button.p-button {
+  gap: 5px;
+}
+.learning-drawer > header {
+  padding: 8px 12px;
+}
+.map-shell .learning-drawer header h2 {
+  line-height: 1.4;
+}
+.map-shell .studio-workspace > .learning-drawer {
+  bottom: 108px;
+}
+.smart-teacher-heading .atlas-robot {
+  flex: 0 0 72px;
+}
+@media (max-height: 500px) and (min-width: 650px) {
+  .map-shell .floating-learning-dock button {
+    flex-direction: row;
+    min-height: 44px;
+    gap: 5px;
+  }
+  .map-shell .studio-workspace > .learning-drawer {
+    bottom: 80px;
+  }
+}
+.learning-drawer .p-question {
+  font-size: 13px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.learning-drawer .p-question label {
+  font-size: 13px;
+  margin: 8px 0;
+}
+.learning-drawer .p-question select {
+  min-height: 42px;
+  margin: 4px 0;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+.map-shell .classroom-notice {
+  bottom: 112px;
+  z-index: 2000;
+}

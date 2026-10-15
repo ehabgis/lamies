@@ -1,0 +1,100 @@
+{
+  "date": "2026-10-16",
+  "localVideoFilesFound": 0,
+  "originalPublicArchive": {
+    "name": "public.zip",
+    "status": "Not transferred: file exceeds executor transfer limit of 32 MiB; archive contents unverified"
+  },
+  "legacyVideoReferences": [
+    {
+      "title": "استخراج الذهب من منجم السكري - فيديو درون",
+      "type": "video",
+      "path": "/lesson-media/lesson1_gold_mine.webm",
+      "description": "شاهد كيف يستخرج الذهب اللامع من باطن الأرض في واحد من أكبر مناجم العالم بالصحراء الشرقية!",
+      "lessonId": "lesson-1"
+    },
+    {
+      "title": "كيف يتم استخراج الغاز الطبيعي؟",
+      "type": "video",
+      "path": "/lesson-media/lesson1_oil_gas.webm",
+      "description": "رحلة تحت أعماق البحار لنعرف كيف يصل الغاز الطبيعي من حقل ظهر إلى بيوتنا!",
+      "lessonId": "lesson-1"
+    },
+    {
+      "title": "محطة بنبان - عاصمة الطاقة الشمسية",
+      "type": "video",
+      "path": "/lesson-media/lesson1_solar_station.webm",
+      "description": "أكبر محطة طاقة شمسية في العالم موجودة في أسوان! الشمس تمنحنا طاقة نظيفة.",
+      "lessonId": "lesson-1"
+    },
+    {
+      "title": "محطة بنبان للطاقة الشمسية",
+      "type": "video",
+      "path": "/lesson-media/lesson1_solar_station.webm",
+      "description": "فيديو محلي يوضح محطة الطاقة الشمسية وفكرة إنتاج الكهرباء من الشمس.",
+      "lessonId": "lesson-1"
+    },
+    {
+      "title": "محطة طاقة شمسية - فيديو تعليمي",
+      "type": "video",
+      "path": "/lesson-media/lesson1_solar_station.webm",
+      "description": "فيديو محلي قصير يوضح كيف تعمل محطة الطاقة الشمسية بطريقة مبسطة.",
+      "lessonId": "lesson-1"
+    },
+    {
+      "title": "مزرعة رياح - فيديو قصير",
+      "type": "video",
+      "path": "/lesson-media/lesson1_wind_farm.webm",
+      "description": "فيديو محلي لمزرعة رياح تُستخدم لتوليد الكهرباء النظيفة.",
+      "lessonId": "lesson-1"
+    },
+    {
+      "title": "نهر النيل وفرعاه وبحيرة ناصر - ملف صوتي",
+      "type": "audio",
+      "path": "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%89%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B5%D9%88%D8%AA%D9%8A%D8%A9/%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D8%B5%D9%88%D8%AA%D9%89%20%D9%86%D9%87%D8%B1%20%D8%A7%D9%84%D9%86%D9%8A%D9%8A%D9%84%20%D9%88%D9%81%D8%B1%D8%B9%D9%8A%D9%87%20%D9%88%D8%A8%D8%AD%D9%8A%D8%B1%D8%A9%20%D9%86%D8%A7%D8%B5%D8%B1.mov",
+      "description": "شرح صوتي عن نهر النيل وفرعيه وبحيرة ناصر ودورها في موارد المياه.",
+      "lessonId": "lesson-2"
+    },
+    {
+      "title": "محطة تحلية مياه العين السخنة",
+      "type": "video",
+      "path": "/lesson-media/lesson2_desalination.webm",
+      "description": "تكنولوجيا مذهلة تحول الماء المالح لماء شرب! أكبر محطة تحلية في الشرق الأوسط.",
+      "lessonId": "lesson-2"
+    },
+    {
+      "title": "دلتا النيل وموارد المياه",
+      "type": "video",
+      "path": "/lesson-media/lesson2_nile_delta.webm",
+      "description": "فيديو قصير يوضح أهمية دلتا النيل ومناطق المياه والزراعة.",
+      "lessonId": "lesson-2"
+    },
+    {
+      "title": "الأمطار الشتوية - تسجيل صوتي",
+      "type": "audio",
+      "path": "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%89%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B5%D9%88%D8%AA%D9%8A%D8%A9/%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D8%B5%D9%88%D8%AA%D9%89%20%D9%84%D9%84%D8%A3%D9%85%D8%B7%D8%A7%D8%B1%20%D8%A7%D9%84%D8%B4%D8%AA%D9%88%D9%8A%D8%A9.mov",
+      "description": "صوت الطبيعة! اسمع صوت المطر واكتشف أهميته للوادي والناس.",
+      "lessonId": "lesson-2"
+    }
+  ],
+  "uniqueVideoPaths": [
+    "/lesson-media/lesson1_gold_mine.webm",
+    "/lesson-media/lesson1_oil_gas.webm",
+    "/lesson-media/lesson1_solar_station.webm",
+    "/lesson-media/lesson1_wind_farm.webm",
+    "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%89%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B5%D9%88%D8%AA%D9%8A%D8%A9/%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D8%B5%D9%88%D8%AA%D9%89%20%D9%86%D9%87%D8%B1%20%D8%A7%D9%84%D9%86%D9%8A%D9%8A%D9%84%20%D9%88%D9%81%D8%B1%D8%B9%D9%8A%D9%87%20%D9%88%D8%A8%D8%AD%D9%8A%D8%B1%D8%A9%20%D9%86%D8%A7%D8%B5%D8%B1.mov",
+    "/lesson-media/lesson2_desalination.webm",
+    "/lesson-media/lesson2_nile_delta.webm",
+    "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%89%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B5%D9%88%D8%AA%D9%8A%D8%A9/%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D8%B5%D9%88%D8%AA%D9%89%20%D9%84%D9%84%D8%A3%D9%85%D8%B7%D8%A7%D8%B1%20%D8%A7%D9%84%D8%B4%D8%AA%D9%88%D9%8A%D8%A9.mov"
+  ],
+  "misclassifiedReferences": [
+    {
+      "title": "فوسفات أبو طرطور - صورة توضيحية",
+      "type": "video",
+      "path": "/lesson-media/lesson1_phosphate.jpg",
+      "description": "صورة توضح خام الفوسفات المستخدم في صناعة الأسمدة الزراعية.",
+      "lessonId": "lesson-1"
+    }
+  ],
+  "bindingPolicy": "Only known resource/path pairs are linked, and only if the actual local file exists. No invented playback URLs."
+}

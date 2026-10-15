@@ -159,31 +159,117 @@ export default function ResourcePin({ resource, className = "" }) {
         </g>
       )}
       {resource?.kind === "water" && (
-        <g>
-          <path
-            d="M42 18C37 31 24 40 25 51a17 17 0 0034 0C60 40 47 31 42 18Z"
-            fill="#53dcff"
-            stroke="#d6faff"
-            strokeWidth="2"
-          />
-          <path
-            d="M33 49q-2 10 7 12"
-            fill="none"
-            stroke="white"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
+        <g
+          stroke="#d8f9ff"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+          data-icon-kind={type}
+        >
+          {type === "nile-river" || type === "nile-delta" ? (
+            <>
+              <path
+                d="M43 20c-14 12 12 17-2 29s8 13-3 24"
+                stroke="#44d9ff"
+                strokeWidth="7"
+              />
+              {type === "nile-delta" && (
+                <path
+                  d="M43 28L24 17m19 11 17-12"
+                  stroke="#44d9ff"
+                  strokeWidth="5"
+                />
+              )}
+            </>
+          ) : type === "groundwater" ? (
+            <>
+              <path d="M23 42h38v20H23ZM20 40l22-20 22 20M42 24v27" />
+              <path d="M29 60q13-8 26 0" stroke="#41dfff" strokeWidth="6" />
+            </>
+          ) : type === "desalination" ? (
+            <>
+              <path d="M21 63V39h27v24M48 47h16v16M27 39V27h9v12M27 49h4m8 0h4M27 57h4m8 0h4" />
+              <path d="M53 27q-10 13 0 17 10-4 0-17Z" fill="#40dfff" />
+            </>
+          ) : type === "rain-harvesting-matrouh" ? (
+            <>
+              <path
+                d="M25 43c-13-2-9-17 2-17 5-17 25-13 26 1 18-2 20 17 6 18Z"
+                fill="#d4f5ff"
+              />
+              <path
+                d="M28 52l-4 10m18-9-4 10m18-11-4 10"
+                stroke="#40dfff"
+                strokeWidth="4"
+              />
+            </>
+          ) : (
+            <>
+              <path
+                d="M20 39q8-9 15 0t15 0 15 0M20 51q8-9 15 0t15 0 15 0M20 63q8-9 15 0t15 0 15 0"
+                stroke="#53e3ff"
+                strokeWidth="4"
+              />
+              {type === "lake-nasser" && (
+                <ellipse cx="42" cy="50" rx="28" ry="24" />
+              )}
+            </>
+          )}
         </g>
       )}
       {resource?.kind === "project" && (
-        <g fill="#e3fbef" stroke="#80d5ad" strokeWidth="2">
-          <path d="M22 40h16v30H22ZM38 25h24v45H38Z" />
-          <path
-            d="M44 34h4m6 0h3m-13 9h4m6 0h3m-13 9h4m6 0h3M27 49h5m-5 10h5"
-            stroke="#16704c"
-            strokeWidth="3"
-          />
-          <path d="M19 71h47" strokeWidth="4" />
+        <g
+          stroke="#d5fae7"
+          strokeWidth="2.3"
+          fill="none"
+          strokeLinejoin="round"
+          data-icon-kind={type}
+        >
+          {type === "new-delta" || type === "toshka-kheir" ? (
+            <>
+              <path
+                d="M42 70V38m0 14C21 52 18 31 23 29c13-1 19 11 19 23Zm0-8c0-17 13-25 21-21 2 14-7 23-21 21Z"
+                fill="#8bdf88"
+              />
+              <path d="M20 66l12-7m-9 16 13-7m12-9 14 7m-13 2 14 7" />
+            </>
+          ) : type === "new-suez-canal" ? (
+            <>
+              <path d="M20 48h44l-8 14H29ZM32 48V28h21v20M41 28V18M19 70q8-7 16 0t16 0 16 0" />
+              <path d="M37 35h3m6 0h3" strokeWidth="4" />
+            </>
+          ) : type === "high-speed-rail" ? (
+            <>
+              <rect
+                x="24"
+                y="22"
+                width="36"
+                height="43"
+                rx="10"
+                fill="#bce5d5"
+              />
+              <path d="M30 29h24v17H30Z" stroke="#176c4b" />
+              <path d="M33 65l-7 11m25-11 7 11M28 73h28" />
+              <circle cx="33" cy="56" r="2" fill="#176c4b" />
+              <circle cx="51" cy="56" r="2" fill="#176c4b" />
+            </>
+          ) : type === "galala-city" ? (
+            <>
+              <path d="M17 66l19-43 18 43Z" fill="#76b79d" />
+              <path d="M41 66V39h17v27M47 45h4m-4 8h4" />
+            </>
+          ) : (
+            <>
+              <path d="M22 67V36h16v31M38 67V20h24v47" fill="#bfe9d7" />
+              <path
+                d="M44 30h4m6 0h3m-13 9h4m6 0h3m-13 9h4m6 0h3M27 45h5m-5 10h5"
+                stroke="#16704c"
+                strokeWidth="3"
+              />
+              <path d="M19 70h47" strokeWidth="4" />
+            </>
+          )}
         </g>
       )}
       <path

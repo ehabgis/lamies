@@ -23,7 +23,7 @@ import {
 import Shell, { PlatformNavigation } from "./Shell";
 import { useSession } from "./Session";
 import { api } from "./api";
-import Modal from "./Modal";
+import LearningDrawer from "./LearningDrawer";
 import EsriLessonMap from "./EsriLessonMap";
 import "./map-workspace.css";
 import "./map-studio.css";
@@ -66,6 +66,7 @@ export default function LessonPage({ demo = false }) {
   const [infoOpen, setInfoOpen] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
   const [resetMap, setResetMap] = useState(0);
+  const [focusRequest, setFocusRequest] = useState(null);
   const [localPhotos, setLocalPhotos] = useState({});
   const photoUrls = useRef(new Set());
   useEffect(
@@ -122,6 +123,7 @@ export default function LessonPage({ demo = false }) {
     setLocation(null);
     setFull(true);
     setVideoOpen(false);
+    setFocusRequest(null);
     setResetMap((n) => n + 1);
   }
   const [search] = useSearchParams();
@@ -283,7 +285,10 @@ export default function LessonPage({ demo = false }) {
     setInfoOpen(true);
     setVideoOpen(false);
     setResource(r);
-    setLocation(null);
+    if (["water", "project"].includes(r.kind) && r.locations?.length === 1) {
+      setLocation({ ...r.locations[0], resource: r });
+      setFocusRequest({ siteId: r.locations[0].id, nonce: Date.now() });
+    } else setLocation(null);
     setNotice("");
   }
   function another() {
@@ -292,17 +297,18 @@ export default function LessonPage({ demo = false }) {
     setFull(false);
     setPulse(true);
   }
+  function openLearning(kind) {
+    setLegendOpen(false);
+    setInfoOpen(false);
+    setPanel(null);
+    setVideoOpen(false);
+    setModal(kind);
+  }
   function ai(mode, message) {
-    if (demo) {
-      setNotice(
-        "المساعد المتصل بـ OpenAI غير مفعّل في التجربة. استخدم تلميحات الأسئلة المكتوبة، فهذه ليست إجابات مولدة.",
-      );
-      return;
-    }
     setAssessment(null);
     setAiMode(mode);
     setAiInitial(message);
-    setModal("ai");
+    openLearning("ai");
   }
   function help(q, answer) {
     if (demo) {
@@ -360,6 +366,9 @@ export default function LessonPage({ demo = false }) {
         </h2>
         {location && (
           <p className="selected-location">الموقع المختار: {location.name}</p>
+        )}
+        {resource.locationNote && (
+          <p className="resource-photo-note">{resource.locationNote}</p>
         )}
         <Photo
           key={localPhotos[resource.id] || resource.media?.image || resource.id}
@@ -459,7 +468,7 @@ export default function LessonPage({ demo = false }) {
             className="p-secondary"
             onClick={() => {
               setIndex(0);
-              setModal("questions");
+              openLearning("questions");
             }}
           >
             اختبر معلوماتك
@@ -749,38 +758,6 @@ export default function LessonPage({ demo = false }) {
             <Compass size={18} />
             عرض الجميع · إعادة الزوم
           </button>
-          <h3 className="map-menu-heading">تعلّم واختبر</h3>
-          <div className="classroom-bottom">
-            <button
-              onClick={() => {
-                setIndex(0);
-                setModal("questions");
-              }}
-            >
-              <Target />
-              أسئلة الدرس
-            </button>
-            <button
-              onClick={() => {
-                setIndex(0);
-                setModal("activities");
-              }}
-            >
-              <Stack />
-              الأنشطة التفاعلية
-            </button>
-            <button className="p-button" onClick={() => ai("explain", "")}>
-              <ChatCircle />
-              اسأل الخريطة
-            </button>
-            <button
-              disabled={solved.length < questions.length || !questions.length}
-              onClick={finish}
-            >
-              <Star weight="fill" />
-              {completed ? "راجع إنجازك" : "أكملت درسي"}
-            </button>
-          </div>
           <div className="map-menu-navigation">
             <Link to={demo ? "/explore" : "/journey"}>
               اختيار الدروس <ArrowLeft size={16} />
@@ -805,8 +782,11 @@ export default function LessonPage({ demo = false }) {
             selectedLocationId={location?.id}
             showNames={discovery}
             resetKey={resetMap}
+            focusRequest={focusRequest}
+            waterLesson={demo && id === "lesson-2"}
             onReset={showAll}
             onSelect={(site) => {
+              setModal(null);
               setResource(site.resource);
               setLocation(site);
               setPanel(null);
@@ -881,7 +861,7 @@ export default function LessonPage({ demo = false }) {
                           .findIndex((x) => x.id === q.id),
                       ),
                     );
-                    setModal("questions");
+                    openLearning("questions");
                   }
                 }}
               >
@@ -893,6 +873,174 @@ export default function LessonPage({ demo = false }) {
             استمع للتوجيه
           </button>
         </aside>
+        <div className="floating-learning-dock">
+          <button
+            aria-controls="lesson-learning-drawer"
+            aria-expanded={modal === "questions"}
+            onClick={() => {
+              setIndex(0);
+              openLearning("questions");
+            }}
+          >
+            <Target />
+            أسئلة الدرس
+          </button>
+          <button
+            aria-controls="lesson-learning-drawer"
+            aria-expanded={modal === "activities"}
+            onClick={() => {
+              setIndex(0);
+              openLearning("activities");
+            }}
+          >
+            <Stack />
+            الأنشطة التفاعلية
+          </button>
+          <button
+            className="p-button"
+            aria-controls="lesson-learning-drawer"
+            aria-expanded={modal === "ai"}
+            onClick={() => ai("explain", "")}
+          >
+            <RobotGuide style={{ width: 38, height: 42 }} />
+            <span>
+              المعلم الذكي<small>اسأل الخريطة</small>
+            </span>
+          </button>
+          <button
+            disabled={solved.length < questions.length || !questions.length}
+            onClick={finish}
+          >
+            <Star weight="fill" />
+            {completed ? "راجع إنجازك" : "أكملت درسي"}
+          </button>
+        </div>
+        {modal && (
+          <LearningDrawer
+            title={
+              modal === "ai"
+                ? "المعلم الذكي"
+                : modal === "activities"
+                  ? "الأنشطة التفاعلية"
+                  : modal === "build-map"
+                    ? "اصنع خريطتك"
+                    : "أسئلة الدرس"
+            }
+            onClose={() => setModal(null)}
+          >
+            {modal === "ai" ? (
+              <AIAssistant
+                demo={demo || preview}
+                reviewReady={Boolean(content.sources?.some((s) => s.approved))}
+                assessment={assessment}
+                lessonTitle={lesson.title}
+                lessonId={id}
+                resource={resource}
+                location={location}
+                mode={aiMode}
+                initial={aiInitial}
+                onQuestion={(q) => {
+                  setAiQuestion(q);
+                  setModal("extra");
+                }}
+              />
+            ) : modal === "extra" && aiQuestion ? (
+              <Question
+                key={aiQuestion.id}
+                question={aiQuestion}
+                lessonId={id}
+                solved={solved.includes(aiQuestion.id)}
+                onSolved={answered}
+                onHelp={help}
+                preview={preview}
+                demo={demo}
+              />
+            ) : (
+              <>
+                {modal === "activities" && (
+                  <div className="activity-selector">
+                    <button
+                      onClick={() => {
+                        setIndex(0);
+                        openLearning("build-map");
+                      }}
+                    >
+                      اصنع خريطتك
+                    </button>
+                    {filtered.map((q, i) => (
+                      <button
+                        className={i === index ? "active" : ""}
+                        key={q.id}
+                        onClick={() => setIndex(i)}
+                      >
+                        {q.type === "map"
+                          ? "اكتشف الموقع"
+                          : q.type === "drag"
+                            ? "صنّف الموارد"
+                            : q.type === "match"
+                              ? "صل المورد باستخدامه"
+                              : q.type === "order"
+                                ? "رتّب الخطوات"
+                                : q.type === "blank"
+                                  ? "أكمل الفراغ"
+                                  : "طابق الرموز"}
+                        {solved.includes(q.id) ? " ✓" : ""}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {current ? (
+                  <>
+                    <div className="learning-progress-summary">
+                      <span>
+                        السؤال {index + 1} من {filtered.length}
+                      </span>
+                      <span>
+                        أتقنت{" "}
+                        {filtered.filter((q) => solved.includes(q.id)).length} /{" "}
+                        {filtered.length}
+                      </span>
+                    </div>
+                    <progress
+                      value={index + 1}
+                      max={filtered.length}
+                      aria-label="موضع السؤال"
+                    />
+                    <Question
+                      key={current.id}
+                      question={current}
+                      presentation={modal === "build-map" ? "place" : undefined}
+                      lessonId={id}
+                      solved={solved.includes(current.id)}
+                      onSolved={answered}
+                      onHelp={help}
+                      preview={preview}
+                      demo={demo}
+                    />
+                    <div className="p-actions">
+                      <button
+                        disabled={!index}
+                        className="p-secondary"
+                        onClick={() => setIndex((i) => i - 1)}
+                      >
+                        السؤال السابق
+                      </button>
+                      <button
+                        className="p-secondary"
+                        disabled={index >= filtered.length - 1}
+                        onClick={() => setIndex((i) => i + 1)}
+                      >
+                        السؤال التالي
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <p>لم تُضف أسئلة لهذا القسم بعد.</p>
+                )}
+              </>
+            )}
+          </LearningDrawer>
+        )}
       </div>
       {notice && (
         <div className="classroom-notice p-feedback" role="status">
@@ -901,123 +1049,6 @@ export default function LessonPage({ demo = false }) {
             ×
           </button>
         </div>
-      )}
-      {modal && (
-        <Modal
-          title={
-            modal === "ai"
-              ? "اسأل الخريطة"
-              : modal === "activities"
-                ? "الأنشطة التفاعلية"
-                : modal === "build-map"
-                  ? "اصنع خريطتك"
-                  : "أسئلة الدرس"
-          }
-          onClose={() => setModal(null)}
-        >
-          {modal === "ai" ? (
-            <AIAssistant
-              assessment={assessment}
-              lessonTitle={lesson.title}
-              lessonId={id}
-              resource={resource}
-              location={location}
-              mode={aiMode}
-              initial={aiInitial}
-              onQuestion={(q) => {
-                setAiQuestion(q);
-                setModal("extra");
-              }}
-            />
-          ) : modal === "extra" && aiQuestion ? (
-            <Question
-              key={aiQuestion.id}
-              question={aiQuestion}
-              lessonId={id}
-              solved={solved.includes(aiQuestion.id)}
-              onSolved={answered}
-              onHelp={help}
-              preview={preview}
-              demo={demo}
-            />
-          ) : (
-            <>
-              {modal === "activities" && (
-                <div className="activity-selector">
-                  <button
-                    onClick={() => {
-                      setIndex(0);
-                      setModal("build-map");
-                    }}
-                  >
-                    اصنع خريطتك
-                  </button>
-                  {filtered.map((q, i) => (
-                    <button
-                      className={i === index ? "active" : ""}
-                      key={q.id}
-                      onClick={() => setIndex(i)}
-                    >
-                      {q.type === "map"
-                        ? "اكتشف الموقع"
-                        : q.type === "drag"
-                          ? "صنّف الموارد"
-                          : q.type === "match"
-                            ? "صل المورد باستخدامه"
-                            : q.type === "order"
-                              ? "رتّب الخطوات"
-                              : q.type === "blank"
-                                ? "أكمل الفراغ"
-                                : "طابق الرموز"}
-                      {solved.includes(q.id) ? " ✓" : ""}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {current ? (
-                <>
-                  <p>
-                    السؤال {index + 1} من {filtered.length}
-                  </p>
-                  <progress
-                    value={index + 1}
-                    max={filtered.length}
-                    aria-label="موضع السؤال"
-                  />
-                  <Question
-                    key={current.id}
-                    question={current}
-                    presentation={modal === "build-map" ? "place" : undefined}
-                    lessonId={id}
-                    solved={solved.includes(current.id)}
-                    onSolved={answered}
-                    onHelp={help}
-                    preview={preview}
-                    demo={demo}
-                  />
-                  <div className="p-actions">
-                    <button
-                      disabled={!index}
-                      className="p-secondary"
-                      onClick={() => setIndex((i) => i - 1)}
-                    >
-                      السؤال السابق
-                    </button>
-                    <button
-                      className="p-secondary"
-                      disabled={index >= filtered.length - 1}
-                      onClick={() => setIndex((i) => i + 1)}
-                    >
-                      السؤال التالي
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <p>لم تُضف أسئلة لهذا القسم بعد.</p>
-              )}
-            </>
-          )}
-        </Modal>
       )}
     </Shell>
   );

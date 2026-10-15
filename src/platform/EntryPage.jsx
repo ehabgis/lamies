@@ -7,7 +7,12 @@ import {
   User,
   Lock,
   Robot,
+  Play,
+  Pause,
+  MapPin,
+  Sparkle,
 } from "phosphor-react";
+import "./entry-experience.css";
 import { api } from "./api";
 import { useSession } from "./Session";
 export default function EntryPage() {
@@ -16,6 +21,7 @@ export default function EntryPage() {
   const [mode, setMode] = useState("login"),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  const [motion, setMotion] = useState(true);
   async function submit(e) {
     e.preventDefault();
     setBusy(true);
@@ -41,15 +47,36 @@ export default function EntryPage() {
     }
   }
   return (
-    <div className="lamis-platform entry-platform" dir="rtl">
+    <div
+      className={`lamis-platform entry-platform entry-experience ${motion ? "" : "entry-still"}`}
+      dir="rtl"
+    >
       <header className="entry-platform-brand">
         <BookOpen size={40} weight="duotone" />
         <div>
-          الخريطة التعليمية الذكية<small>لميس · رحلة صغيرة… اكتشاف كبير</small>
+          الخرائط التعليمية الزكية<small>لميس · رحلة صغيرة… اكتشاف كبير</small>
         </div>
+        <button
+          className="entry-motion-control"
+          aria-pressed={!motion}
+          onClick={() => setMotion(!motion)}
+        >
+          {motion ? <Pause size={18} /> : <Play size={18} />}
+          {motion ? "إيقاف الحركة" : "تشغيل الحركة"}
+        </button>
       </header>
       <main className="entry-platform-grid">
-        <section className="platform-welcome-art">
+        <section
+          className="platform-welcome-art"
+          aria-label="رحلتك لاكتشاف مصر"
+        >
+          <div className="entry-art-heading">
+            <h2>مغامرتك تبدأ من هنا.</h2>
+            <p>اكتشف مصر… موردًا، ومكانًا، وحكاية.</p>
+          </div>
+          <span className="entry-map-label" aria-hidden="true">
+            <MapPin size={20} weight="fill" /> هنا مصر!
+          </span>
           <img
             src="/welcome/explorer-globe.webp"
             alt="طفل مستكشف مع كرة أرضية يشير إلى مصر"
@@ -60,25 +87,37 @@ export default function EntryPage() {
               مصر مليانة حكايات<strong>افتح خريطتك، وابدأ بالاكتشاف.</strong>
             </span>
           </div>
+          <div className="entry-journey-steps" aria-label="مراحل الرحلة">
+            <span>
+              <Compass size={23} /> استكشف الخريطة
+            </span>
+            <ArrowLeft size={16} aria-hidden="true" />
+            <span>
+              <BookOpen size={23} /> تعلّم الحكاية
+            </span>
+            <ArrowLeft size={16} aria-hidden="true" />
+            <span>
+              <Sparkle size={23} /> اختبر معلوماتك
+            </span>
+          </div>
         </section>
         <section className="platform-signin">
           <span className="welcome-robot">
             <Robot size={44} weight="duotone" />
           </span>
-          <h1>مرحبًا يا بطل!</h1>
-          <p>
-            خريطة، سؤال، واكتشاف جديد.
-            <br />
-            سجّل دخولك لنحفظ رحلتك.
-          </p>
+          <h1>مرحبًا يا مستكشف!</h1>
+          <p>سجّل دخولك لنحفظ اكتشافاتك.</p>
           <Link to="/demo/lesson-1" className="p-button demo-entry-link">
-            جرّب الدرس دون حساب
+            <Play size={23} weight="fill" /> جرّب الدرس دون حساب
           </Link>
           <p className="p-muted">تجربة غير معتمدة · لا تُحفظ نتائج رسمية</p>
           {user ? (
             <div>
               <p>أهلًا {user.name || user.username}، حسابك جاهز.</p>
-              <Link className="p-button" to="/journey">
+              <Link
+                className="p-button"
+                to={user.role === "student" ? "/journey" : "/admin"}
+              >
                 تابع رحلتك <ArrowLeft />
               </Link>
             </div>
@@ -104,7 +143,7 @@ export default function EntryPage() {
                   مستكشف جديد
                 </button>
               </div>
-              <form onSubmit={submit}>
+              <form onSubmit={submit} aria-busy={busy}>
                 {mode === "register" && (
                   <label>
                     اسم مستعار
@@ -131,10 +170,7 @@ export default function EntryPage() {
                     dir="ltr"
                     placeholder="explorer_25"
                   />
-                  <small>
-                    للطلاب: حروف إنجليزية وأرقام دون اسم حقيقي. للإدارة: البريد
-                    المسجل.
-                  </small>
+                  <small>حروف إنجليزية وأرقام؛ للإدارة: البريد المسجّل.</small>
                 </label>
                 <label>
                   <span>
@@ -151,9 +187,7 @@ export default function EntryPage() {
                       mode === "login" ? "current-password" : "new-password"
                     }
                   />
-                  <small>
-                    10 أحرف على الأقل. اطلب مساعدة ولي أمرك عند الحاجة.
-                  </small>
+                  <small>10 أحرف على الأقل؛ استعن بولي أمرك.</small>
                 </label>
                 {error && (
                   <p className="p-error" role="alert">

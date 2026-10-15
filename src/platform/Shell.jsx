@@ -15,7 +15,7 @@ export default function Shell({ children, mapPage = false }) {
             <BookOpen size={30} weight="duotone" />
           </span>
           <div>
-            الخريطة التعليمية الذكية<small>لميس · نكتشف مصر معًا</small>
+            الخرائط التعليمية الزكية<small>لميس · نكتشف مصر معًا</small>
           </div>
         </Link>
         <nav aria-label="تنقل المنصة">

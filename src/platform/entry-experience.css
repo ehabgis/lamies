@@ -1,0 +1,415 @@
+.entry-experience.entry-platform {
+  height: 100dvh;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  background:
+    radial-gradient(ellipse at 20% 45%, #b2e8fa 0, transparent 60%), #e5f6fd;
+  color: #12365c;
+}
+.entry-experience ::selection {
+  background: #ffdc70;
+  color: #12365c;
+}
+.entry-experience :focus-visible {
+  outline: 3px solid #0869c4;
+  outline-offset: 4px;
+}
+.entry-experience .entry-platform-brand {
+  flex-shrink: 0;
+  padding: 18px clamp(20px, 4vw, 64px);
+  font-size: clamp(22px, 2.6vw, 36px);
+  line-height: 1.5;
+}
+.entry-experience .entry-platform-brand > svg {
+  flex-shrink: 0;
+}
+.entry-experience .entry-platform-brand small {
+  font-size: 13px;
+  color: #355873;
+}
+.entry-experience .entry-motion-control {
+  margin-inline-start: auto;
+  background: transparent;
+  border: 1px solid #8dbad0;
+  color: #214e70;
+  font-size: 12px;
+  white-space: nowrap;
+  min-height: 44px;
+}
+.entry-experience .entry-platform-grid {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 64px) 22px;
+  gap: clamp(24px, 5vw, 80px);
+  grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.9fr);
+}
+.entry-experience .platform-welcome-art {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  direction: rtl;
+}
+.entry-art-heading {
+  text-align: center;
+  flex-shrink: 0;
+}
+.entry-experience .entry-art-heading h2 {
+  font-size: clamp(23px, 2.5vw, 35px);
+  margin: 0;
+  font-weight: 900;
+}
+.entry-art-heading p {
+  margin: 0;
+  color: #355873;
+}
+.entry-experience .platform-welcome-art img {
+  width: 100%;
+  height: min(48dvh, 490px);
+  min-height: 0;
+  object-fit: contain;
+  animation: entry-arrive 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.entry-map-label {
+  position: absolute;
+  top: 38%;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 13px;
+  border-radius: 30px;
+  background: #fff5cf;
+  border: 1px solid #e8c760;
+  color: #614a0a;
+  transform: rotate(-6deg);
+  animation: entry-pin 1.4s ease-out 2;
+}
+.entry-experience .explorer-note {
+  margin: -8px 7% 0;
+  padding: 10px 18px;
+  flex-shrink: 0;
+}
+.entry-experience .explorer-note > svg {
+  flex-shrink: 0;
+  color: #0869c4;
+}
+.entry-journey-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding-top: 22px;
+  color: #234e6c;
+  font-size: 12px;
+}
+.entry-journey-steps span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.entry-journey-steps span svg {
+  color: #0869c4;
+}
+.entry-experience .platform-signin {
+  max-width: 470px;
+  padding: clamp(18px, 2.2vw, 30px);
+  border-radius: 24px;
+  box-shadow: 0 16px 40px #144a6e16;
+  max-height: 100%;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #8dbad0 #edf7fc;
+}
+.entry-experience .welcome-robot {
+  float: left;
+  padding: 10px;
+  margin: 0 8px 0 0;
+}
+.entry-experience .platform-signin h1 {
+  font-size: clamp(25px, 2.4vw, 32px);
+  margin: 0;
+}
+.entry-experience .platform-signin > p {
+  font-size: 14px;
+  margin: 5px 0 14px;
+  color: #355873;
+}
+.entry-experience .platform-signin .p-button {
+  min-height: 48px;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.entry-experience .platform-signin .p-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px #133d5d20;
+}
+.entry-experience .platform-signin .p-button:active {
+  transform: translateY(0);
+}
+.entry-experience .platform-signin form .p-button {
+  background: #0869c4;
+  color: white;
+}
+.entry-experience .platform-signin > .p-muted {
+  font-size: 11px;
+  margin: 3px 0 12px;
+  text-align: center;
+}
+.entry-experience .p-tabs {
+  margin-bottom: 10px;
+}
+.entry-experience .p-tabs button {
+  flex: 1;
+}
+.entry-experience .platform-signin form label {
+  margin-bottom: 9px;
+  font-size: 13px;
+}
+.entry-experience .platform-signin input {
+  min-height: 44px;
+  padding: 7px 12px;
+  margin: 3px 0;
+  caret-color: #0869c4;
+}
+.entry-experience .platform-signin form small {
+  font-size: 11px;
+  line-height: 1.6;
+  display: block;
+  color: #355873;
+}
+.entry-experience .entry-privacy {
+  margin: 10px 0 4px !important;
+  font-size: 11px !important;
+}
+.entry-experience .p-text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  font-size: 12px;
+  text-underline-offset: 4px;
+}
+@keyframes entry-arrive {
+  from {
+    transform: translateY(18px) scale(0.97);
+    filter: saturate(0.7);
+  }
+  to {
+    transform: none;
+    filter: saturate(1);
+  }
+}
+@keyframes entry-pin {
+  50% {
+    transform: rotate(-6deg) translateY(-7px);
+  }
+}
+.entry-experience.entry-still *,
+.entry-experience.entry-still *::before {
+  animation: none !important;
+  transition: none !important;
+}
+@media (max-width: 700px) {
+  .entry-experience .entry-platform-brand {
+    padding: 10px 16px;
+    gap: 8px;
+    font-size: 21px;
+  }
+  .entry-experience .entry-platform-brand > svg {
+    width: 30px;
+  }
+  .entry-experience .entry-platform-brand small {
+    font-size: 10px;
+  }
+  .entry-experience .entry-motion-control {
+    padding: 6px;
+    width: 44px;
+    font-size: 0;
+  }
+  .entry-experience .entry-platform-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(100px, 1fr) auto;
+    gap: 8px;
+    padding: 0 14px 12px;
+  }
+  .entry-experience .platform-welcome-art {
+    width: 100%;
+  }
+  .entry-experience .platform-welcome-art img {
+    height: 100%;
+    max-height: 220px;
+  }
+  .entry-experience .entry-art-heading {
+    position: absolute;
+    right: 2px;
+    top: 15%;
+    width: 42%;
+    text-align: right;
+  }
+  .entry-experience .entry-art-heading h2 {
+    font-size: 19px;
+    line-height: 1.6;
+  }
+  .entry-experience .entry-art-heading p {
+    font-size: 11px;
+  }
+  .entry-experience .platform-welcome-art img {
+    width: 57%;
+    margin-right: auto;
+  }
+  .entry-experience .entry-map-label,
+  .entry-experience .explorer-note,
+  .entry-experience .entry-journey-steps {
+    display: none;
+  }
+  .entry-experience .platform-signin {
+    padding: 16px 20px;
+    max-height: none;
+    width: 100%;
+    max-width: 470px;
+  }
+  .entry-experience .platform-signin h1 {
+    font-size: 25px;
+  }
+  .entry-experience .platform-signin > p {
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+  .entry-experience .welcome-robot {
+    padding: 6px;
+  }
+  .entry-experience .welcome-robot svg {
+    width: 32px;
+    height: 32px;
+  }
+  .entry-experience .entry-privacy {
+    margin-top: 7px !important;
+  }
+}
+@media (max-height: 650px) and (min-width: 701px) {
+  .entry-experience .entry-platform-brand {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .entry-experience .platform-signin {
+    padding: 16px 22px;
+  }
+  .entry-experience .entry-journey-steps {
+    padding-top: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entry-experience *,
+  .entry-experience *::before {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+.entry-experience .platform-signin {
+  line-height: 1.5;
+}
+.entry-experience .platform-signin > p {
+  line-height: 1.6;
+  margin: 6px 0 10px;
+}
+.entry-experience .platform-signin .p-tabs {
+  padding: 3px;
+  margin: 8px 0;
+}
+.entry-experience .platform-signin .p-tabs button {
+  padding: 6px 10px;
+}
+.entry-experience .platform-signin form label {
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+.entry-experience .platform-signin form label > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.entry-experience .platform-signin .p-error {
+  margin: 5px 0;
+  font-size: 12px;
+}
+.entry-experience .platform-signin .p-button:disabled {
+  transform: none;
+  box-shadow: none;
+}
+@media (max-width: 700px) {
+  .entry-experience .entry-art-heading {
+    top: 10%;
+  }
+  .entry-experience .entry-art-heading h2 {
+    font-size: 17px;
+  }
+  .entry-experience .entry-art-heading p {
+    font-size: 10px;
+    line-height: 1.5;
+    margin: 3px 0;
+  }
+  .entry-experience .platform-signin {
+    padding: 12px 18px;
+  }
+  .entry-experience .platform-signin > p {
+    margin: 4px 0 7px;
+  }
+  .entry-experience .platform-signin .p-button {
+    min-height: 44px;
+    padding: 7px 12px;
+  }
+  .entry-experience .platform-signin form label {
+    margin-bottom: 6px;
+  }
+  .entry-experience .platform-signin > .p-muted {
+    margin: 3px 0 6px;
+  }
+}
+@media (max-width: 700px) and (max-height: 760px) {
+  .entry-experience .entry-platform-grid {
+    grid-template-rows: minmax(72px, 1fr) auto;
+    gap: 4px;
+  }
+  .entry-experience .entry-art-heading p {
+    display: none;
+  }
+  .entry-experience .entry-platform-brand {
+    font-size: 19px;
+  }
+  .entry-experience .platform-signin form small {
+    font-size: 10px;
+  }
+}
+@media (min-width: 701px) and (min-height: 651px) and (max-height: 800px) {
+  .entry-experience .platform-signin {
+    padding: 16px 24px;
+  }
+  .entry-experience .platform-signin .p-button {
+    min-height: 44px;
+    padding: 7px 12px;
+  }
+  .entry-experience .platform-signin > p {
+    margin: 4px 0 7px;
+  }
+  .entry-experience .platform-signin form label {
+    margin-bottom: 5px;
+  }
+}
+@media (max-width: 700px) and (max-height: 760px) {
+  .entry-experience .entry-platform-grid {
+    grid-template-rows: minmax(60px, 1fr) auto;
+  }
+}
+
+@media (min-width: 701px) and (min-height: 651px) and (max-height: 800px) {
+  .entry-experience .platform-signin { padding-top: 14px; padding-bottom: 14px; }
+}

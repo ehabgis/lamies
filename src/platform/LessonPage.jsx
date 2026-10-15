@@ -19,7 +19,8 @@ import {
 import Shell from "./Shell";
 import { api } from "./api";
 import Modal from "./Modal";
-import Governorates from "./Governorates";
+import EsriLessonMap from "./EsriLessonMap";
+import "./map-workspace.css";
 import Question from "./Question";
 import AIAssistant from "./AIAssistant";
 import ResourcePin from "../components/Map/ResourcePin";
@@ -61,7 +62,6 @@ export default function LessonPage({ demo = false }) {
     [index, setIndex] = useState(0),
     [solved, setSolved] = useState([]),
     [completed, setCompleted] = useState(false),
-    [zoom, setZoom] = useState(1),
     [pulse, setPulse] = useState(false),
     [aiMode, setAiMode] = useState("explain"),
     [aiInitial, setAiInitial] = useState(""),
@@ -70,7 +70,7 @@ export default function LessonPage({ demo = false }) {
     [notice, setNotice] = useState(""),
     [stateReady, setStateReady] = useState(false),
     [videoFailed, setVideoFailed] = useState(false),
-    [governorates, setGovernorates] = useState(false);
+    [mobilePanel, setMobilePanel] = useState(null);
   useEffect(() => {
     setLesson(null);
     setStateReady(false);
@@ -122,6 +122,17 @@ export default function LessonPage({ demo = false }) {
   useEffect(() => {
     setVideoFailed(false);
   }, [modal, resource?.id]);
+  useEffect(() => {
+    if (!mobilePanel || modal) return;
+    const escape = (e) => {
+      if (e.key === "Escape") {
+        setMobilePanel(null);
+        document.getElementById(`show-${mobilePanel}`)?.focus();
+      }
+    };
+    document.addEventListener("keydown", escape);
+    return () => document.removeEventListener("keydown", escape);
+  }, [mobilePanel, modal]);
   if (error)
     return (
       <Shell>
@@ -177,6 +188,7 @@ export default function LessonPage({ demo = false }) {
   const current = filtered[index];
   const answered = (id) => setSolved((s) => (s.includes(id) ? s : [...s, id]));
   function pick(r) {
+    setMobilePanel(null);
     setResource(r);
     setLocation(null);
     setNotice("");
@@ -247,7 +259,7 @@ export default function LessonPage({ demo = false }) {
         ? "اختر موردًا من مفتاح الخريطة؛ ستظهر مواقعه فقط."
         : "مرحبًا يا مستكشف مصر الصغير! اختر موردًا من مفتاح الخريطة لنكتشف أماكن وجوده.";
   return (
-    <Shell>
+    <Shell mapPage>
       <div className="classroom-heading">
         <div>
           <Link to={demo ? "/" : "/journey"}>
@@ -353,11 +365,46 @@ export default function LessonPage({ demo = false }) {
           )}
         </section>
       )}
+      <div className="classroom-mobile-switcher" aria-label="لوحات الخريطة">
+        <button
+          id="show-legend"
+          aria-expanded={mobilePanel === "legend"}
+          aria-controls="lesson-legend"
+          onClick={() =>
+            setMobilePanel(mobilePanel === "legend" ? null : "legend")
+          }
+        >
+          <BookOpen size={19} />
+          مفتاح الخريطة
+        </button>
+        <button
+          id="show-guide"
+          aria-expanded={mobilePanel === "guide"}
+          aria-controls="lesson-guide"
+          onClick={() =>
+            setMobilePanel(mobilePanel === "guide" ? null : "guide")
+          }
+        >
+          <ChatCircle size={19} />
+          {location ? "معلومات المورد" : "المعلم والمعلومات"}
+        </button>
+      </div>
       <div className="classroom-workspace">
         <aside
-          className={`classroom-legend ${pulse ? "legend-focus" : ""}`}
+          id="lesson-legend"
+          className={`classroom-legend ${pulse ? "legend-focus" : ""} ${mobilePanel === "legend" ? "mobile-open" : ""}`}
           aria-label="مفتاح الخريطة"
         >
+          <button
+            className="mobile-panel-close"
+            aria-label="إغلاق مفتاح الخريطة"
+            onClick={() => {
+              setMobilePanel(null);
+              document.getElementById("show-legend")?.focus();
+            }}
+          >
+            إغلاق ×
+          </button>
           <h2>
             <BookOpen />
             مفتاح الخريطة
@@ -397,82 +444,38 @@ export default function LessonPage({ demo = false }) {
             </span>
             <span>شمال ↑</span>
           </div>
-          <button
-            className="governorates-toggle"
-            aria-pressed={governorates}
-            onClick={() => setGovernorates((v) => !v)}
-          >
-            طبقة المحافظات {governorates ? "✓" : ""}
-          </button>
-          <div className="classroom-map-scroll">
-            <div className="classroom-map" style={{ width: `${zoom * 100}%` }}>
-              <img
-                src="/lesson-media/atlas-geography.svg"
-                alt="رسم جغرافي تعليمي لمصر ونهر النيل والبحرين المتوسط والأحمر؛ العلامات التقريبية من بيانات المشروع السابقة"
-              />
-              {governorates && <Governorates />}
-              {sites.filter(showSite).map((l) => (
-                <div
-                  key={l.id}
-                  className={`classroom-map-site ${resource && resource.id !== l.resource.id ? "is-dim" : ""} ${resource?.id === l.resource.id ? "is-highlighted" : ""}`}
-                  style={mapPosition(l)}
-                >
-                  <button
-                    aria-label={`${l.resource.label} — ${l.name}`}
-                    aria-pressed={location?.id === l.id}
-                    onClick={() => {
-                      setResource(l.resource);
-                      setLocation(l);
-                    }}
-                  >
-                    <ResourcePin resource={l.resource} />
-                  </button>
-                  {(discovery || location?.id === l.id) && (
-                    <span className="map-site-name">{l.name}</span>
-                  )}
-                  {resource?.id === l.resource.id &&
-                    l.resource.media?.video && (
-                      <button
-                        className="map-video-camera"
-                        aria-label={`فيديو ${l.resource.label}`}
-                        onClick={() => {
-                          setLocation(l);
-                          setModal("video");
-                        }}
-                      >
-                        <VideoCamera size={22} weight="fill" />
-                      </button>
-                    )}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="classroom-map-controls">
-            <button
-              aria-label="تكبير الخريطة"
-              disabled={zoom >= 2}
-              onClick={() => setZoom((z) => Math.min(2, z + 0.25))}
-            >
-              <Plus size={22} />
-            </button>
-            <button
-              aria-label="تصغير الخريطة"
-              disabled={zoom <= 1}
-              onClick={() => setZoom((z) => Math.max(1, z - 0.25))}
-            >
-              <Minus size={22} />
-            </button>
-            <button onClick={() => setZoom(1)}>
-              <Compass size={22} />
-              عرض مصر كاملة
-            </button>
-          </div>
-          <small className="map-source">
-            رسم تعليمي من Natural Earth؛ مواقع تقريبية من النسخة السابقة تحتاج
-            مراجعة. ليست صورة قمر صناعي أو حدود محافظات معتمدة.
-          </small>
+          <EsriLessonMap
+            sites={sites.filter(showSite)}
+            activeResourceId={resource?.id}
+            selectedLocationId={location?.id}
+            showNames={discovery}
+            onSelect={(site) => {
+              setResource(site.resource);
+              setLocation(site);
+              setMobilePanel("guide");
+            }}
+            onVideo={(site) => {
+              setResource(site.resource);
+              setLocation(site);
+              setModal("video");
+            }}
+          />
         </section>
-        <aside className="classroom-guide" aria-label="المعلم ومعلومات المورد">
+        <aside
+          id="lesson-guide"
+          className={`classroom-guide ${mobilePanel === "guide" ? "mobile-open" : ""}`}
+          aria-label="المعلم ومعلومات المورد"
+        >
+          <button
+            className="mobile-panel-close"
+            aria-label="إغلاق معلومات المورد"
+            onClick={() => {
+              setMobilePanel(null);
+              document.getElementById("show-guide")?.focus();
+            }}
+          >
+            العودة للخريطة ×
+          </button>
           {!location ? (
             <section className="guide-speech">
               <RobotGuide />
@@ -621,9 +624,12 @@ export default function LessonPage({ demo = false }) {
         </button>
       </div>
       {notice && (
-        <p className="p-feedback" role="status">
+        <div className="classroom-notice p-feedback" role="status">
           {notice}
-        </p>
+          <button aria-label="إغلاق الرسالة" onClick={() => setNotice("")}>
+            ×
+          </button>
+        </div>
       )}
       {modal && (
         <Modal

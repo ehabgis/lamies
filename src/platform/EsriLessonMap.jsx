@@ -1,0 +1,523 @@
+import { useEffect, useRef, useState } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import {
+  SquaresFour,
+  X,
+  Plus,
+  Minus,
+  Compass,
+  ArrowClockwise,
+  MapTrifold,
+  Stack,
+  CornersOut,
+} from "phosphor-react";
+import ResourcePin from "../components/Map/ResourcePin";
+import { BASEMAPS, EGYPT_BOUNDS, readBasemap } from "./mapBasemaps";
+const textNode = (text) => {
+  const node = document.createElement("span");
+  node.textContent = text;
+  return node;
+};
+const safeText = (value) => {
+  const node = document.createElement("span");
+  node.textContent = value;
+  return node.innerHTML;
+};
+function GalleryThumbnail({ basemap }) {
+  const [failed, setFailed] = useState(false);
+  return basemap.thumbnail && !failed ? (
+    <img
+      loading="lazy"
+      src={basemap.thumbnail}
+      alt={`معاينة ${basemap.label}`}
+      onError={() => setFailed(true)}
+    />
+  ) : (
+    <span className={`basemap-thumb thumb-${basemap.id}`}>
+      <MapTrifold size={30} />
+      {failed && <small>المعاينة غير متاحة</small>}
+    </span>
+  );
+}
+export default function EsriLessonMap({
+  sites,
+  activeResourceId,
+  selectedLocationId,
+  showNames,
+  onSelect,
+  onVideo,
+}) {
+  const host = useRef(null),
+    mapRef = useRef(null),
+    root = useRef(null),
+    galleryButton = useRef(null),
+    focusSite = useRef(null),
+    [ready, setReady] = useState(false),
+    [basemap, setBasemap] = useState(readBasemap),
+    [gallery, setGallery] = useState(false),
+    [governorates, setGovernorates] = useState(false),
+    [features, setFeatures] = useState(null),
+    [river, setRiver] = useState(null),
+    [dataError, setDataError] = useState(""),
+    [selectedGovernorate, setSelectedGovernorate] = useState(""),
+    [status, setStatus] = useState("loading"),
+    [retry, setRetry] = useState(0),
+    [notice, setNotice] = useState("");
+  const chosen = BASEMAPS.find((b) => b.id === basemap) || BASEMAPS[0];
+  const usingLocal = basemap === "local" || status === "error";
+  const callback = useRef({ onSelect, onVideo });
+  callback.current = { onSelect, onVideo };
+  useEffect(() => {
+    const map = L.map(host.current, {
+      zoomControl: false,
+      attributionControl: true,
+      scrollWheelZoom: true,
+      minZoom: 4,
+      maxZoom: 17,
+      maxBounds: [
+        [18, 20],
+        [36, 42],
+      ],
+      maxBoundsViscosity: 0.7,
+      keyboard: true,
+    });
+    mapRef.current = map;
+    map.fitBounds(EGYPT_BOUNDS, { padding: [24, 36], animate: false });
+    map.attributionControl.setPrefix(
+      '<a href="https://leafletjs.com" target="_blank" rel="noopener noreferrer">Leaflet</a>',
+    );
+    const observer = new ResizeObserver(() => {
+      map.invalidateSize({ pan: false });
+    });
+    observer.observe(host.current);
+    setReady(true);
+    return () => {
+      observer.disconnect();
+      map.remove();
+      mapRef.current = null;
+    };
+  }, []);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/geodata/egypt-governorates.geojson", { signal: controller.signal })
+      .then((r) => {
+        if (!r.ok) throw Error();
+        return r.json();
+      })
+      .then(setFeatures)
+      .catch((e) => {
+        if (e.name !== "AbortError")
+          setDataError("تعذر تحميل حدود المحافظات المحلية.");
+      });
+    fetch("/geodata/egypt-nile.geojson", { signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setRiver)
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
+  useEffect(() => {
+    if (!ready) return;
+    const map = mapRef.current;
+    if (!chosen.url) {
+      setStatus("local");
+      return;
+    }
+    let valid = true,
+      loaded = 0,
+      errors = 0;
+    setStatus("loading");
+    const layer = L.tileLayer(chosen.url, {
+      maxZoom: 18,
+      attribution: `Tiles © <a href="${chosen.source}" target="_blank" rel="noopener noreferrer">Esri</a> — ${safeText(chosen.credit)}`,
+      crossOrigin: true,
+      keepBuffer: 1,
+    });
+    const timer = setTimeout(() => {
+      if (!valid) return;
+      if (!loaded) {
+        valid = false;
+        setStatus("error");
+        map.removeLayer(layer);
+      } else setStatus("partial");
+    }, 12000);
+    layer.on("tileload", () => {
+      loaded++;
+    });
+    layer.on("loading", () => {
+      if (valid) setStatus("loading");
+    });
+    layer.on("load", () => {
+      if (valid && loaded) {
+        clearTimeout(timer);
+        setStatus(errors ? "partial" : "ready");
+      }
+    });
+    layer.on("tileerror", () => {
+      errors++;
+      if (valid && !loaded && errors >= 3) {
+        valid = false;
+        clearTimeout(timer);
+        setStatus("error");
+        map.removeLayer(layer);
+      } else if (valid && loaded) setStatus("partial");
+    });
+    layer.addTo(map);
+    return () => {
+      valid = false;
+      clearTimeout(timer);
+      map.removeLayer(layer);
+    };
+  }, [ready, basemap, retry]);
+  useEffect(() => {
+    if (!ready || !usingLocal || !features) return;
+    const map = mapRef.current;
+    const land = L.geoJSON(features, {
+      interactive: false,
+      style: { fillColor: "#f1d9a4", fillOpacity: 1, stroke: false },
+      attribution: "Natural Earth · حدود تعليمية معمّمة",
+    }).addTo(map);
+    const water = river
+      ? L.geoJSON(river, {
+          interactive: false,
+          style: { color: "#218cca", weight: 2.5, opacity: 1 },
+        }).addTo(map)
+      : null;
+    const labels = L.layerGroup().addTo(map);
+    for (const [label, lat, lng] of [
+      ["مصر", 26.6, 28.2],
+      ["البحر المتوسط", 32.1, 29.5],
+      ["البحر الأحمر", 25.3, 35.9],
+      ["نهر النيل", 26.5, 31.9],
+    ])
+      L.marker([lat, lng], {
+        interactive: false,
+        icon: L.divIcon({
+          className: "local-map-label",
+          html: safeText(label),
+          iconSize: [110, 25],
+          iconAnchor: [55, 12],
+        }),
+      }).addTo(labels);
+    return () => {
+      map.removeLayer(land);
+      if (water) map.removeLayer(water);
+      map.removeLayer(labels);
+    };
+  }, [ready, usingLocal, features, river]);
+  useEffect(() => {
+    if (!ready || !governorates || !features) return;
+    const map = mapRef.current;
+    const boundaries = L.geoJSON(features, {
+      style: (f) => ({
+        color: f.id === selectedGovernorate ? "#ffd45b" : "#f9fbff",
+        weight: f.id === selectedGovernorate ? 3 : 1,
+        fillColor: "#f4d777",
+        fillOpacity: f.id === selectedGovernorate ? 0.25 : 0.03,
+      }),
+      onEachFeature: (feature, layer) => {
+        layer.bindTooltip(textNode(feature.properties.name_ar), {
+          direction: "center",
+          className: "governorate-name",
+        });
+        layer.on("click", () => setSelectedGovernorate(feature.id));
+      },
+    }).addTo(map);
+    return () => map.removeLayer(boundaries);
+  }, [ready, governorates, features, selectedGovernorate]);
+  useEffect(() => {
+    if (!ready) return;
+    const map = mapRef.current;
+    const group = L.layerGroup().addTo(map);
+    for (const site of sites) {
+      if (!Number.isFinite(site.lat) || !Number.isFinite(site.lng)) continue;
+      const highlighted = site.resource.id === activeResourceId,
+        dim = activeResourceId && !highlighted;
+      const marker = L.marker([site.lat, site.lng], {
+        keyboard: true,
+        riseOnHover: true,
+        zIndexOffset: highlighted ? 500 : 0,
+        opacity: dim ? 0.2 : 1,
+        icon: L.divIcon({
+          className: `esri-resource-marker ${highlighted ? "is-highlighted" : ""} ${selectedLocationId === site.id ? "is-selected" : ""}`,
+          html: renderToStaticMarkup(<ResourcePin resource={site.resource} />),
+          iconSize: [38, 48],
+          iconAnchor: [19, 45],
+          tooltipAnchor: [0, -35],
+        }),
+      });
+      marker.on("click", () => {
+        if (marker.getElement() === document.activeElement)
+          focusSite.current = site.id;
+        callback.current.onSelect(site);
+      });
+      marker.bindTooltip(textNode(site.name), {
+        permanent: showNames || selectedLocationId === site.id,
+        direction: "top",
+        className: "resource-map-label",
+      });
+      marker.addTo(group);
+      const element = marker.getElement();
+      element.setAttribute("role", "button");
+      element.setAttribute(
+        "aria-label",
+        `${site.resource.label} — ${site.name}`,
+      );
+      element.setAttribute(
+        "aria-pressed",
+        String(selectedLocationId === site.id),
+      );
+      element.dataset.siteId = site.id;
+      if (focusSite.current === site.id) {
+        element.focus({ preventScroll: true });
+        focusSite.current = null;
+      }
+      element.addEventListener("keydown", (e) => {
+        if (e.target === element && (e.key === " " || e.key === "Enter")) {
+          e.preventDefault();
+          e.stopPropagation();
+          marker.fire("click");
+        }
+      });
+      if (highlighted && site.resource.media?.video) {
+        const button = document.createElement("button");
+        button.className = "map-video-camera";
+        button.type = "button";
+        button.setAttribute("aria-label", `فيديو ${site.resource.label}`);
+        button.textContent = "▶";
+        button.addEventListener("click", (e) => {
+          e.stopPropagation();
+          callback.current.onVideo(site);
+        });
+        element.appendChild(button);
+      }
+    }
+    return () => map.removeLayer(group);
+  }, [ready, sites, activeResourceId, selectedLocationId, showNames]);
+  useEffect(() => {
+    if (!gallery) return;
+    const escape = (e) => {
+      if (e.key === "Escape") {
+        setGallery(false);
+        galleryButton.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", escape);
+    return () => document.removeEventListener("keydown", escape);
+  }, [gallery]);
+  function selectBasemap(id, close = true) {
+    setBasemap(id);
+    setRetry((n) => n + 1);
+    if (close) setGallery(false);
+    try {
+      localStorage.setItem("lamis.basemap.v1", id);
+    } catch {}
+    if (close) galleryButton.current?.focus();
+  }
+  function chooseGovernorate(id) {
+    setSelectedGovernorate(id);
+    const feature = features?.features.find((f) => f.id === id);
+    if (feature)
+      mapRef.current.fitBounds(L.geoJSON(feature).getBounds(), {
+        padding: [28, 28],
+        maxZoom: 8,
+        animate: false,
+      });
+  }
+  async function fullscreen() {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else if (root.current.requestFullscreen)
+        await root.current.requestFullscreen();
+      else setNotice("ملء الشاشة غير متاح في هذا المتصفح.");
+    } catch {
+      setNotice("تعذّر فتح ملء الشاشة.");
+    }
+  }
+  return (
+    <section
+      ref={root}
+      className={`esri-map-surface ${usingLocal ? "has-local-basemap" : ""}`}
+      aria-label="خريطة موارد مصر"
+    >
+      <div
+        ref={host}
+        className="esri-leaflet-host"
+        aria-label="خريطة مصر؛ استخدم أزرار التكبير أو اسحب الخريطة"
+      />
+      <div className="esri-map-toolbar">
+        <button
+          ref={galleryButton}
+          aria-expanded={gallery}
+          aria-controls="basemap-gallery"
+          onClick={() => setGallery((v) => !v)}
+        >
+          <SquaresFour size={21} />
+          معرض الخرائط
+        </button>
+        <button
+          aria-pressed={governorates}
+          onClick={() => setGovernorates((v) => !v)}
+        >
+          <Stack size={20} />
+          المحافظات
+        </button>
+      </div>
+      <div className="esri-map-zoom" aria-label="أدوات الخريطة">
+        <button
+          aria-label="تكبير الخريطة"
+          onClick={() => mapRef.current.zoomIn()}
+        >
+          <Plus size={21} />
+        </button>
+        <button
+          aria-label="تصغير الخريطة"
+          onClick={() => mapRef.current.zoomOut()}
+        >
+          <Minus size={21} />
+        </button>
+        <button
+          aria-label="عرض مصر كاملة"
+          onClick={() => {
+            mapRef.current.fitBounds(EGYPT_BOUNDS, {
+              padding: [24, 36],
+              animate: false,
+            });
+            setSelectedGovernorate("");
+          }}
+        >
+          <Compass size={22} />
+        </button>
+        <button aria-label="ملء الشاشة" onClick={fullscreen}>
+          <CornersOut size={21} />
+        </button>
+      </div>
+      <div className="esri-basemap-state" role="status">
+        {usingLocal
+          ? "الخريطة التعليمية المحلية"
+          : status === "loading"
+            ? "جارٍ تحميل خريطة Esri…"
+            : chosen.label}
+        {status === "partial" && " · بعض الصور لم تُحمّل"}
+      </div>
+      {status === "error" && basemap !== "local" && (
+        <div className="esri-map-warning" role="status">
+          تعذر تحميل Esri؛ نعرض خريطة محلية وليست صورة قمر صناعي.
+          <button onClick={() => setRetry((n) => n + 1)}>
+            <ArrowClockwise size={16} />
+            إعادة المحاولة
+          </button>
+        </div>
+      )}
+      {notice && (
+        <div className="esri-map-warning" role="status">
+          {notice}
+          <button aria-label="إغلاق التنبيه" onClick={() => setNotice("")}>
+            <X />
+          </button>
+        </div>
+      )}
+      {gallery && (
+        <section
+          id="basemap-gallery"
+          className="basemap-gallery"
+          aria-labelledby="gallery-title"
+        >
+          <header>
+            <h2 id="gallery-title">اختر شكل خريطتك</h2>
+            <button
+              aria-label="إغلاق معرض الخرائط"
+              onClick={() => {
+                setGallery(false);
+                galleryButton.current?.focus();
+              }}
+            >
+              <X size={21} />
+            </button>
+          </header>
+          <div role="radiogroup" aria-label="خرائط الأساس">
+            {BASEMAPS.map((b) => (
+              <button
+                key={b.id}
+                role="radio"
+                aria-checked={basemap === b.id}
+                tabIndex={basemap === b.id ? 0 : -1}
+                onKeyDown={(e) => {
+                  if (
+                    ![
+                      "ArrowLeft",
+                      "ArrowRight",
+                      "ArrowDown",
+                      "ArrowUp",
+                      "Home",
+                      "End",
+                    ].includes(e.key)
+                  )
+                    return;
+                  e.preventDefault();
+                  const i = BASEMAPS.findIndex((item) => item.id === b.id),
+                    index =
+                      e.key === "Home"
+                        ? 0
+                        : e.key === "End"
+                          ? BASEMAPS.length - 1
+                          : (i +
+                              (["ArrowLeft", "ArrowDown"].includes(e.key)
+                                ? 1
+                                : -1) +
+                              BASEMAPS.length) %
+                            BASEMAPS.length;
+                  const buttons =
+                    e.currentTarget.parentElement.querySelectorAll(
+                      '[role="radio"]',
+                    );
+                  selectBasemap(BASEMAPS[index].id, false);
+                  buttons[index]?.focus();
+                }}
+                onClick={() => selectBasemap(b.id)}
+              >
+                <GalleryThumbnail basemap={b} />
+                <strong>{b.label}</strong>
+                <small>{b.description}</small>
+              </button>
+            ))}
+          </div>
+          <p>
+            خدمات Esri العامة تتطلب اتصالًا بالإنترنت وتخضع لشروط المصدر. الصور
+            ليست بثًا مباشرًا.
+          </p>
+        </section>
+      )}
+      {governorates && (
+        <div className="esri-governorates-picker">
+          <label>
+            اختر محافظة
+            <select
+              value={selectedGovernorate}
+              onChange={(e) => chooseGovernorate(e.target.value)}
+            >
+              <option value="">جميع المحافظات</option>
+              {features?.features.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.properties.name_ar}
+                </option>
+              ))}
+            </select>
+          </label>
+          <small>حدود Natural Earth التعليمية المعمّمة.</small>
+          {selectedGovernorate && (
+            <span role="status">
+              المحافظة المختارة:{" "}
+              {
+                features?.features.find((f) => f.id === selectedGovernorate)
+                  ?.properties.name_ar
+              }
+            </span>
+          )}
+          {dataError && <span role="status">{dataError}</span>}
+        </div>
+      )}
+    </section>
+  );
+}

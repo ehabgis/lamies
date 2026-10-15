@@ -1,0 +1,935 @@
+/* The map lesson owns one viewport; secondary content scrolls inside its panels. */
+.map-shell {
+  height: 100dvh;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.map-shell .platform-header {
+  padding: 8px 18px;
+  min-height: 62px;
+  flex-shrink: 0;
+  gap: 16px;
+}
+.map-shell .platform-brand {
+  font-size: 18px;
+}
+.map-shell .platform-brand > span {
+  width: 42px;
+  height: 42px;
+}
+.map-shell .platform-brand small {
+  font-size: 11px;
+}
+.map-shell .platform-header nav {
+  font-size: 13px;
+}
+.map-shell > .platform-footer {
+  display: none;
+}
+.map-shell > main {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: none;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+.map-shell .classroom-heading {
+  margin: 0;
+  padding: 8px 16px;
+  gap: 12px;
+  min-height: 54px;
+  flex-shrink: 0;
+}
+.map-shell .classroom-heading h1 {
+  font-size: 21px;
+  margin: 0;
+  line-height: 1.5;
+}
+.map-shell .classroom-heading a {
+  font-size: 10px;
+}
+.map-shell .lesson-status {
+  font-size: 11px;
+  padding: 4px 10px;
+}
+.map-shell > main > .p-feedback {
+  margin: 0;
+  padding: 5px 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  flex-shrink: 0;
+}
+.map-shell .classroom-toolbar {
+  margin: 0;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.map-shell .classroom-toolbar button {
+  font-size: 12px;
+  min-height: 42px;
+  padding: 7px 12px;
+}
+.map-shell .classroom-toolbar .p-tabs {
+  margin: 0;
+  padding: 3px;
+}
+.map-shell .classroom-disclosure {
+  flex-shrink: 0;
+  max-height: 24dvh;
+  overflow: auto;
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 13px;
+  overscroll-behavior: contain;
+}
+.map-shell .classroom-disclosure h2 {
+  font-size: 18px;
+}
+.map-shell .classroom-disclosure h3 {
+  font-size: 16px;
+}
+.map-shell .classroom-disclosure ol {
+  margin: 0;
+  gap: 4px;
+}
+.map-shell .classroom-workspace {
+  position: relative;
+  flex: 1;
+  min-height: 190px;
+  display: grid;
+  grid-template-columns: 178px minmax(0, 1fr) 246px;
+  align-items: stretch;
+  overflow: hidden;
+  gap: 12px;
+}
+.map-shell .classroom-legend {
+  overflow: auto;
+  min-height: 0;
+  padding: 10px;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #8ab1cf #edf6fc;
+}
+.map-shell .classroom-legend h2 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+.map-shell .classroom-legend > button {
+  min-height: 44px;
+  padding: 4px;
+  gap: 8px;
+  font-size: 12px;
+}
+.map-shell .classroom-legend > button .resource-pin {
+  width: 27px;
+  height: 33px;
+}
+.map-shell .classroom-legend small {
+  font-size: 9px;
+}
+.map-shell .classroom-legend .show-map-all {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  min-height: 40px;
+  font-size: 11px;
+  margin-top: 6px;
+}
+.map-shell .classroom-map-region {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  order: initial;
+}
+.map-shell .classroom-map-meta {
+  font-size: 11px;
+  padding: 5px 12px;
+  flex-shrink: 0;
+}
+.map-shell .classroom-guide {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  min-height: 0;
+  overscroll-behavior: contain;
+  gap: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #8ab1cf #edf6fc;
+}
+.map-shell .guide-speech {
+  padding: 12px;
+}
+.map-shell .guide-speech .atlas-robot {
+  height: 106px;
+  width: 95px;
+  margin-bottom: 3px;
+}
+.map-shell .guide-speech h2 {
+  font-size: 19px;
+  margin: 3px 0;
+}
+.map-shell .guide-speech p {
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 0;
+}
+.map-shell .classroom-resource {
+  padding: 12px;
+  flex-shrink: 0;
+}
+.map-shell .classroom-resource h2 {
+  font-size: 20px;
+  margin: 0 0 6px;
+}
+.map-shell .classroom-resource h3 {
+  font-size: 14px;
+  margin: 10px 0 3px;
+}
+.map-shell .classroom-resource p {
+  font-size: 12px;
+  line-height: 1.8;
+  margin-bottom: 8px;
+}
+.map-shell .classroom-resource .media-pending {
+  padding: 12px 5px;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+.map-shell .classroom-resource .p-actions {
+  margin: 6px 0;
+  gap: 5px;
+}
+.map-shell .classroom-resource .p-actions button {
+  font-size: 11px;
+  min-height: 42px;
+  padding: 6px;
+}
+.map-shell .classroom-guide > .p-secondary {
+  flex-shrink: 0;
+  min-height: 42px;
+  font-size: 12px;
+}
+.map-shell .classroom-bottom {
+  margin: 0;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.map-shell .classroom-bottom > button {
+  font-size: 12px;
+  min-height: 44px;
+  padding: 7px;
+}
+.classroom-mobile-switcher,
+.mobile-panel-close {
+  display: none !important;
+}
+.classroom-notice {
+  position: absolute;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1100;
+  width: min(600px, 90%);
+  box-shadow: 0 8px 25px #1b395c22;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.classroom-notice button {
+  min-width: 44px;
+  border: 0;
+  background: #fff8de;
+  color: #60480e;
+}
+.esri-map-surface {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  isolation: isolate;
+  background: #cae8f3;
+}
+.esri-map-surface:fullscreen {
+  height: 100dvh;
+  width: 100vw;
+  display: block;
+}
+.esri-leaflet-host {
+  position: absolute;
+  inset: 0;
+  min-height: 180px;
+  direction: ltr;
+  background: #cfe7f1 !important;
+  overscroll-behavior: contain;
+  font-family: "Cairo", sans-serif !important;
+}
+.esri-leaflet-host .leaflet-control-attribution {
+  font-size: 9px;
+  max-width: min(80%, 680px);
+  line-height: 1.4;
+  background: #ffffffed;
+  padding: 3px 5px;
+}
+.esri-leaflet-host .leaflet-control-attribution a {
+  color: #074f86;
+  text-decoration: underline;
+}
+.esri-resource-marker {
+  background: none !important;
+  border: 0 !important;
+}
+.esri-resource-marker .resource-pin {
+  width: 38px;
+  height: 48px;
+  filter: drop-shadow(0 3px 4px #061e4d66);
+}
+.esri-resource-marker.is-highlighted .resource-pin {
+  filter: drop-shadow(0 0 5px #ff9800) drop-shadow(0 0 2px white);
+}
+.esri-resource-marker.is-selected {
+  outline: 2px solid #ffcf46;
+  outline-offset: 3px;
+  border-radius: 50%;
+}
+.esri-resource-marker:focus-visible {
+  outline: 3px solid #ffd45b;
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+.esri-resource-marker .map-video-camera {
+  left: 95%;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  font-size: 16px !important;
+}
+.leaflet-tooltip.resource-map-label {
+  font-family: "Cairo", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #163c60;
+  border-radius: 7px;
+  padding: 2px 6px;
+  background: #fffffff5;
+}
+.local-map-label {
+  color: #164b74;
+  font:
+    800 14px Cairo,
+    sans-serif;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px #fff;
+  text-align: center;
+}
+.governorate-name {
+  font-family: Cairo, sans-serif;
+  font-weight: 700;
+}
+.esri-map-toolbar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 750;
+  display: flex;
+  gap: 6px;
+  direction: rtl;
+}
+.esri-map-toolbar button,
+.esri-map-zoom button {
+  border: 1px solid #b1cede;
+  background: #fffffff5;
+  color: #124774;
+  box-shadow: 0 3px 10px #143c631c;
+  min-height: 44px;
+  padding: 7px 11px;
+  font-size: 12px;
+}
+.esri-map-toolbar button[aria-expanded="true"],
+.esri-map-toolbar button[aria-pressed="true"] {
+  background: #0869c4;
+  color: white;
+  border-color: #0869c4;
+}
+.esri-map-zoom {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 750;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.esri-map-zoom button {
+  width: 44px;
+  padding: 8px;
+}
+.esri-basemap-state {
+  position: absolute;
+  bottom: 34px;
+  left: 9px;
+  z-index: 650;
+  padding: 4px 9px;
+  border-radius: 7px;
+  background: #fffffff0;
+  color: #164c7e;
+  font-size: 10px;
+  pointer-events: none;
+  max-width: 70%;
+}
+.esri-map-warning {
+  position: absolute;
+  bottom: 65px;
+  left: 10px;
+  right: 10px;
+  z-index: 800;
+  background: #fff5d6;
+  border: 1px solid #dbb863;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 11px;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  color: #60480e;
+}
+.esri-map-warning button {
+  background: white;
+  border: 1px solid #d6bc73;
+  min-height: 38px;
+  padding: 4px 8px;
+  flex-shrink: 0;
+  font-size: 10px;
+}
+.basemap-gallery {
+  position: absolute;
+  top: 62px;
+  right: 10px;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #adc9dc;
+  border-radius: 15px;
+  padding: 13px;
+  width: min(350px, calc(100% - 20px));
+  max-height: calc(100% - 85px);
+  overflow: auto;
+  box-shadow: 0 10px 35px #0b2a4c33;
+  overscroll-behavior: contain;
+}
+.basemap-gallery header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.basemap-gallery h2 {
+  font-size: 17px;
+  margin: 0;
+}
+.basemap-gallery header button {
+  background: #eff6fc;
+  border: 0;
+  color: #164c7e;
+  min-width: 44px;
+  padding: 5px;
+}
+.basemap-gallery [role="radiogroup"] {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 8px;
+}
+.basemap-gallery [role="radio"] {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 5px;
+  gap: 2px;
+  border: 2px solid #d5e3ec;
+  background: #f8fcff;
+  color: #164c7e;
+  text-align: right;
+}
+.basemap-gallery [role="radio"][aria-checked="true"] {
+  border-color: #0869c4;
+  background: #e9f3ff;
+}
+.basemap-gallery img,
+.basemap-thumb {
+  height: 68px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.basemap-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #d8e9f6;
+  color: #2a5777;
+}
+.basemap-thumb small {
+  font-size: 8px;
+}
+.basemap-gallery strong {
+  font-size: 11px;
+}
+.basemap-gallery button small {
+  font-size: 9px;
+}
+.basemap-gallery > p {
+  font-size: 10px;
+  margin: 8px 0 0;
+  line-height: 1.7;
+  color: #46677e;
+}
+.esri-governorates-picker {
+  position: absolute;
+  top: 64px;
+  right: 10px;
+  z-index: 800;
+  background: #fffffff5;
+  padding: 8px 10px;
+  border: 1px solid #b2ccdf;
+  border-radius: 10px;
+  width: min(230px, calc(100% - 78px));
+  box-shadow: 0 3px 15px #0a365219;
+}
+.esri-governorates-picker label {
+  font-size: 11px;
+}
+.esri-governorates-picker select {
+  min-height: 40px;
+  font-size: 12px;
+  margin: 3px 0;
+  padding: 5px;
+}
+.esri-governorates-picker small,
+.esri-governorates-picker > span {
+  display: block;
+  font-size: 9px;
+  line-height: 1.5;
+}
+@media (min-width: 1600px) {
+  .map-shell .classroom-workspace {
+    grid-template-columns: 196px minmax(0, 1fr) 275px;
+  }
+  .map-shell .classroom-legend > button {
+    font-size: 14px;
+  }
+  .map-shell .classroom-resource p {
+    font-size: 14px;
+  }
+}
+@media (max-width: 1050px) and (min-width: 851px) {
+  .map-shell .classroom-workspace {
+    grid-template-columns: 155px minmax(0, 1fr) 205px;
+    gap: 8px;
+  }
+  .map-shell .classroom-guide {
+    grid-column: auto;
+    grid-template-columns: none;
+  }
+  .map-shell .classroom-heading h1 {
+    font-size: 18px;
+  }
+  .map-shell .classroom-legend > button {
+    font-size: 11px;
+  }
+  .map-shell .classroom-tools button {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+}
+@media (max-width: 850px) {
+  .map-shell .platform-header {
+    padding: 6px 12px;
+    min-height: 50px;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+  .map-shell .platform-brand {
+    font-size: 13px;
+    gap: 7px;
+  }
+  .map-shell .platform-brand > span {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+  }
+  .map-shell .platform-brand svg {
+    width: 23px;
+  }
+  .map-shell .platform-brand small {
+    display: none;
+  }
+  .map-shell .platform-header nav {
+    width: auto;
+    gap: 5px;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  .map-shell .platform-header nav button {
+    font-size: 10px;
+    padding: 4px;
+    min-height: 38px;
+  }
+  .map-shell .platform-header nav svg {
+    display: none;
+  }
+  .map-shell .platform-header nav a {
+    min-height: 38px;
+  }
+  .map-shell > main {
+    padding: 6px 8px;
+    gap: 6px;
+  }
+  .map-shell .classroom-heading {
+    display: block;
+    padding: 7px 11px;
+    min-height: 0;
+    border-radius: 12px;
+  }
+  .map-shell .classroom-heading h1 {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .map-shell .classroom-heading a,
+  .map-shell .lesson-status {
+    display: none;
+  }
+  .map-shell > main > .p-feedback {
+    font-size: 10px;
+    padding: 4px 8px;
+    line-height: 1.5;
+    border-radius: 8px;
+  }
+  .map-shell .classroom-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .map-shell .classroom-toolbar .p-tabs {
+    width: 100%;
+    padding: 2px;
+  }
+  .map-shell .classroom-toolbar .p-tabs button {
+    font-size: 10px;
+    min-height: 36px;
+    padding: 3px 6px;
+  }
+  .map-shell .classroom-tools {
+    width: 100%;
+    margin: 0;
+    gap: 4px;
+  }
+  .map-shell .classroom-tools button {
+    flex: 1;
+    min-height: 40px;
+    font-size: 10px;
+    padding: 4px;
+  }
+  .map-shell .classroom-tools button svg {
+    width: 15px;
+  }
+  .map-shell .classroom-mobile-switcher {
+    display: flex !important;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .classroom-mobile-switcher > button {
+    flex: 1;
+    background: white;
+    border: 1px solid #a8cce3;
+    min-height: 40px;
+    font-size: 11px;
+    padding: 5px;
+    color: #164c7e;
+  }
+  .classroom-mobile-switcher > button[aria-expanded="true"] {
+    background: #0869c4;
+    color: white;
+  }
+  .map-shell .classroom-workspace {
+    display: flex;
+    min-height: 140px;
+    overflow: hidden;
+  }
+  .map-shell .classroom-map-region {
+    width: 100%;
+    flex: 1;
+    order: initial;
+  }
+  .map-shell .classroom-map-meta {
+    font-size: 10px;
+    padding: 3px 8px;
+    line-height: 1.7;
+  }
+  .map-shell .classroom-workspace > .classroom-legend,
+  .map-shell .classroom-workspace > .classroom-guide {
+    display: none;
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    top: auto;
+    width: auto;
+    max-height: 85%;
+    min-height: 0;
+    z-index: 1100;
+    background: #fff;
+    border: 1px solid #a9cfe4;
+    border-radius: 17px;
+    box-shadow: 0 8px 35px #12365c55;
+    padding: 10px;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .map-shell .classroom-workspace > .classroom-legend.mobile-open {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+    align-items: start;
+  }
+  .map-shell .classroom-workspace > .classroom-guide.mobile-open {
+    display: flex;
+    flex-direction: column;
+  }
+  .map-shell .classroom-legend h2 {
+    grid-column: 1/-1;
+    width: auto;
+    font-size: 14px;
+    margin: 0;
+  }
+  .map-shell .classroom-legend > button {
+    width: auto;
+    min-height: 44px;
+    font-size: 10px;
+    padding: 3px;
+    gap: 4px;
+    line-height: 1.5;
+  }
+  .map-shell .classroom-legend .resource-pin {
+    width: 23px;
+    height: 29px;
+  }
+  .map-shell .classroom-legend small {
+    display: none;
+  }
+  .map-shell .classroom-legend .show-map-all {
+    grid-column: 1/-1;
+    position: static;
+    width: 100%;
+    min-height: 40px;
+    margin: 0;
+  }
+  .map-shell .mobile-panel-close {
+    display: flex !important;
+    grid-column: 1/-1;
+    justify-self: end;
+    align-self: flex-end;
+    min-height: 40px !important;
+    width: auto !important;
+    font-size: 11px !important;
+    background: #eaf5fc;
+    color: #164c7e;
+    border: 1px solid #c4ddec;
+    padding: 5px 12px !important;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  .map-shell .guide-speech {
+    padding: 8px;
+    grid-template-columns: 58px 1fr;
+  }
+  .map-shell .guide-speech .atlas-robot {
+    width: 48px;
+    height: 55px;
+  }
+  .map-shell .guide-speech p {
+    font-size: 12px;
+  }
+  .map-shell .classroom-resource p {
+    font-size: 13px;
+  }
+  .map-shell .classroom-resource .media-pending {
+    padding: 10px;
+  }
+  .map-shell .classroom-bottom {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .map-shell .classroom-bottom > button {
+    min-height: 46px;
+    font-size: 9px;
+    line-height: 1.5;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex-basis: auto;
+    white-space: normal;
+  }
+  .map-shell .classroom-bottom > button svg {
+    width: 18px;
+    height: 18px;
+  }
+  .esri-map-toolbar {
+    top: 7px;
+    right: 7px;
+    gap: 4px;
+  }
+  .esri-map-toolbar button {
+    font-size: 10px;
+    min-height: 40px;
+    padding: 5px 7px;
+    gap: 4px;
+  }
+  .esri-map-toolbar button svg {
+    width: 16px;
+  }
+  .esri-map-zoom {
+    top: 55px;
+    left: 7px;
+    gap: 4px;
+  }
+  .esri-map-zoom button {
+    width: 40px;
+    min-height: 40px;
+    padding: 5px;
+  }
+  .esri-governorates-picker {
+    top: 53px;
+    right: 7px;
+    width: min(205px, calc(100% - 65px));
+  }
+  .basemap-gallery {
+    top: 53px;
+    right: 7px;
+    padding: 9px;
+    max-height: calc(100% - 65px);
+    width: calc(100% - 14px);
+  }
+  .basemap-gallery h2 {
+    font-size: 14px;
+  }
+  .basemap-gallery img,
+  .basemap-thumb {
+    height: 50px;
+  }
+  .basemap-gallery [role="radiogroup"] {
+    gap: 5px;
+  }
+  .esri-map-warning {
+    bottom: 45px;
+    padding: 5px 7px;
+    font-size: 10px;
+    display: block;
+    line-height: 1.5;
+  }
+  .esri-map-warning button {
+    font-size: 9px;
+    min-height: 34px;
+    margin-right: 5px;
+  }
+  .esri-leaflet-host .leaflet-control-attribution {
+    font-size: 8px;
+    max-width: 88%;
+    line-height: 1.3;
+  }
+  .esri-basemap-state {
+    font-size: 9px;
+    bottom: 43px;
+    padding: 2px 6px;
+  }
+  .map-shell .classroom-disclosure {
+    max-height: 24dvh;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .map-shell .classroom-disclosure h2 {
+    font-size: 15px;
+  }
+  .map-shell .classroom-disclosure ol {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .map-shell .classroom-disclosure li {
+    padding: 2px;
+  }
+  .classroom-notice {
+    bottom: 63px;
+    font-size: 11px !important;
+  }
+  .esri-resource-marker .resource-pin {
+    width: 38px;
+    height: 48px;
+  }
+}
+@media (max-height: 560px) {
+  .map-shell .classroom-heading {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+    overflow: hidden;
+    clip-path: inset(100%);
+    padding: 0;
+  }
+  .map-shell .platform-header {
+    min-height: 40px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+  .map-shell .classroom-toolbar {
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+  .map-shell .classroom-tools {
+    width: auto;
+  }
+  .map-shell .classroom-toolbar .p-tabs {
+    width: auto;
+    flex: 1;
+  }
+  .map-shell .classroom-mobile-switcher {
+    position: absolute;
+    right: 12px;
+    bottom: 63px;
+    z-index: 850;
+    max-width: 300px;
+  }
+  .map-shell .classroom-bottom > button {
+    min-height: 40px;
+  }
+  .map-shell .classroom-disclosure {
+    max-height: 22dvh;
+  }
+  .esri-map-zoom {
+    top: 48px;
+    gap: 2px;
+  }
+  .esri-map-zoom button {
+    min-height: 36px;
+    height: 36px;
+  }
+  .map-shell .classroom-workspace {
+    min-height: 120px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .esri-map-surface * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

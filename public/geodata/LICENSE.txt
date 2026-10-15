@@ -106,3 +106,9 @@ The author’s used road transportation data (for North America only) from XNR P
     for any claims arising out of Natural Earth’s use of the data.
 
 Happy mapping!
+
+Nile centerline supplement (15 October 2026)
+Source: Natural Earth ne_50m_rivers_lake_centerlines, filtered by name=Nile.
+https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_rivers_lake_centerlines.geojson
+Public domain under the Natural Earth terms above. Geometry retained without simplification.
+Educational local fallback only; not a surveyed or official river boundary.

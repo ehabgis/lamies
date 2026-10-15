@@ -53,7 +53,16 @@ test("water highlights retain closed marine geometry, contain sea locators and e
         f.geometry.coordinates[0],
       ),
     );
-    assert.equal(inside([31.24, 30.04], f.geometry.coordinates[0]), false);
+    const covers = (point) => inside(point, f.geometry.coordinates[0]) &&
+      !f.geometry.coordinates.slice(1).some(ring => inside(point, ring));
+    assert.equal(covers([31.24, 30.04]), false);
+    // Land near shore must stay unfilled, including Sinai and the Nile Delta.
+    for (const point of [[33.7, 29], [31, 31], [33.75, 27.2]])
+      assert.equal(covers(point), false);
+    if (f.id === "red-sea") {
+      assert(covers([33, 28.5]), "Gulf of Suez must be included");
+      assert(covers([34.7, 28.8]), "Gulf of Aqaba must be included");
+    }
     for (const [x, y] of f.geometry.coordinates.flat())
       assert(
         Number.isFinite(x) &&

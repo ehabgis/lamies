@@ -42,15 +42,15 @@ export default function Shell({
   );
 }
 
-export function PlatformNavigation() {
+export function PlatformNavigation({ hideHome = false }) {
   const { user, logout } = useSession();
   const navigate = useNavigate();
   return (
     <nav aria-label="تنقل المنصة">
-      <Link to={user ? "/journey" : "/"}>
+      {!hideHome && <Link to={user ? "/journey" : "/"}>
         <Compass size={21} />
         {user ? "رحلتي" : "صفحة البداية"}
-      </Link>
+      </Link>}
       {user && (
         <Link to="/my-progress">
           <Star size={21} />

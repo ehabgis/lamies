@@ -1242,3 +1242,41 @@
   bottom: 112px;
   z-index: 2000;
 }
+
+/* Persistent map actions and a centered, readable lesson header. */
+.map-shell .studio-titlebar { justify-content: center; }
+.map-top-button-cluster { display: flex; align-items: center; justify-content: center; gap: 18px; }
+.map-shell .map-header-identity { position: absolute; left: 8px; max-width: 210px; flex-direction: column; align-items: start; gap: 2px; }
+.map-shell .lesson-button-wrap button { min-height: 50px; padding: 10px 18px; font-size: 15px; }
+.map-shell .lesson-top-actions button { min-height: 48px; padding: 9px 13px; font-size: 14px; }
+.map-handle-group { display: flex; align-items: center; gap: 7px; pointer-events: auto; }
+.map-label-icon { display: inline-grid; place-items: center; width: 21px; height: 21px; font-size: 18px; font-weight: 800; border: 1px solid currentColor; border-radius: 4px; }
+.map-sidebar-handles button[aria-pressed="true"] { background: #0869c4; color: #fff; border-color: #0869c4; }
+.map-shell .leaflet-tooltip.resource-map-label { background: #12365c; color: #fff; border: 2px solid white; border-radius: 7px; padding: 6px 10px; font-size: 12px; font-weight: 800; box-shadow: 0 4px 12px #102a4d55; }
+.map-shell .leaflet-tooltip-top.resource-map-label::before { border-top-color: #12365c; }
+.map-shell .studio-workspace > .learning-drawer { top: 10px; bottom: 100px; width: min(560px, calc(100% - 24px)); }
+.learning-drawer-body { scrollbar-color: #7da5c5 #edf5fa; scrollbar-width: thin; }
+@media (max-width: 1250px) {
+  .map-shell .studio-titlebar { flex-direction: column; gap: 6px; }
+  .map-shell .map-header-identity { position: static; max-width: none; flex-direction: row; justify-content: center; align-items: center; order: -1; margin: 0; }
+  .map-top-button-cluster { width: 100%; gap: 14px; }
+}
+@media (max-width: 850px) {
+  .map-top-button-cluster { flex-direction: column; gap: 5px; }
+  .map-shell .lesson-button-wrap button { min-height: 44px; padding: 6px 10px; font-size: 13px; }
+  .map-shell .lesson-top-actions button { min-height: 44px; padding: 6px 7px; font-size: 11px; }
+  .map-shell .lesson-number-buttons, .map-shell .lesson-top-actions { justify-content: center; }
+  .map-sidebar-handles { gap: 5px; left: 8px; right: 8px; }
+  .map-handle-group { gap: 4px; }
+  .map-shell .map-sidebar-handles button { padding: 5px 7px; gap: 4px; font-size: 10px; }
+  .map-shell .map-sidebar-handles button svg { width: 17px; }
+  .map-sidebar-handles .map-label-icon { display: none; }
+  .map-shell .studio-workspace > .learning-drawer { width: calc(100% - 20px); bottom: 102px; }
+}
+@media (max-height: 500px) and (min-width: 650px) {
+  .map-shell .studio-titlebar { flex-direction: row; gap: 8px; }
+  .map-top-button-cluster { flex-direction: row; gap: 8px; width: auto; }
+  .map-shell .map-header-identity { position: static; order: 0; flex-direction: column; font-size: 9px; }
+  .map-shell .lesson-button-wrap button, .map-shell .lesson-top-actions button { min-height: 44px; padding: 5px 8px; font-size: 11px; }
+  .map-shell .studio-workspace > .learning-drawer { bottom: 80px; }
+}

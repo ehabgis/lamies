@@ -117,3 +117,7 @@ Additional water teaching layer (2026-10-16):
 Marine polygons: https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_geography_marine_polys.geojson
 Nile and named Rosetta/Damietta branches: https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_rivers_lake_centerlines.geojson
 Natural Earth public domain. Marine geometry clipped to the Egypt teaching region.
+
+Coastline refinement (15 October 2026):
+https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_ocean.geojson
+Marine regions including Gulf of Suez and Gulf of Aqaba intersected with ocean coastline polygons; clipped to the teaching extent. Public domain. Not survey or navigation data.

@@ -5,13 +5,14 @@
   "license": "Natural Earth public domain",
   "sources": [
     "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_geography_marine_polys.geojson",
-    "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_rivers_lake_centerlines.geojson"
+    "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_rivers_lake_centerlines.geojson",
+    "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_ocean.geojson"
   ],
-  "method": "Marine source rings clipped to [24,21.7,37.5,34.5]; Nile layer retains earlier Nile features and adds the two named Delta branches without moving source coordinates. Generalized educational geometry; marine locator pins are representative labels, not freshwater intakes.",
+  "method": "Named marine regions (Red Sea including Gulf of Suez and Gulf of Aqaba; Mediterranean Sea) intersected with Natural Earth 1:10m ocean coastline polygons, then clipped to [24,21.7,37.5,34.5]. Coastline holes/islands preserved. Nile retains source lines and both Delta branches. Generalized educational geometry, not survey/navigation precision; marine locator pins are representative labels, not freshwater intakes.",
   "files": [
     {
       "path": "public/geodata/egypt-seas.geojson",
-      "sha256": "4945ad8db05ef7353ee95faedac9e4952ce25d2a95279a8bb331ec74861e5c8c",
+      "sha256": "1b2f28c5c470571400f48369e29fd4cb99dbc90d3c49aacd606ccfd48bb3f4f6",
       "features": [
         {
           "id": "red-sea",

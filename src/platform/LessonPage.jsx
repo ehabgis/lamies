@@ -13,7 +13,6 @@ import {
   VideoCamera,
   ChatCircle,
   SpeakerHigh,
-  ArrowLeft,
   Compass,
   MagnifyingGlass,
   Plus,
@@ -64,6 +63,7 @@ export default function LessonPage({ demo = false }) {
   const [lessonOptions, setLessonOptions] = useState([]);
   const [legendOpen, setLegendOpen] = useState(() => window.innerWidth > 850);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [showLocationNames, setShowLocationNames] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
   const [resetMap, setResetMap] = useState(0);
   const [focusRequest, setFocusRequest] = useState(null);
@@ -483,6 +483,7 @@ export default function LessonPage({ demo = false }) {
     <Shell mapPage>
       <h1 className="studio-page-title">{lesson.title}</h1>
       <div className="studio-titlebar">
+        <div className="map-top-button-cluster">
         <nav className="lesson-number-buttons" aria-label="دروس الوحدة">
           {[0, 1, 2].map((i) => {
             const next = lessonOptions[i];
@@ -551,6 +552,7 @@ export default function LessonPage({ demo = false }) {
               {title}
             </button>
           ))}
+        </div>
         </div>
         <div className="map-header-identity">
           <span className="map-unit-name">
@@ -676,6 +678,7 @@ export default function LessonPage({ demo = false }) {
         )}
 
         <div className="map-sidebar-handles" aria-label="القوائم الجانبية">
+          <div className="map-handle-group">
           <button
             id="show-legend"
             aria-controls="lesson-legend"
@@ -687,6 +690,14 @@ export default function LessonPage({ demo = false }) {
           >
             <BookOpen size={21} />
             <span>المفتاح والأدوات</span>
+          </button>
+          <button className="map-reset-all" onClick={showAll} title="عرض جميع الموارد وإعادة الخريطة إلى مصر كاملة">
+            <Compass size={21} /><span>عرض الجميع</span>
+          </button>
+          </div>
+          <div className="map-handle-group">
+          <button aria-pressed={showLocationNames} aria-label={showLocationNames ? "إخفاء أسماء المواقع" : "إظهار أسماء المواقع"} title="إظهار أو إخفاء أسماء المواقع على الخريطة" onClick={() => setShowLocationNames(v => !v)}>
+            <span className="map-label-icon" aria-hidden="true">أ</span><span>الأسماء</span>
           </button>
           <button
             id="show-guide"
@@ -700,6 +711,7 @@ export default function LessonPage({ demo = false }) {
             <ChatCircle size={21} />
             <span>المعلم والمورد</span>
           </button>
+          </div>
         </div>
         <aside
           id="lesson-legend"
@@ -754,16 +766,7 @@ export default function LessonPage({ demo = false }) {
               </span>
             </button>
           ))}
-          <button className="show-map-all" onClick={showAll}>
-            <Compass size={18} />
-            عرض الجميع · إعادة الزوم
-          </button>
-          <div className="map-menu-navigation">
-            <Link to={demo ? "/explore" : "/journey"}>
-              اختيار الدروس <ArrowLeft size={16} />
-            </Link>
-            <PlatformNavigation />
-          </div>
+          {user && <div className="map-menu-navigation"><PlatformNavigation hideHome /></div>}
         </aside>
         <section className="classroom-map-region" aria-label="خريطة موارد مصر">
           <div className="classroom-map-meta">
@@ -780,7 +783,7 @@ export default function LessonPage({ demo = false }) {
             sites={sites.filter(showSite)}
             activeResourceId={resource?.id}
             selectedLocationId={location?.id}
-            showNames={discovery}
+            showNames={showLocationNames}
             resetKey={resetMap}
             focusRequest={focusRequest}
             waterLesson={demo && id === "lesson-2"}

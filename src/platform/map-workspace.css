@@ -933,3 +933,102 @@
     transition: none !important;
   }
 }
+/* Selected location: one panel with accessible video and summary tabs. */
+.map-shell .site-detail-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin: 10px 0 14px;
+  border: 1px solid #c2ddeb;
+  border-radius: 13px;
+  background: #edf7fc;
+}
+.map-shell .site-detail-tabs button {
+  flex: 1;
+  padding: 7px 5px;
+  gap: 5px;
+  font-size: 12px;
+  color: #224d6c;
+  border: 0;
+  background: transparent;
+  min-height: 44px;
+}
+.map-shell .site-detail-tabs button[aria-selected="true"] {
+  background: #0869c4;
+  color: white;
+}
+.map-shell .site-detail-panel {
+  outline-offset: 3px;
+}
+.map-shell .site-detail-panel > video {
+  display: block;
+  width: 100%;
+  max-height: 230px;
+  aspect-ratio: 16 / 9;
+  background: #0e2439;
+  border-radius: 12px;
+}
+.map-shell .site-facts {
+  margin: 0 0 14px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid #cbdfe9;
+}
+.map-shell .site-facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 11px;
+}
+.map-shell .site-facts dt {
+  color: #355873;
+  flex-shrink: 0;
+}
+.map-shell .site-facts dd {
+  margin: 0;
+  text-align: left;
+  font-weight: 700;
+}
+.map-shell .site-facts small {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: #355873;
+}
+.map-shell .site-video-empty {
+  padding: 18px 3px;
+  text-align: center;
+  color: #355873;
+}
+.map-shell .site-video-empty > svg {
+  color: #0869c4;
+  margin-bottom: 8px;
+}
+.map-shell .site-video-empty .p-button {
+  margin-top: 12px;
+  font-size: 12px;
+}
+.map-shell .classroom-resource .site-media-note {
+  font-size: 11px;
+  color: #355873;
+  margin-top: 10px;
+}
+.map-shell .site-lesson-summary {
+  margin: 12px 0;
+  padding: 10px 0;
+  border-block: 1px solid #d3e4ef;
+  font-size: 12px;
+}
+.map-shell .site-lesson-summary summary {
+  cursor: pointer;
+  font-weight: 700;
+  min-height: 32px;
+}
+.map-shell .site-lesson-summary p {
+  margin-top: 8px;
+}
+@media (max-width: 850px) {
+  .map-shell .classroom-workspace > .classroom-guide.mobile-open { max-height: 62%; }
+  .map-shell .classroom-guide.mobile-open .mobile-panel-close { min-height: 32px !important; padding: 3px 8px; font-size: 11px; }
+  .map-shell .site-detail-tabs { margin: 6px 0 10px; }
+}

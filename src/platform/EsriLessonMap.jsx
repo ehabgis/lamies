@@ -234,6 +234,16 @@ export default function EsriLessonMap({
       if (!Number.isFinite(site.lat) || !Number.isFinite(site.lng)) continue;
       const highlighted = site.resource.id === activeResourceId,
         dim = activeResourceId && !highlighted;
+      if (selectedLocationId === site.id)
+        L.circleMarker([site.lat, site.lng], {
+          radius: 24,
+          color: "#ffb12b",
+          weight: 3,
+          fillColor: "#ffc14d",
+          fillOpacity: 0.18,
+          interactive: false,
+          className: "selected-site-ring",
+        }).addTo(group);
       const marker = L.marker([site.lat, site.lng], {
         keyboard: true,
         riseOnHover: true,
@@ -250,6 +260,7 @@ export default function EsriLessonMap({
       marker.on("click", () => {
         if (marker.getElement() === document.activeElement)
           focusSite.current = site.id;
+        focusLocation(site);
         callback.current.onSelect(site);
       });
       marker.bindTooltip(textNode(site.name), {
@@ -288,6 +299,7 @@ export default function EsriLessonMap({
         button.textContent = "▶";
         button.addEventListener("click", (e) => {
           e.stopPropagation();
+          focusLocation(site);
           callback.current.onVideo(site);
         });
         element.appendChild(button);
@@ -306,6 +318,18 @@ export default function EsriLessonMap({
     document.addEventListener("keydown", escape);
     return () => document.removeEventListener("keydown", escape);
   }, [gallery]);
+  function focusLocation(site) {
+    const map = mapRef.current;
+    const zoom = Math.max(map.getZoom(), 8);
+    const point = map.project([site.lat, site.lng], zoom);
+    if (window.matchMedia("(max-width: 850px)").matches)
+      point.y += map.getSize().y * 0.24;
+    map.stop();
+    map.setView(map.unproject(point, zoom), zoom, {
+      animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      duration: 0.6,
+    });
+  }
   function selectBasemap(id, close = true) {
     setBasemap(id);
     setRetry((n) => n + 1);

@@ -70,7 +70,33 @@ export default function LessonPage({ demo = false }) {
     [notice, setNotice] = useState(""),
     [stateReady, setStateReady] = useState(false),
     [videoFailed, setVideoFailed] = useState(false),
-    [mobilePanel, setMobilePanel] = useState(null);
+    [mobilePanel, setMobilePanel] = useState(null),
+    [detailTab, setDetailTab] = useState("summary");
+  useEffect(() => {
+    setVideoFailed(false);
+  }, [resource?.id, location?.id]);
+  function changeDetailTab(tab, focus = false) {
+    setDetailTab(tab);
+    if (focus)
+      requestAnimationFrame(() =>
+        document.getElementById(`site-tab-${tab}`)?.focus(),
+      );
+  }
+  function detailKeys(e) {
+    if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) {
+      e.preventDefault();
+      changeDetailTab(
+        e.key === "Home"
+          ? "video"
+          : e.key === "End"
+            ? "summary"
+            : detailTab === "summary"
+              ? "video"
+              : "summary",
+        true,
+      );
+    }
+  }
   useEffect(() => {
     setLesson(null);
     setStateReady(false);
@@ -139,7 +165,7 @@ export default function LessonPage({ demo = false }) {
         <div className="p-empty">
           <h1>تعذر فتح الدرس</h1>
           <p role="alert">{error}</p>
-          <Link className="p-button" to={demo ? "/" : "/journey"}>
+          <Link className="p-button" to={demo ? "/explore" : "/journey"}>
             ارجع إلى دروسك
           </Link>
         </div>
@@ -189,6 +215,7 @@ export default function LessonPage({ demo = false }) {
   const answered = (id) => setSolved((s) => (s.includes(id) ? s : [...s, id]));
   function pick(r) {
     setMobilePanel(null);
+    setDetailTab("summary");
     setResource(r);
     setLocation(null);
     setNotice("");
@@ -252,7 +279,7 @@ export default function LessonPage({ demo = false }) {
     } else setNotice("الاستماع غير متاح في هذا المتصفح.");
   }
   let guide = location
-    ? "اقرأ بطاقة الموقع، ثم جرّب سؤالًا سريعًا."
+    ? "قرّبنا موقعك على الخريطة. افتح تبويب الملخص أو الفيديو، ثم جرّب سؤالًا سريعًا."
     : resource
       ? `أحسنت! ${resource.locations?.length ? "اضغط على أحد مواقع " + resource.label + " لتعرف المزيد." : "لم تُضف مواقع موثقة لهذا المورد بعد. يمكنك قراءة معلوماته."}`
       : discovery
@@ -262,8 +289,8 @@ export default function LessonPage({ demo = false }) {
     <Shell mapPage>
       <div className="classroom-heading">
         <div>
-          <Link to={demo ? "/" : "/journey"}>
-            {demo ? "العودة للبداية" : "دروسي"} <ArrowLeft />
+          <Link to={demo ? "/explore" : "/journey"}>
+            {demo ? "اختيار الدروس" : "دروسي"} <ArrowLeft />
           </Link>
           <h1>{lesson.title}</h1>
         </div>
@@ -452,12 +479,14 @@ export default function LessonPage({ demo = false }) {
             onSelect={(site) => {
               setResource(site.resource);
               setLocation(site);
+              setDetailTab("summary");
               setMobilePanel("guide");
             }}
             onVideo={(site) => {
               setResource(site.resource);
               setLocation(site);
-              setModal("video");
+              setDetailTab("video");
+              setMobilePanel("guide");
             }}
           />
         </section>
@@ -494,68 +523,200 @@ export default function LessonPage({ demo = false }) {
                   الموقع المختار: {location.name}
                 </p>
               )}
-              <Photo
-                key={resource.id}
-                src={resource.media?.image}
-                label={`خامات ${resource.label}`}
-              />
-              <h3>أماكن وجوده</h3>
-              <p>{resource.description}</p>
-              <h3>أهميته</h3>
-              <p>{resource.importance}</p>
-              <div className="p-actions">
+              <div
+                className="site-detail-tabs"
+                role="tablist"
+                aria-label="محتوى الموقع"
+                onKeyDown={detailKeys}
+              >
                 <button
-                  className="p-secondary"
-                  onClick={() =>
-                    ai("explain", `اشرح لي ببساطة معلومة عن ${resource.label}`)
-                  }
+                  id="site-tab-video"
+                  role="tab"
+                  aria-selected={detailTab === "video"}
+                  aria-controls="site-panel-video"
+                  tabIndex={detailTab === "video" ? 0 : -1}
+                  onClick={() => changeDetailTab("video")}
                 >
-                  اشرح لي ببساطة
+                  <VideoCamera size={19} />
+                  الفيديو
                 </button>
                 <button
-                  className="p-secondary"
-                  onClick={() =>
-                    ai(
-                      "question",
-                      `اختر سؤالًا إضافيًا من بنك الدرس عن ${resource.label}`,
-                    )
-                  }
+                  id="site-tab-summary"
+                  role="tab"
+                  aria-selected={detailTab === "summary"}
+                  aria-controls="site-panel-summary"
+                  tabIndex={detailTab === "summary" ? 0 : -1}
+                  onClick={() => changeDetailTab("summary")}
                 >
-                  سؤال إضافي
+                  <BookOpen size={19} />
+                  الملخص والخصائص
                 </button>
               </div>
-              {resource.media?.video ? (
-                <button className="p-button" onClick={() => setModal("video")}>
-                  <VideoCamera />
-                  شاهد الفيديو
-                </button>
-              ) : (
-                <p className="p-muted">لم يُضف فيديو لهذا المورد بعد.</p>
+              {detailTab === "video" && (
+                <div
+                  id="site-panel-video"
+                  role="tabpanel"
+                  tabIndex={0}
+                  aria-labelledby="site-tab-video"
+                  className="site-detail-panel"
+                >
+                  {resource.media?.video ? (
+                    <>
+                      <h3>شاهد وتعلّم عن {resource.label}</h3>
+                      {videoFailed ? (
+                        <p role="status">
+                          تعذّر تشغيل الفيديو. يمكنك قراءة الملخص أو إعادة
+                          المحاولة.
+                        </p>
+                      ) : (
+                        modal !== "video" && (
+                          <video
+                            key={`${resource.id}-${location?.id}`}
+                            src={resource.media.video}
+                            controls
+                            playsInline
+                            preload="metadata"
+                            onError={() => setVideoFailed(true)}
+                          />
+                        )
+                      )}
+                      <div className="p-actions">
+                        {videoFailed && (
+                          <button
+                            className="p-secondary"
+                            onClick={() => setVideoFailed(false)}
+                          >
+                            إعادة المحاولة
+                          </button>
+                        )}
+                        <button
+                          className="p-secondary"
+                          disabled={videoFailed}
+                          onClick={(e) => {
+                            e.currentTarget
+                              .closest(".site-detail-panel")
+                              .querySelector("video")
+                              ?.pause();
+                            setModal("video");
+                          }}
+                        >
+                          عرض أكبر للفيديو
+                        </button>
+                      </div>
+                      <p className="site-media-note">
+                        ابدأ التشغيل بنفسك. يمكنك الرجوع للملخص دون تغيير موقع
+                        الخريطة.
+                      </p>
+                    </>
+                  ) : (
+                    <div className="site-video-empty">
+                      <VideoCamera size={38} weight="duotone" />
+                      <h3>الفيديو غير متاح حاليًا</h3>
+                      <p>
+                        لم يُضف فيديو لهذا المورد بعد. يمكنك استكشاف موقعه
+                        وقراءة ملخصه الآن.
+                      </p>
+                      <button
+                        className="p-button"
+                        onClick={() => changeDetailTab("summary", true)}
+                      >
+                        اقرأ الملخص والخصائص
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
-              <button
-                className="p-secondary"
-                onClick={() => {
-                  const relevant = questions.find(
-                    (q) =>
-                      q.resourceId === resource.id &&
-                      ["choice", "boolean"].includes(q.type),
-                  );
-                  setIndex(
-                    Math.max(
-                      0,
-                      questions
-                        .filter((q) => ["choice", "boolean"].includes(q.type))
-                        .findIndex((q) => q.id === relevant?.id),
-                    ),
-                  );
-                  setModal("questions");
-                }}
-              >
-                سؤال سريع
-              </button>
-              <button className="p-text-link" onClick={another}>
-                اكتشف رمزًا آخر
-              </button>
+              {detailTab === "summary" && (
+                <div
+                  id="site-panel-summary"
+                  role="tabpanel"
+                  tabIndex={0}
+                  aria-labelledby="site-tab-summary"
+                  className="site-detail-panel"
+                >
+                  <dl className="site-facts">
+                    <div>
+                      <dt>نوع المورد</dt>
+                      <dd>{kindNames[resource.kind]}</dd>
+                    </div>
+                    {location && (
+                      <div>
+                        <dt>الموقع على الخريطة</dt>
+                        <dd>
+                          {Number(location.lat).toFixed(2)}° شمالًا ·{" "}
+                          {Number(location.lng).toFixed(2)}° شرقًا
+                          <small>إحداثيات تعليمية تقريبية</small>
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
+                  {resource.media?.image && (
+                    <Photo
+                      key={resource.id}
+                      src={resource.media?.image}
+                      label={`خامات ${resource.label}`}
+                    />
+                  )}
+                  <h3>أماكن وجوده</h3>
+                  <p>{resource.description}</p>
+                  <h3>أهميته</h3>
+                  <p>{resource.importance}</p>
+                  <div className="p-actions">
+                    <button
+                      className="p-secondary"
+                      onClick={() =>
+                        ai(
+                          "explain",
+                          `اشرح لي ببساطة معلومة عن ${resource.label}`,
+                        )
+                      }
+                    >
+                      اشرح لي ببساطة
+                    </button>
+                    <button
+                      className="p-secondary"
+                      onClick={() =>
+                        ai(
+                          "question",
+                          `اختر سؤالًا إضافيًا من بنك الدرس عن ${resource.label}`,
+                        )
+                      }
+                    >
+                      سؤال إضافي
+                    </button>
+                  </div>
+                  <details className="site-lesson-summary">
+                    <summary>ملخص الدرس كاملًا</summary>
+                    <p>{content.summary || content.intro}</p>
+                  </details>
+                  <button
+                    className="p-secondary"
+                    onClick={() => {
+                      const relevant = questions.find(
+                        (q) =>
+                          q.resourceId === resource.id &&
+                          ["choice", "boolean"].includes(q.type),
+                      );
+                      setIndex(
+                        Math.max(
+                          0,
+                          questions
+                            .filter((q) =>
+                              ["choice", "boolean"].includes(q.type),
+                            )
+                            .findIndex((q) => q.id === relevant?.id),
+                        ),
+                      );
+                      setModal("questions");
+                    }}
+                  >
+                    سؤال سريع
+                  </button>
+                  <button className="p-text-link" onClick={another}>
+                    اكتشف رمزًا آخر
+                  </button>
+                </div>
+              )}
             </section>
           )}
           {discovery &&

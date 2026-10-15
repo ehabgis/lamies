@@ -1,0 +1,222 @@
+{
+  "source": "src/data/curriculumData.js",
+  "adapter": "server/legacy-content.mjs",
+  "published": false,
+  "contentReviewRequired": true,
+  "legacyRewards": "Preserved in original data; not merged with server-authoritative account XP",
+  "legacyMetadataUnit": {
+    "number": 3,
+    "title": "كنوز مصر",
+    "description": "اكتشف ثروات مصر من معادن وطاقة ومياه ومشروعات",
+    "icon": "🏛️"
+  },
+  "lessons": [
+    {
+      "id": "lesson-1",
+      "objectives": 7,
+      "concepts": 8,
+      "resources": 10,
+      "sites": 9,
+      "questions": 43,
+      "media": [
+        {
+          "title": "استخراج الذهب من منجم السكري - فيديو درون",
+          "type": "video",
+          "path": "/lesson-media/lesson1_gold_mine.webm",
+          "description": "شاهد كيف يستخرج الذهب اللامع من باطن الأرض في واحد من أكبر مناجم العالم بالصحراء الشرقية!",
+          "available": false
+        },
+        {
+          "title": "كيف يتم استخراج الغاز الطبيعي؟",
+          "type": "video",
+          "path": "/lesson-media/lesson1_oil_gas.webm",
+          "description": "رحلة تحت أعماق البحار لنعرف كيف يصل الغاز الطبيعي من حقل ظهر إلى بيوتنا!",
+          "available": false
+        },
+        {
+          "title": "فوسفات أبو طرطور - صورة توضيحية",
+          "type": "video",
+          "path": "/lesson-media/lesson1_phosphate.jpg",
+          "description": "صورة توضح خام الفوسفات المستخدم في صناعة الأسمدة الزراعية.",
+          "available": false
+        },
+        {
+          "title": "محطة بنبان - عاصمة الطاقة الشمسية",
+          "type": "video",
+          "path": "/lesson-media/lesson1_solar_station.webm",
+          "description": "أكبر محطة طاقة شمسية في العالم موجودة في أسوان! الشمس تمنحنا طاقة نظيفة.",
+          "available": false
+        },
+        {
+          "title": "موارد المياه في مصر - ملف صوتي",
+          "type": "audio",
+          "path": "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%89%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B5%D9%88%D8%AA%D9%8A%D8%A9/%D9%85%D9%88%D8%A7%D8%B1%D8%AF%20%D8%A7%D9%84%D9%85%D9%8A%D8%A7%D8%A9%20%D9%81%D9%88%D9%8A%D8%B3.MP3",
+          "description": "ملف صوتي يشرح مصادر المياه في مصر وأهميتها للحياة والزراعة.",
+          "available": false
+        },
+        {
+          "title": "أعمال التعدين بالصحراء الشرقية",
+          "type": "image",
+          "path": "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%D8%A7%D9%84%D8%A7%D9%88%D9%84%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/176480-%D8%A3%D8%B9%D9%85%D8%A7%D9%84-%D8%A7%D9%84%D8%AA%D8%B9%D8%AF%D9%8A%D9%86-%D8%A8%D8%A7%D9%84%D8%B5%D8%AD%D8%B1%D8%A7%D8%A1-%D8%A7%D9%84%D8%B4%D8%B1%D9%82%D9%8A%D8%A9-.jpg",
+          "description": "صورة حقيقية للعمال وهم يستخرجون المعادن من قلب الجبال في قلب الصحراء.",
+          "available": false
+        },
+        {
+          "title": "النحاس بعد التصنيع - صورة توضيحية",
+          "type": "image",
+          "path": "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%D8%A7%D9%84%D8%A7%D9%88%D9%84%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/2019-637015848439981881-998.jpg",
+          "description": "صورة توضح لفائف النحاس بعد تجهيزها لاستخدامها في الصناعة.",
+          "available": false
+        },
+        {
+          "title": "منجم السكري - صورة توضيحية",
+          "type": "image",
+          "path": "/lesson-media/lesson1_sukari.jpg",
+          "description": "صورة محلية من منطقة منجم السكري توضح التعدين واستخراج الذهب في مصر.",
+          "available": false
+        },
+        {
+          "title": "محطة بنبان للطاقة الشمسية",
+          "type": "video",
+          "path": "/lesson-media/lesson1_solar_station.webm",
+          "description": "فيديو محلي يوضح محطة الطاقة الشمسية وفكرة إنتاج الكهرباء من الشمس.",
+          "available": false
+        },
+        {
+          "title": "محطة طاقة شمسية - فيديو تعليمي",
+          "type": "video",
+          "path": "/lesson-media/lesson1_solar_station.webm",
+          "description": "فيديو محلي قصير يوضح كيف تعمل محطة الطاقة الشمسية بطريقة مبسطة.",
+          "available": false
+        },
+        {
+          "title": "مزرعة رياح - فيديو قصير",
+          "type": "video",
+          "path": "/lesson-media/lesson1_wind_farm.webm",
+          "description": "فيديو محلي لمزرعة رياح تُستخدم لتوليد الكهرباء النظيفة.",
+          "available": false
+        }
+      ]
+    },
+    {
+      "id": "lesson-2",
+      "objectives": 3,
+      "concepts": 3,
+      "resources": 6,
+      "sites": 6,
+      "questions": 12,
+      "media": [
+        {
+          "title": "نهر النيل وفرعاه وبحيرة ناصر - ملف صوتي",
+          "type": "audio",
+          "path": "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%89%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B5%D9%88%D8%AA%D9%8A%D8%A9/%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D8%B5%D9%88%D8%AA%D9%89%20%D9%86%D9%87%D8%B1%20%D8%A7%D9%84%D9%86%D9%8A%D9%8A%D9%84%20%D9%88%D9%81%D8%B1%D8%B9%D9%8A%D9%87%20%D9%88%D8%A8%D8%AD%D9%8A%D8%B1%D8%A9%20%D9%86%D8%A7%D8%B5%D8%B1.mov",
+          "description": "شرح صوتي عن نهر النيل وفرعيه وبحيرة ناصر ودورها في موارد المياه.",
+          "available": false
+        },
+        {
+          "title": "محطة تحلية مياه العين السخنة",
+          "type": "video",
+          "path": "/lesson-media/lesson2_desalination.webm",
+          "description": "تكنولوجيا مذهلة تحول الماء المالح لماء شرب! أكبر محطة تحلية في الشرق الأوسط.",
+          "available": false
+        },
+        {
+          "title": "دلتا النيل وموارد المياه",
+          "type": "video",
+          "path": "/lesson-media/lesson2_nile_delta.webm",
+          "description": "فيديو قصير يوضح أهمية دلتا النيل ومناطق المياه والزراعة.",
+          "available": false
+        },
+        {
+          "title": "الأمطار الشتوية - تسجيل صوتي",
+          "type": "audio",
+          "path": "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%89%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B5%D9%88%D8%AA%D9%8A%D8%A9/%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D8%B5%D9%88%D8%AA%D9%89%20%D9%84%D9%84%D8%A3%D9%85%D8%B7%D8%A7%D8%B1%20%D8%A7%D9%84%D8%B4%D8%AA%D9%88%D9%8A%D8%A9.mov",
+          "description": "صوت الطبيعة! اسمع صوت المطر واكتشف أهميته للوادي والناس.",
+          "available": false
+        },
+        {
+          "title": "صورة للمياه العذبة مقابل المالحة",
+          "type": "image",
+          "path": "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%89%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/%D8%B5%D9%88%D8%B1%D8%A9%20%D9%84%D9%84%D9%85%D9%8A%D8%A7%D9%87.jfif",
+          "description": "هل تعرف الفرق؟ صورة توضح لنا أين نجد الماء العذب وأين نجد الماء المالح.",
+          "available": false
+        },
+        {
+          "title": "خريطة موارد المياه",
+          "type": "image",
+          "path": "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%89%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/%D8%AE%D8%B1%D9%8A%D8%B7%D8%A9%20%D8%A7%D9%84%D8%AF%D8%B1%D8%B3/a0eea397-80b9-462e-9b8a-1d443f848550.jfif",
+          "description": "خريطة ملونة توضح شريان الحياة في مصر ونقاط توزيع المياه.",
+          "available": false
+        },
+        {
+          "title": "السد العالي في أسوان",
+          "type": "image",
+          "path": "/lesson-media/lesson2_aswan.jpg",
+          "description": "صورة محلية من أسوان تساعد في شرح السد العالي ودوره في تنظيم مياه النيل.",
+          "available": false
+        },
+        {
+          "title": "خريطة مصر",
+          "type": "image",
+          "path": "/lesson-media/egypt_map.svg",
+          "description": "خريطة محلية تساعد الطلاب على تحديد مواقع الموارد والأنهار والمدن.",
+          "available": false
+        }
+      ]
+    },
+    {
+      "id": "lesson-3",
+      "objectives": 3,
+      "concepts": 3,
+      "resources": 6,
+      "sites": 6,
+      "questions": 9,
+      "media": [
+        {
+          "title": "العاصمة الإدارية الجديدة - مدينة المستقبل",
+          "type": "image",
+          "path": "/lesson-media/lesson3_new_capital.jpg",
+          "description": "صورة توضح ملامح العاصمة الإدارية كمشروع عمراني حديث.",
+          "available": false
+        },
+        {
+          "title": "وزارة البيئة في العاصمة الإدارية",
+          "type": "image",
+          "path": "/lesson-media/lesson3_ministry_env.jpg",
+          "description": "صورة محلية لمبنى حكومي حديث داخل العاصمة الإدارية الجديدة.",
+          "available": false
+        },
+        {
+          "title": "مشروع توشكى الخير - صورة زراعية",
+          "type": "image",
+          "path": "/lesson-media/lesson3_toshka.jpg",
+          "description": "صورة توضح الزراعة والاستصلاح في مشروع توشكى الخير.",
+          "available": false
+        }
+      ]
+    }
+  ],
+  "missingMediaReferences": 22,
+  "uniqueMissingPaths": [
+    "/lesson-media/lesson1_gold_mine.webm",
+    "/lesson-media/lesson1_oil_gas.webm",
+    "/lesson-media/lesson1_phosphate.jpg",
+    "/lesson-media/lesson1_solar_station.webm",
+    "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%89%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B5%D9%88%D8%AA%D9%8A%D8%A9/%D9%85%D9%88%D8%A7%D8%B1%D8%AF%20%D8%A7%D9%84%D9%85%D9%8A%D8%A7%D8%A9%20%D9%81%D9%88%D9%8A%D8%B3.MP3",
+    "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%D8%A7%D9%84%D8%A7%D9%88%D9%84%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/176480-%D8%A3%D8%B9%D9%85%D8%A7%D9%84-%D8%A7%D9%84%D8%AA%D8%B9%D8%AF%D9%8A%D9%86-%D8%A8%D8%A7%D9%84%D8%B5%D8%AD%D8%B1%D8%A7%D8%A1-%D8%A7%D9%84%D8%B4%D8%B1%D9%82%D9%8A%D8%A9-.jpg",
+    "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%D8%A7%D9%84%D8%A7%D9%88%D9%84%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/2019-637015848439981881-998.jpg",
+    "/lesson-media/lesson1_sukari.jpg",
+    "/lesson-media/lesson1_wind_farm.webm",
+    "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%89%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B5%D9%88%D8%AA%D9%8A%D8%A9/%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D8%B5%D9%88%D8%AA%D9%89%20%D9%86%D9%87%D8%B1%20%D8%A7%D9%84%D9%86%D9%8A%D9%8A%D9%84%20%D9%88%D9%81%D8%B1%D8%B9%D9%8A%D9%87%20%D9%88%D8%A8%D8%AD%D9%8A%D8%B1%D8%A9%20%D9%86%D8%A7%D8%B5%D8%B1.mov",
+    "/lesson-media/lesson2_desalination.webm",
+    "/lesson-media/lesson2_nile_delta.webm",
+    "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%89%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/%D8%A7%D9%84%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B5%D9%88%D8%AA%D9%8A%D8%A9/%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D8%B5%D9%88%D8%AA%D9%89%20%D9%84%D9%84%D8%A3%D9%85%D8%B7%D8%A7%D8%B1%20%D8%A7%D9%84%D8%B4%D8%AA%D9%88%D9%8A%D8%A9.mov",
+    "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%89%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/%D8%B5%D9%88%D8%B1%D8%A9%20%D9%84%D9%84%D9%85%D9%8A%D8%A7%D9%87.jfif",
+    "/%D8%A7%D9%84%D8%AF%D8%B1%D8%B3%20%D8%A7%D9%84%D8%AB%D8%A7%D9%86%D9%89%20%D8%A7%D9%84%D8%AC%D8%AF%D9%8A%D8%AF/%D8%AE%D8%B1%D9%8A%D8%B7%D8%A9%20%D8%A7%D9%84%D8%AF%D8%B1%D8%B3/a0eea397-80b9-462e-9b8a-1d443f848550.jfif",
+    "/lesson-media/lesson2_aswan.jpg",
+    "/lesson-media/egypt_map.svg",
+    "/lesson-media/lesson3_new_capital.jpg",
+    "/lesson-media/lesson3_ministry_env.jpg",
+    "/lesson-media/lesson3_toshka.jpg"
+  ]
+}

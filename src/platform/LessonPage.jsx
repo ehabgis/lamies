@@ -36,6 +36,8 @@ const kindNames = {
   mineral: "خام معدني",
   renewable: "طاقة متجددة",
   nonrenewable: "طاقة غير متجددة",
+  water: "مورد مائي",
+  project: "مشروع قومي",
 };
 export const mapPosition = (l) => ({
   left: `${(75 + ((l.lng - 24) / 12) * 350) / 5}%`,
@@ -143,12 +145,19 @@ export default function LessonPage({ demo = false }) {
     [notice, setNotice] = useState(""),
     [stateReady, setStateReady] = useState(false);
   useEffect(() => {
+    let active = true;
     setLesson(null);
+    setPanel(null);
+    setModal(null);
+    setIndex(0);
+    setFull(false);
+    setNotice("");
     setVideoOpen(false);
     setStateReady(false);
     setError("");
     api(`${demo ? "/demo" : ""}/lessons/${encodeURIComponent(id)}`)
       .then((data) => {
+        if (!active) return;
         setLesson(data.lesson);
         setSolved(
           data.progress.answers
@@ -168,7 +177,12 @@ export default function LessonPage({ demo = false }) {
         setMode(state.mode === "discover" ? "discover" : "interactive");
         setStateReady(true);
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => {
+        if (active) setError(e.message);
+      });
+    return () => {
+      active = false;
+    };
   }, [id, demo]);
   useEffect(() => {
     if (!pulse) return;
@@ -192,10 +206,14 @@ export default function LessonPage({ demo = false }) {
     return () => clearTimeout(timer);
   }, [stateReady, lesson, id, resource, location, mode, preview, demo]);
   useEffect(() => {
-    if (modal || videoOpen || (!infoOpen && !legendOpen)) return;
+    if (modal || videoOpen || (!infoOpen && !legendOpen && !panel)) return;
     const escape = (e) => {
       if (e.key !== "Escape") return;
-      if (infoOpen) {
+      if (panel) {
+        const key = panel;
+        setPanel(null);
+        document.getElementById(`lesson-info-${key}`)?.focus();
+      } else if (infoOpen) {
         setInfoOpen(false);
         document.getElementById("show-guide")?.focus();
       } else {
@@ -205,7 +223,7 @@ export default function LessonPage({ demo = false }) {
     };
     document.addEventListener("keydown", escape);
     return () => document.removeEventListener("keydown", escape);
-  }, [modal, videoOpen, infoOpen, legendOpen]);
+  }, [modal, videoOpen, infoOpen, legendOpen, panel]);
   if (error)
     return (
       <Shell>
@@ -392,6 +410,27 @@ export default function LessonPage({ demo = false }) {
           <VideoCamera size={20} />
           افتح الفيديو على الخريطة
         </button>
+        {resource.legacyDetails && (
+          <details className="site-lesson-summary">
+            <summary>معلومات من النسخة القديمة</summary>
+            <p className="legacy-content-notice">
+              بيانات منقولة تحتاج مراجعة المعلم
+            </p>
+            {resource.legacyDetails.governorate && (
+              <p>المحافظة: {resource.legacyDetails.governorate}</p>
+            )}
+            {Object.values(resource.legacyDetails.description || {}).map(
+              (text, i) => (
+                <p key={i}>{text}</p>
+              ),
+            )}
+            {Object.values(resource.legacyDetails.dialog || {}).map(
+              (text, i) => (
+                <p key={i}>{text}</p>
+              ),
+            )}
+          </details>
+        )}
         <details className="site-lesson-summary">
           <summary>ملخص الدرس</summary>
           <p>{content.summary || content.intro}</p>
@@ -435,35 +474,75 @@ export default function LessonPage({ demo = false }) {
     <Shell mapPage>
       <h1 className="studio-page-title">{lesson.title}</h1>
       <div className="studio-titlebar">
-        <label className="studio-lesson-select">
-          الدرس الحالي
-          <select
-            aria-label="التنقل بين الدروس"
-            value={
-              lessonOptions.find((n) => n.id === id || n.demoLessonId === id)
-                ?.id || "current"
-            }
-            onChange={(e) => {
-              const next = lessonOptions.find((n) => n.id === e.target.value);
-              if (next && next.available !== false)
-                navigate(
-                  demo
-                    ? `/demo/${next.demoLessonId || next.id}`
-                    : `/classroom/${next.id}${preview ? "?preview=1" : ""}`,
-                );
-            }}
-          >
-            {!lessonOptions.length && (
-              <option value="current">{lesson.title}</option>
-            )}
-            {lessonOptions.map((n) => (
-              <option key={n.id} value={n.id} disabled={n.available === false}>
-                {n.title}
-                {n.available === false ? " — قيد التجهيز" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
+        <nav className="lesson-number-buttons" aria-label="دروس الوحدة">
+          {[0, 1, 2].map((i) => {
+            const next = lessonOptions[i];
+            const selected =
+              next && (next.id === id || next.demoLessonId === id);
+            const title =
+              next?.title ||
+              (i === 0 ? lesson.title : "لم يُضف درس لهذا الموضع بعد");
+            return (
+              <div
+                className={`lesson-button-wrap lesson-color-${i + 1}`}
+                key={i}
+              >
+                <button
+                  aria-label={
+                    ["الدرس الأول", "الدرس الثاني", "الدرس الثالث"][i]
+                  }
+                  aria-current={selected ? "page" : undefined}
+                  aria-disabled={!next || next.available === false}
+                  aria-describedby={`lesson-title-${i}`}
+                  onClick={() => {
+                    if (!next || next.available === false) {
+                      setNotice("هذا الدرس غير متاح بعد.");
+                      return;
+                    }
+                    setPanel(null);
+                    setInfoOpen(false);
+                    navigate(
+                      demo
+                        ? `/demo/${next.demoLessonId || next.id}`
+                        : `/classroom/${next.id}${preview ? "?preview=1" : ""}`,
+                    );
+                  }}
+                >
+                  {["الدرس الأول", "الدرس الثاني", "الدرس الثالث"][i]}
+                </button>
+                <span
+                  role="tooltip"
+                  id={`lesson-title-${i}`}
+                  className="lesson-name-tooltip"
+                >
+                  {title}
+                  {next?.available === false ? " · قيد التجهيز" : ""}
+                </span>
+              </div>
+            );
+          })}
+        </nav>
+        <div className="lesson-top-actions" aria-label="تفاصيل الدرس">
+          {[
+            ["objectives", "أهداف الدرس", Target],
+            ["concepts", "مفاهيم الدرس", BookOpen],
+            ["intro", "معلومات الدرس", BookOpen],
+          ].map(([key, title, Icon]) => (
+            <button
+              key={key}
+              id={`lesson-info-${key}`}
+              aria-expanded={panel === key}
+              aria-controls="lesson-information-panel"
+              onClick={() => {
+                setPanel(panel === key ? null : key);
+                setInfoOpen(false);
+              }}
+            >
+              <Icon size={18} />
+              {title}
+            </button>
+          ))}
+        </div>
         <div className="map-header-identity">
           <span className="map-unit-name">
             {unitTitle || "الوحدة: جارٍ التحميل…"}
@@ -476,6 +555,117 @@ export default function LessonPage({ demo = false }) {
       <div
         className={`classroom-workspace studio-workspace ${videoOpen ? "has-video" : ""} ${legendOpen ? "" : "legend-hidden"} ${infoOpen ? "" : "guide-hidden"}`}
       >
+        {panel && (
+          <section
+            id="lesson-information-panel"
+            role="region"
+            aria-label="تفاصيل الدرس المختار"
+            className="classroom-disclosure lesson-floating-information"
+          >
+            <button
+              className="p-close-text"
+              aria-label="إغلاق تفاصيل الدرس"
+              onClick={() => {
+                const key = panel;
+                setPanel(null);
+                document.getElementById(`lesson-info-${key}`)?.focus();
+              }}
+            >
+              إغلاق ×
+            </button>
+            {(demo || preview) && (
+              <p className="legacy-content-notice">
+                محتوى تجريبي يحتاج مراجعة المعلم
+              </p>
+            )}
+            {panel === "objectives" ? (
+              <>
+                <h2>أهداف الدرس</h2>
+                <ol>
+                  {(content.objectives || []).map((o, i) => (
+                    <li key={i}>{o}</li>
+                  ))}
+                </ol>
+              </>
+            ) : panel === "concepts" ? (
+              <>
+                <h2>مفاهيم الدرس</h2>
+                {(content.concepts || []).map((c, i) => (
+                  <article key={i}>
+                    <h3>{c.term}</h3>
+                    <p>{c.definition}</p>
+                    {c.image && <Photo src={c.image} label={c.term} />}
+                    <button
+                      className="p-secondary"
+                      onClick={() => speak(`${c.term}: ${c.definition}`)}
+                    >
+                      <SpeakerHigh />
+                      استمع للمفهوم
+                    </button>
+                  </article>
+                ))}
+              </>
+            ) : (
+              <>
+                <h2>هيا نبدأ الاستكشاف</h2>
+                <p>{content.intro}</p>
+                <h3>ملخص الدرس</h3>
+                <p>{content.summary}</p>
+                {content.legacyExtras && (
+                  <div className="legacy-lesson-information">
+                    <p className="legacy-content-notice">
+                      بيانات من النسخة القديمة · تحتاج مراجعة المعلم
+                    </p>
+                    <h3>أهم النقاط</h3>
+                    <ul>
+                      {content.legacyExtras.keyPoints.map((t, i) => (
+                        <li key={i}>{t}</li>
+                      ))}
+                    </ul>
+                    <h3>أمثلة من حياتنا</h3>
+                    <ul>
+                      {content.legacyExtras.examples.map((t, i) => (
+                        <li key={i}>{t}</li>
+                      ))}
+                    </ul>
+                    <p>{content.legacyExtras.realLife}</p>
+                    <h3>معلومات إضافية</h3>
+                    <ul>
+                      {content.legacyExtras.funFacts.map((t, i) => (
+                        <li key={i}>
+                          {typeof t === "string"
+                            ? t
+                            : `${t.title}: ${t.content}`}
+                        </li>
+                      ))}
+                    </ul>
+                    {content.legacyExtras.secrets.map((t, i) => (
+                      <p key={i}>
+                        <strong>{t.title}</strong> {t.content}
+                      </p>
+                    ))}
+                    <h3>وسائط النسخة القديمة</h3>
+                    <ul>
+                      {content.legacyExtras.media.map((m, i) => (
+                        <li key={i}>
+                          {m.title} —{" "}
+                          {m.available ? (
+                            <a href={m.path} target="_blank" rel="noreferrer">
+                              فتح الملف
+                            </a>
+                          ) : (
+                            "الملف غير موجود حاليًا"
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        )}
+
         <div className="map-sidebar-handles" aria-label="القوائم الجانبية">
           <button
             id="show-legend"
@@ -523,7 +713,7 @@ export default function LessonPage({ demo = false }) {
             مفتاح الخريطة
           </h2>
           <details className="map-settings" open>
-            <summary>إعدادات العرض ودليل الدرس</summary>
+            <summary>إعدادات العرض</summary>
             <div className="studio-select-tools">
               <label>
                 وضع الخريطة
@@ -539,62 +729,7 @@ export default function LessonPage({ demo = false }) {
                   <option value="discover">اكتشف الرموز</option>
                 </select>
               </label>
-              <label>
-                دليل الدرس
-                <select
-                  aria-label="دليل الدرس"
-                  value={panel || ""}
-                  onChange={(e) => setPanel(e.target.value || null)}
-                >
-                  <option value="">الأهداف والمعلومات</option>
-                  <option value="objectives">أهداف الدرس</option>
-                  <option value="intro">معلومات الدرس</option>
-                  <option value="concepts">مفاهيم الدرس</option>
-                </select>
-              </label>
             </div>
-            {panel && (
-              <section className="classroom-disclosure">
-                <button className="p-close-text" onClick={() => setPanel(null)}>
-                  إغلاق ×
-                </button>
-                {panel === "objectives" ? (
-                  <>
-                    <h2>أهداف الدرس</h2>
-                    <ol>
-                      {(content.objectives || []).map((o, i) => (
-                        <li key={i}>{o}</li>
-                      ))}
-                    </ol>
-                  </>
-                ) : panel === "concepts" ? (
-                  <>
-                    <h2>مفاهيم الدرس</h2>
-                    {(content.concepts || []).map((c, i) => (
-                      <article key={i}>
-                        <h3>{c.term}</h3>
-                        <p>{c.definition}</p>
-                        {c.image && <Photo src={c.image} label={c.term} />}
-                        <button
-                          className="p-secondary"
-                          onClick={() => speak(`${c.term}: ${c.definition}`)}
-                        >
-                          <SpeakerHigh />
-                          استمع للمفهوم
-                        </button>
-                      </article>
-                    ))}
-                  </>
-                ) : (
-                  <>
-                    <h2>هيا نبدأ الاستكشاف</h2>
-                    <p>{content.intro}</p>
-                    <h3>ملخص الدرس</h3>
-                    <p>{content.summary}</p>
-                  </>
-                )}
-              </section>
-            )}
           </details>
           <h3 className="map-menu-heading">الموارد الطبيعية</h3>
           {resources.map((r) => (
@@ -674,6 +809,7 @@ export default function LessonPage({ demo = false }) {
             onSelect={(site) => {
               setResource(site.resource);
               setLocation(site);
+              setPanel(null);
               setInfoOpen(true);
               setVideoOpen(false);
               setLegendOpen(false);
@@ -681,6 +817,7 @@ export default function LessonPage({ demo = false }) {
             onVideo={(site) => {
               setResource(site.resource);
               setLocation(site);
+              setPanel(null);
               setVideoOpen(true);
             }}
           />

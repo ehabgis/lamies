@@ -655,3 +655,233 @@
     min-height: 44px;
   }
 }
+/* Three clearly named lesson choices and contextual information below the bar. */
+.map-shell .studio-titlebar {
+  gap: 14px;
+  overflow: visible;
+  position: relative;
+  z-index: 1600;
+}
+.lesson-number-buttons {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.lesson-button-wrap {
+  position: relative;
+}
+.map-shell .lesson-button-wrap button {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--lesson-border);
+  background: var(--lesson-bg);
+  color: var(--lesson-ink);
+  font-size: 13px;
+}
+.lesson-color-1 {
+  --lesson-bg: #e0efff;
+  --lesson-ink: #074d94;
+  --lesson-border: #a1c7e9;
+  --lesson-active: #0869c4;
+}
+.lesson-color-2 {
+  --lesson-bg: #e1f4eb;
+  --lesson-ink: #185e40;
+  --lesson-border: #9dcdb4;
+  --lesson-active: #1a754c;
+}
+.lesson-color-3 {
+  --lesson-bg: #f1e9fc;
+  --lesson-ink: #653096;
+  --lesson-border: #cdb3e5;
+  --lesson-active: #783dad;
+}
+.map-shell .lesson-button-wrap button[aria-current] {
+  background: var(--lesson-active);
+  color: white;
+  border-color: var(--lesson-active);
+  box-shadow: 0 4px 10px #12365c18;
+}
+.map-shell .lesson-button-wrap button[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.lesson-name-tooltip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #12365c;
+  color: white;
+  padding: 9px 12px;
+  border-radius: 10px;
+  width: max-content;
+  max-width: 260px;
+  white-space: normal;
+  font-size: 12px;
+  box-shadow: 0 6px 16px #12365c26;
+  pointer-events: none;
+}
+.lesson-button-wrap:hover .lesson-name-tooltip,
+.lesson-button-wrap:focus-within .lesson-name-tooltip {
+  display: block;
+}
+.lesson-top-actions {
+  display: flex;
+  gap: 5px;
+}
+.map-shell .lesson-top-actions button {
+  border: 1px solid #c1d8e7;
+  background: white;
+  color: #234e70;
+  min-height: 44px;
+  font-size: 12px;
+  padding: 7px 10px;
+}
+.map-shell .lesson-top-actions button[aria-expanded="true"] {
+  background: #fff0c1;
+  border-color: #d8b65c;
+  color: #624710;
+}
+.map-shell .map-header-identity {
+  font-size: 11px;
+  gap: 9px;
+}
+.map-shell .studio-workspace > .lesson-floating-information {
+  position: absolute;
+  right: 12px;
+  top: 62px;
+  z-index: 1400;
+  width: min(420px, calc(100% - 24px));
+  max-height: calc(100% - 76px);
+  overflow: auto;
+  background: white;
+  border: 1px solid #bdd5e7;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 12px 32px #12365c33;
+  margin: 0;
+}
+.map-shell .lesson-floating-information h2 {
+  font-size: 20px;
+}
+.map-shell .lesson-floating-information h3 {
+  font-size: 15px;
+  margin-top: 14px;
+}
+.map-shell .lesson-floating-information p,
+.map-shell .lesson-floating-information li {
+  font-size: 13px;
+  line-height: 1.9;
+}
+.map-shell .lesson-floating-information .p-close-text {
+  float: left;
+  min-height: 36px;
+  font-size: 11px;
+  background: #edf6fc;
+  border: 0;
+}
+.legacy-content-notice {
+  padding: 8px;
+  border-radius: 9px;
+  background: #fff3cd;
+  color: #624c15;
+}
+@media (max-width: 1100px) {
+  .map-shell .lesson-button-wrap button {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+  .map-shell .lesson-top-actions button {
+    padding: 7px;
+    font-size: 11px;
+  }
+  .map-shell .lesson-top-actions button svg {
+    display: none;
+  }
+}
+@media (max-width: 850px) {
+  .map-shell .studio-titlebar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 0;
+  }
+  .map-header-identity {
+    order: -1;
+    width: 100%;
+  }
+  .lesson-number-buttons {
+    width: 100%;
+    gap: 6px;
+  }
+  .lesson-button-wrap {
+    flex: 1;
+  }
+  .map-shell .lesson-button-wrap button {
+    width: 100%;
+    font-size: 12px;
+    min-height: 42px;
+  }
+  .lesson-top-actions {
+    width: 100%;
+    gap: 6px;
+  }
+  .map-shell .lesson-top-actions button {
+    flex: 1;
+    min-height: 38px;
+  }
+  .lesson-name-tooltip {
+    max-width: 200px;
+  }
+  .lesson-button-wrap:last-child .lesson-name-tooltip {
+    right: auto;
+    left: 0;
+  }
+  .map-shell .studio-workspace > .lesson-floating-information {
+    top: 62px;
+    padding: 14px;
+  }
+}
+@media (max-height: 500px) and (min-width: 650px) {
+  .map-shell .studio-titlebar {
+    display: flex;
+    flex-wrap: nowrap;
+    min-height: 54px;
+    gap: 8px;
+  }
+  .lesson-number-buttons,
+  .lesson-top-actions {
+    width: auto;
+    gap: 4px;
+  }
+  .map-shell .lesson-button-wrap button {
+    font-size: 10px;
+    padding: 6px 8px;
+    min-height: 40px;
+  }
+  .map-shell .lesson-top-actions button {
+    font-size: 10px;
+    padding: 6px;
+    min-height: 40px;
+  }
+  .map-shell .map-header-identity {
+    width: auto;
+    order: 0;
+    flex-direction: column;
+    gap: 2px;
+    white-space: nowrap;
+    font-size: 9px;
+  }
+  .map-student-name {
+    padding: 3px 7px;
+  }
+}
+.map-shell .lesson-floating-information ol {
+  display: block;
+  padding-inline-start: 22px;
+  margin: 10px 0;
+}
+.map-shell .lesson-floating-information ol li {
+  margin-bottom: 10px;
+}

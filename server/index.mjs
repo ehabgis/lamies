@@ -1,4 +1,4 @@
-import { DEMO_ID, demoLesson, demoAnswer, demoCatalog } from "./demo.mjs";
+import { DEMO_IDS, demoLesson, demoAnswer, demoCatalog } from "./demo.mjs";
 import http from "node:http";
 import {
   randomBytes,
@@ -383,7 +383,7 @@ export function createApp({
         ![
           "/api/auth/login",
           "/api/auth/register",
-          "/api/demo/lessons/lesson-1/answers",
+          ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/answers`),
         ].includes(path)
       ) {
         if (!user) fail(401, "سجّل الدخول أولًا");
@@ -415,11 +415,11 @@ export function createApp({
         /^\/api\/demo\/lessons\/([^/]+)(?:\/(answers))?$/,
       );
       if (demoMatch) {
-        if (demoMatch[1] !== DEMO_ID) fail(404, "التجربة غير موجودة");
+        if (!DEMO_IDS.includes(demoMatch[1])) fail(404, "التجربة غير موجودة");
         if (method === "GET" && !demoMatch[2])
           return send({
             demo: true,
-            lesson: demoLesson(),
+            lesson: demoLesson(demoMatch[1]),
             progress: { answers: [], completed: false, state: {} },
           });
         if (method === "POST" && demoMatch[2] === "answers") {
@@ -427,7 +427,7 @@ export function createApp({
           const b = await body(req);
           if (b.answer === undefined || JSON.stringify(b.answer).length > 20000)
             fail(400, "الإجابة غير صالحة");
-          const result = demoAnswer(b.questionId, b.answer);
+          const result = demoAnswer(b.questionId, b.answer, demoMatch[1]);
           if (!result) fail(400, "السؤال غير موجود");
           return send(result);
         }

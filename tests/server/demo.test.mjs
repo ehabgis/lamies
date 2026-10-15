@@ -38,8 +38,11 @@ test("guest demo grades all eight types without publishing, answer leakage or du
     const available = catalog.data.nodes.filter(
       (n) => n.kind === "lesson" && n.available,
     );
-    assert.equal(available.length, 2);
-    assert(available.every((n) => n.demoLessonId === "lesson-1"));
+    assert.equal(available.length, 6);
+    assert.deepEqual(
+      [...new Set(available.map((n) => n.demoLessonId))].sort(),
+      ["lesson-1", "lesson-2", "lesson-3"],
+    );
     assert(
       catalog.data.nodes
         .filter((n) => n.kind === "lesson" && !n.available)
@@ -140,6 +143,54 @@ test("guest demo grades all eight types without publishing, answer leakage or du
       ).status,
       403,
     );
+    for (const id of ["lesson-2", "lesson-3"]) {
+      const imported = await request(`/api/demo/lessons/${id}`);
+      assert.equal(imported.status, 200);
+      assert.equal(imported.data.lesson.content.reviewRequired, true);
+      assert.equal(imported.data.lesson.content.resources.length, 6);
+      assert(imported.data.lesson.content.sources.every((s) => !s.approved));
+      assert(
+        imported.data.lesson.content.questions.every(
+          (q) => !("answer" in q) && !("explanation" in q),
+        ),
+      );
+      assert(
+        imported.data.lesson.content.legacyExtras.media.every(
+          (m) => m.available === false,
+        ),
+      );
+      const { legacyContent } = await import("../../server/legacy-content.mjs");
+      const original = legacyContent(id);
+      const q = original.questions[0];
+      const correct = await request(`/api/demo/lessons/${id}/answers`, "POST", {
+        questionId: q.id,
+        answer: q.answer,
+      });
+      assert.equal(correct.status, 200);
+      assert.equal(correct.data.correct, true);
+      assert.equal(correct.data.awarded, 0);
+      const otherId = id === "lesson-2" ? "lesson-3" : "lesson-2";
+      assert.equal(
+        (
+          await request(`/api/demo/lessons/${otherId}/answers`, "POST", {
+            questionId: q.id,
+            answer: q.answer,
+          })
+        ).status,
+        400,
+      );
+      assert.equal(
+        (
+          await request(
+            `/api/demo/lessons/${id}/answers`,
+            "POST",
+            { questionId: q.id, answer: q.answer },
+            { Origin: "https://other.invalid" },
+          )
+        ).status,
+        403,
+      );
+    }
     for (const table of ["users", "answers", "rewards", "learning_state"])
       assert.equal(
         app.db.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get().count,

@@ -158,6 +158,34 @@ export default function ResourcePin({ resource, className = "" }) {
           <path d="M42 56v16" stroke="#ddeffc" strokeWidth="4" />
         </g>
       )}
+      {resource?.kind === "water" && (
+        <g>
+          <path
+            d="M42 18C37 31 24 40 25 51a17 17 0 0034 0C60 40 47 31 42 18Z"
+            fill="#53dcff"
+            stroke="#d6faff"
+            strokeWidth="2"
+          />
+          <path
+            d="M33 49q-2 10 7 12"
+            fill="none"
+            stroke="white"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+        </g>
+      )}
+      {resource?.kind === "project" && (
+        <g fill="#e3fbef" stroke="#80d5ad" strokeWidth="2">
+          <path d="M22 40h16v30H22ZM38 25h24v45H38Z" />
+          <path
+            d="M44 34h4m6 0h3m-13 9h4m6 0h3m-13 9h4m6 0h3M27 49h5m-5 10h5"
+            stroke="#16704c"
+            strokeWidth="3"
+          />
+          <path d="M19 71h47" strokeWidth="4" />
+        </g>
+      )}
       <path
         d="M16 28Q25 9 45 12"
         fill="none"

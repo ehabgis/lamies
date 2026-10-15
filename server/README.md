@@ -90,3 +90,6 @@ Remove-Variable adminSecret
 ## تجربة زائر بلا حساب
 
 `GET /api/demo/lessons/lesson-1` يعرض فقط نسخة البذرة المرفقة، لا مسودات الإدارة المخصصة؛ يحذف answer وexplanation ويُبقي الحالة draft والمصادر غير معتمدة. `POST /api/demo/lessons/lesson-1/answers` يصحح `{questionId,answer}` دون جلسة أو كتابة في DB، ويرجع awarded:0 دائمًا. هذا المسار عديم الحالة مستثنى تحديدًا من CSRF token، مع فحص Origin وحد المعدل وحجم الطلب. أي درس آخر غير متاح من هذا المسار. لا يوجد نشر أو مسار إكمال/AI للزائر. واجهة `/demo/lesson-1` تستخدم نفس مكونات الخريطة والأسئلة مع شارة عدم الاعتماد وتلميحات محلية واضحة.
+
+
+تحديث العينات: تدعم /api/demo/lessons/lesson-1 وlesson-2 وlesson-3 قراءة الدرس وPOST answers. الدروسان الثاني والثالث محولان من المصدر القديم، والأول يجمع البذرة الحالية ومعلوماته القديمة. جميعها draft وغير معتمدة، ولا تحفظ نتائج أو تمنح نقاطًا رسمية. لا تتوسع الإتاحة إلى مسودات CMS؛ قائمة DEMO_IDS ثابتة. راجع docs/LESSON_BUTTONS_AND_LEGACY.md وجرد الوسائط في docs/LEGACY_MIGRATION.json.

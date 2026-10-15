@@ -1,10 +1,42 @@
+import { legacyContent } from "./legacy-content.mjs";
 import { readFileSync } from "node:fs";
 const seed = JSON.parse(
   readFileSync(new URL("./seed-content.json", import.meta.url), "utf8"),
 );
 export const DEMO_ID = "lesson-1";
-export function demoLesson() {
-  const content = structuredClone(seed);
+export const DEMO_IDS = ["lesson-1", "lesson-2", "lesson-3"];
+function fullContent(id) {
+  const old = legacyContent(id);
+  if (!old) return null;
+  if (id !== DEMO_ID) return old;
+  return {
+    ...structuredClone(seed),
+    legacyExtras: {
+      ...old.legacyExtras,
+      locationNotes: old.resources.map((r) => ({
+        name: r.label,
+        ...r.legacyDetails,
+      })),
+    },
+    sources: [...seed.sources, ...old.sources],
+    resources: seed.resources.map((r) => ({
+      ...structuredClone(r),
+      legacyDetails: old.resources.find((l) => l.id.startsWith(`${r.id}-`))
+        ?.legacyDetails,
+    })),
+    objectives: [...new Set([...seed.objectives, ...old.objectives])],
+    concepts: [
+      ...seed.concepts,
+      ...old.concepts.filter(
+        (c) => !seed.concepts.some((s) => s.term === c.term),
+      ),
+    ],
+    questions: [...seed.questions, ...old.questions],
+  };
+}
+export function demoLesson(id = DEMO_ID) {
+  const content = fullContent(id);
+  if (!content) return null;
   content.reviewRequired = true;
   content.sources = (content.sources || []).map((s) => ({
     ...s,
@@ -14,8 +46,8 @@ export function demoLesson() {
     ({ answer, explanation, ...question }) => question,
   );
   return {
-    id: DEMO_ID,
-    title: "الثروة المعدنية ومصادر الطاقة",
+    id,
+    title: id === DEMO_ID ? "الثروة المعدنية ومصادر الطاقة" : content.title,
     kind: "lesson",
     status: "draft",
     demo: true,
@@ -34,8 +66,8 @@ const canonical = (v) =>
         ? v.map((x) => JSON.parse(canonical(x)))
         : v,
   );
-export function demoAnswer(questionId, answer) {
-  const q = seed.questions.find((q) => q.id === questionId);
+export function demoAnswer(questionId, answer, lessonId = DEMO_ID) {
+  const q = fullContent(lessonId)?.questions.find((q) => q.id === questionId);
   if (!q) return null;
   const clean = (v) =>
     q.type === "blank" && typeof v === "string"
@@ -105,8 +137,8 @@ export function demoCatalog() {
           add(`${unit}-lesson-${i + 1}`, unit, "lesson", title, {
             demo: true,
             status: "draft",
-            available: g === 5 && u === 3 && i === 0,
-            ...(g === 5 && u === 3 && i === 0 ? { demoLessonId: DEMO_ID } : {}),
+            available: g === 5 && u === 3,
+            ...(g === 5 && u === 3 ? { demoLessonId: `lesson-${i + 1}` } : {}),
           }),
         );
       }

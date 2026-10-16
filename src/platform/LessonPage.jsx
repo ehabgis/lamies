@@ -19,6 +19,7 @@ import {
   Minus,
   MapTrifold,
   ImageSquare,
+  X,
 } from "phosphor-react";
 import Shell, { PlatformNavigation } from "./Shell";
 import SelectField from "./SelectField";
@@ -29,6 +30,7 @@ import EsriLessonMap from "./EsriLessonMap";
 import "./map-workspace.css";
 import "./map-studio.css";
 import "./map-polish.css";
+import "./map-ux.css";
 import MapVideoPanel from "./MapVideoPanel";
 import Question from "./Question";
 import AIAssistant from "./AIAssistant";
@@ -600,7 +602,7 @@ export default function LessonPage({ demo = false }) {
                 document.getElementById(`lesson-info-${key}`)?.focus();
               }}
             >
-              إغلاق ×
+              <X size={20} weight="bold" aria-hidden="true" />
             </button>
             {(demo || preview) && (
               <p className="legacy-content-notice">
@@ -707,10 +709,10 @@ export default function LessonPage({ demo = false }) {
             }}
           >
             <BookOpen size={21} />
-            <span>المفتاح والأدوات</span>
+            <span className="ux-long">المفتاح والأدوات</span><span className="ux-short" aria-hidden="true">المفتاح</span>
           </button>
           <button className="map-reset-all" onClick={showAll} title="عرض جميع الموارد وإعادة الخريطة إلى مصر كاملة">
-            <Compass size={21} /><span>عرض الجميع</span>
+            <Compass size={21} /><span className="ux-long">عرض الجميع</span><span className="ux-short" aria-hidden="true">الكل</span>
           </button>
           </div>
           <div className="map-handle-group">
@@ -727,7 +729,7 @@ export default function LessonPage({ demo = false }) {
             }}
           >
             <ChatCircle size={21} />
-            <span>المعلم والمورد</span>
+            <span className="ux-long">المعلم والمورد</span><span className="ux-short" aria-hidden="true">المعلم</span>
           </button>
           </div>
         </div>
@@ -745,7 +747,7 @@ export default function LessonPage({ demo = false }) {
               document.getElementById("show-legend")?.focus();
             }}
           >
-            إغلاق ×
+            <X size={20} weight="bold" aria-hidden="true" />
           </button>
           <h2>
             <BookOpen />
@@ -841,7 +843,7 @@ export default function LessonPage({ demo = false }) {
               document.getElementById("show-guide")?.focus();
             }}
           >
-            إغلاق المعلومات ×
+            <X size={20} weight="bold" aria-hidden="true" />
           </button>
           <span className="studio-status">
             {demo
@@ -901,7 +903,7 @@ export default function LessonPage({ demo = false }) {
             }}
           >
             <Target />
-            أسئلة الدرس
+            <span className="ux-long">أسئلة الدرس</span><span className="ux-short" aria-hidden="true">الأسئلة</span>
           </button>
           <button
             aria-controls="lesson-learning-drawer"
@@ -912,7 +914,7 @@ export default function LessonPage({ demo = false }) {
             }}
           >
             <Stack />
-            الأنشطة التفاعلية
+            <span className="ux-long">الأنشطة التفاعلية</span><span className="ux-short" aria-hidden="true">الأنشطة</span>
           </button>
           <button
             className="p-button"
@@ -926,11 +928,34 @@ export default function LessonPage({ demo = false }) {
             </span>
           </button>
           <button
+            className="dock-finish"
             disabled={solved.length < questions.length || !questions.length}
+            aria-describedby={questions.length ? "dock-finish-hint" : undefined}
+            title={solved.length < questions.length ? "أنهِ جميع الأسئلة والأنشطة ليُفتح هذا الزر" : undefined}
             onClick={finish}
           >
             <Star weight="fill" />
-            {completed ? "راجع إنجازك" : "أكملت درسي"}
+            <span>
+              {completed ? "راجع إنجازك" : "أكملت درسي"}
+              {questions.length > 0 && (
+                <small className="dock-progress" id="dock-finish-hint">
+                  {solved.length < questions.length ? (
+                    <>
+                      <span className="sr-only">أنجزت </span>
+                      <bdi dir="ltr">{solved.length}/{questions.length}</bdi>
+                      <span className="sr-only"> من الأسئلة والأنشطة</span>
+                    </>
+                  ) : (
+                    "جاهز للإكمال"
+                  )}
+                </small>
+              )}
+            </span>
+            {questions.length > 0 && (
+              <span className="dock-progress-bar" aria-hidden="true">
+                <span style={{ width: `${Math.round((solved.length / questions.length) * 100)}%` }} />
+              </span>
+            )}
           </button>
         </div>
         {modal && (

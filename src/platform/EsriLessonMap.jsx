@@ -481,7 +481,7 @@ export default function EsriLessonMap({
           onClick={() => { if (!gallery) { setGovernorates(false); onToolOpen?.(); } setGallery((v) => !v); }}
         >
           <SquaresFour size={21} />
-          معرض الخرائط
+          <span className="ux-long">معرض الخرائط</span><span className="ux-short" aria-hidden="true">الخرائط</span>
         </button>
         <button
           ref={governorateButton}

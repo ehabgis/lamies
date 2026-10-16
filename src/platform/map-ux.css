@@ -1,0 +1,184 @@
+/* UX round 2 (2026-10-16): loaded after map-polish.css. Remove the import in
+   LessonPage.jsx to roll back. Keeps the adopted identity: colours, Cairo, RTL. */
+
+/* ---------- Short / long labels ----------
+   Long labels are the accessible name everywhere. On narrow screens they are
+   visually hidden (not display:none) so screen readers still announce them. */
+.ux-short {
+  display: none;
+}
+
+/* ---------- Panel close: one round icon button in the panel corner ----------
+   Replaces the full-width «إغلاق ×» bar. Sticky so it stays reachable while the
+   panel scrolls; the next element leaves room for it instead of a whole row. */
+.map-shell .studio-workspace .mobile-panel-close,
+.map-shell .lesson-floating-information .p-close-text {
+  position: sticky !important;
+  top: 0;
+  z-index: 3;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 44px !important;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px !important;
+  margin: 0 0 -44px !important;
+  margin-inline-start: auto !important;
+  padding: 0 !important;
+  border-radius: 999px;
+  background: #fff !important;
+  color: #174766;
+  border: 1px solid #c9deec !important;
+  box-shadow: 0 2px 6px #12365c1f;
+  cursor: pointer;
+  transition: background-color 150ms ease-out, transform 120ms ease-out;
+}
+.map-shell .studio-workspace .mobile-panel-close:hover,
+.map-shell .lesson-floating-information .p-close-text:hover {
+  background: #edf5fc !important;
+}
+.map-shell .studio-workspace .mobile-panel-close + *,
+.map-shell .lesson-floating-information .p-close-text + * {
+  margin-inline-end: 54px;
+  min-height: 44px;
+}
+.map-shell .classroom-legend > .mobile-panel-close + h2 {
+  display: flex;
+  align-items: center;
+  margin-top: 0;
+}
+.map-shell .lesson-floating-information .p-close-text + h2 {
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* ---------- Learning dock: progress on «أكملت درسي» ---------- */
+.map-shell .floating-learning-dock .dock-finish {
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 14px !important;
+}
+.map-shell .floating-learning-dock .dock-finish > span:not(.dock-progress-bar) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.3;
+}
+.map-shell .floating-learning-dock .dock-progress {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #4a6178;
+}
+.map-shell .floating-learning-dock .dock-progress-bar {
+  position: absolute;
+  inset-inline: 10px;
+  bottom: 6px;
+  height: 4px;
+  border-radius: 99px;
+  background: #d7e5f1;
+  overflow: hidden;
+}
+.map-shell .floating-learning-dock .dock-progress-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #f4b400;
+  transition: width 300ms ease-out;
+}
+.map-shell .floating-learning-dock .dock-finish:not(:disabled) {
+  background: #fff4cc;
+  color: #6b4a00;
+}
+.map-shell .floating-learning-dock .dock-finish:not(:disabled) .dock-progress {
+  color: #6b4a00;
+}
+/* Disabled still reads (it now carries progress); it just isn't pressable. */
+.map-shell .floating-learning-dock .dock-finish:disabled {
+  opacity: 1;
+  color: #5b6f82;
+  cursor: not-allowed;
+}
+
+/* ---------- Narrow phones: one-line toolbar and dock ---------- */
+@media (max-width: 600px), (max-height: 500px) and (min-width: 650px) {
+  .ux-short {
+    display: inline;
+  }
+  .ux-long {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .map-shell .map-sidebar-handles button,
+  .map-shell .esri-map-toolbar button {
+    min-height: 44px;
+    padding: 0 11px !important;
+    gap: 6px !important;
+    font-size: 13px !important;
+    font-weight: 800;
+    white-space: nowrap;
+    line-height: 1;
+    border-radius: 999px;
+  }
+  .map-shell .map-sidebar-handles button svg,
+  .map-shell .esri-map-toolbar button svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  .map-shell .floating-learning-dock button {
+    font-size: 13px !important;
+    font-weight: 800;
+    white-space: nowrap;
+    line-height: 1.25;
+  }
+  .map-shell .floating-learning-dock button small {
+    font-size: 11px !important;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .map-shell .floating-learning-dock {
+    align-items: stretch;
+  }
+  .map-shell .floating-learning-dock button {
+    min-height: 60px;
+    justify-content: center;
+  }
+}
+
+/* ---------- Landscape phones: header text was 9–11px; dock covered the card ---------- */
+@media (max-height: 500px) and (min-width: 650px) {
+  .map-shell .studio-workspace > .classroom-guide,
+  .map-shell .classroom-workspace > .classroom-guide.mobile-open,
+  .map-shell .studio-workspace > .classroom-legend {
+    bottom: 76px !important;
+    max-height: none;
+  }
+  .map-shell .lesson-button-wrap button,
+  .map-shell .lesson-top-actions button {
+    font-size: 13px;
+  }
+  .map-shell .map-header-identity {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-shell .studio-workspace .mobile-panel-close,
+  .map-shell .lesson-floating-information .p-close-text,
+  .map-shell .floating-learning-dock .dock-progress-bar > span {
+    transition: none;
+  }
+}

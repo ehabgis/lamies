@@ -12,7 +12,11 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-if not exist node_modules\.bin\vite.cmd (
+set NEED_INSTALL=
+if not exist node_modules\.bin\vite.cmd set NEED_INSTALL=1
+rem Newer versions add libraries (e.g. maplibre-gl for the 3D view).
+if not exist node_modules\maplibre-gl\package.json set NEED_INSTALL=1
+if defined NEED_INSTALL (
   call npm ci
   if errorlevel 1 (
     pause

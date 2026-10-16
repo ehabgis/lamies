@@ -98,6 +98,8 @@ export default function EsriLessonMap({
     [status, setStatus] = useState("loading"),
     [retry, setRetry] = useState(0),
     [notice, setNotice] = useState("");
+  const [textbookMeta, setTextbookMeta] = useState(null);
+  const galleryItems = BASEMAPS.filter((b) => !b.image || textbookMeta);
   const chosen = BASEMAPS.find((b) => b.id === basemap) || BASEMAPS[0];
   const usingLocal = basemap === "local" || status === "error";
   const callback = useRef({ onSelect, onVideo });
@@ -291,8 +293,34 @@ export default function EsriLessonMap({
     return () => map.removeLayer(group);
   }, [ready, waterLesson, waterHighlights, river, seas]);
   useEffect(() => {
+    const textbook = BASEMAPS.find((b) => b.image);
+    fetch(textbook.meta)
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((meta) => {
+        if (Array.isArray(meta?.bounds)) setTextbookMeta(meta);
+        else throw Error();
+      })
+      .catch(() => {
+        setTextbookMeta(null);
+        setBasemap((b) => (b === textbook.id ? BASEMAPS[0].id : b));
+      });
+  }, []);
+  useEffect(() => {
     if (!ready) return;
     const map = mapRef.current;
+    if (chosen.image) {
+      if (!textbookMeta) return;
+      const overlay = L.imageOverlay(chosen.image, textbookMeta.bounds, {
+        attribution: safeText(textbookMeta.credit || chosen.credit),
+        className: "textbook-basemap",
+      }).addTo(map);
+      map.getContainer().classList.add("has-textbook-basemap");
+      setStatus("ready");
+      return () => {
+        map.getContainer().classList.remove("has-textbook-basemap");
+        map.removeLayer(overlay);
+      };
+    }
     if (!chosen.url) {
       setStatus("local");
       return;
@@ -342,7 +370,7 @@ export default function EsriLessonMap({
       clearTimeout(timer);
       map.removeLayer(layer);
     };
-  }, [ready, basemap, retry]);
+  }, [ready, basemap, retry, textbookMeta]);
   useEffect(() => {
     if (!ready || !usingLocal || !features) return;
     const map = mapRef.current;
@@ -742,7 +770,7 @@ export default function EsriLessonMap({
             </button>
           </header>
           <div role="radiogroup" aria-label="خرائط الأساس">
-            {BASEMAPS.map((b) => (
+            {galleryItems.map((b) => (
               <button
                 key={b.id}
                 role="radio"
@@ -761,23 +789,23 @@ export default function EsriLessonMap({
                   )
                     return;
                   e.preventDefault();
-                  const i = BASEMAPS.findIndex((item) => item.id === b.id),
+                  const i = galleryItems.findIndex((item) => item.id === b.id),
                     index =
                       e.key === "Home"
                         ? 0
                         : e.key === "End"
-                          ? BASEMAPS.length - 1
+                          ? galleryItems.length - 1
                           : (i +
                               (["ArrowLeft", "ArrowDown"].includes(e.key)
                                 ? 1
                                 : -1) +
-                              BASEMAPS.length) %
-                            BASEMAPS.length;
+                              galleryItems.length) %
+                            galleryItems.length;
                   const buttons =
                     e.currentTarget.parentElement.querySelectorAll(
                       '[role="radio"]',
                     );
-                  selectBasemap(BASEMAPS[index].id, false);
+                  selectBasemap(galleryItems[index].id, false);
                   buttons[index]?.focus();
                 }}
                 onClick={() => selectBasemap(b.id)}

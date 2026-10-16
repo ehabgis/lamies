@@ -24,6 +24,16 @@ export const BASEMAPS = [
       "Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), OpenStreetMap contributors, GIS User Community",
   },
   {
+    // Georeferenced by scripts/georef_textbook_map.py; shown only once the file exists.
+    id: "textbook",
+    label: "خريطة الكتاب",
+    description: "خريطة مصر الصماء من الكتاب المدرسي",
+    image: "/lesson-media/textbook-egypt-map.png",
+    meta: "/lesson-media/textbook-egypt-map.json",
+    thumbnail: "/lesson-media/textbook-egypt-map.png",
+    credit: "الكتاب المدرسي",
+  },
+  {
     id: "local",
     label: "الخريطة التعليمية",
     description: "بديل محلي دون اتصال",
@@ -32,7 +42,7 @@ export const BASEMAPS = [
 ].map((b) => ({
   ...b,
   url: b.service ? `${base}/${b.service}/MapServer/tile/{z}/{y}/{x}` : null,
-  thumbnail: b.service ? `${base}/${b.service}/MapServer/tile/4/6/9` : null,
+  thumbnail: b.thumbnail || (b.service ? `${base}/${b.service}/MapServer/tile/4/6/9` : null),
   source: b.service ? `${base}/${b.service}/MapServer` : null,
 }));
 // Egypt's own extent (Salloum to Halaib, Sudan border to the coast), so the

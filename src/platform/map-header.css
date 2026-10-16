@@ -639,3 +639,16 @@
     display: none;
   }
 }
+
+/* Textbook basemap: tan surround like the book page outside its frame. */
+.map-shell .has-textbook-basemap {
+  background: #fbe6b8;
+}
+.map-shell .textbook-basemap {
+  image-rendering: auto;
+}
+.basemap-thumb.thumb-textbook,
+.basemap-gallery img[alt="معاينة خريطة الكتاب"] {
+  background: #ffffff;
+  object-fit: cover;
+}

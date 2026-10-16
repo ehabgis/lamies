@@ -10,6 +10,7 @@ import {
   Star,
 } from "phosphor-react";
 import Shell from "./Shell";
+import SelectField from "./SelectField";
 import { api } from "./api";
 import { useSession } from "./Session";
 import "./journey-workspace.css";
@@ -152,27 +153,23 @@ export default function JourneyPage({ demo = false }) {
     }
   }
   function selectField(key, label, options, disabled = false) {
+    const prerequisite = {
+      stageId: "اختر العام الدراسي أولًا.",
+      gradeId: "اختر المرحلة التعليمية أولًا.",
+    }[key];
+    const hint = disabled ? prerequisite : !options.length && !loading
+      ? "لا تتوفر خيارات لهذا المسار حاليًا."
+      : key === "unitId" ? "اختر الوحدة لتظهر الدروس المتاحة أسفلها." : undefined;
     return (
-      <label className="journey-field">
-        {label}
-        <select
-          value={selection[key] || ""}
-          disabled={disabled || loading || saving}
-          onChange={(e) => choose(key, e.target.value)}
-        >
-          <option value="">اختر {label}</option>
-          {options.map((n) => (
-            <option key={n.id} value={n.id}>
-              {n.title}
-            </option>
-          ))}
-        </select>
-        {!loading && !disabled && !options.length && (
-          <small>لا تتوفر خيارات لهذا المسار حاليًا.</small>
-        )}
-      </label>
+      <SelectField className="journey-field" label={label} hint={hint}
+        value={selection[key] || ""} disabled={disabled || loading || saving || !options.length}
+        onChange={(e) => choose(key, e.target.value)}>
+        <option value="">اختر {label}</option>
+        {options.map(n => <option key={n.id} value={n.id}>{n.title}</option>)}
+      </SelectField>
     );
   }
+
   return (
     <Shell journeyPage>
       <div className="journey-heading">
@@ -232,18 +229,10 @@ export default function JourneyPage({ demo = false }) {
               <div className="journey-fields">
                 {step === 0 && (
                   <>
-                    <label className="journey-field">
-                      العام الدراسي
-                      <select
-                        value={selection.yearTitle || ""}
-                        onChange={(e) => choose("yearTitle", e.target.value)}
-                      >
-                        <option value="">اختر العام الدراسي</option>
-                        {years.map((y) => (
-                          <option key={y}>{y}</option>
-                        ))}
-                      </select>
-                    </label>
+                    <SelectField className="journey-field" label="العام الدراسي" value={selection.yearTitle || ""} disabled={saving || !years.length} onChange={(e) => choose("yearTitle", e.target.value)}>
+                      <option value="">اختر العام الدراسي</option>
+                      {years.map(y => <option key={y}>{y}</option>)}
+                    </SelectField>
                     {selectField(
                       "stageId",
                       "المرحلة التعليمية",

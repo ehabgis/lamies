@@ -1,0 +1,32 @@
+/* Refinement of the 170b7bb blue/white interface, not a replacement theme. */
+.lamis-platform .select-field { --select-ink: #12365c; --select-border: #a9c7de; --select-active: #0869c4; display: block; min-width: 0; text-align: start; color: var(--select-ink); }
+.lamis-platform .select-field > label { display: block; font-size: 14px; font-weight: 800; margin: 0 0 7px; }
+.lamis-platform .select-field .select-control { position: relative; width: 100%; min-width: 0; }
+.lamis-platform .select-field .select-control select { display: block; appearance: none; -webkit-appearance: none; width: 100%; min-width: 0; min-height: 50px; margin: 0; padding: 10px 14px 10px 43px; border: 1px solid var(--select-border); border-radius: 12px; background: #f9fcff; color: var(--select-ink); font-family: inherit; font-size: 16px; font-weight: 700; line-height: 1.6; cursor: pointer; text-overflow: ellipsis; white-space: nowrap; }
+.lamis-platform .select-field .select-control > svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #286c9c; pointer-events: none; }
+.lamis-platform .select-field[data-filled="true"] .select-control select { border-color: #6fa6d1; background: #f1f8ff; }
+.lamis-platform .select-field .select-control select:hover:not(:disabled) { border-color: var(--select-active); background: #f1f8ff; }
+.lamis-platform .select-field .select-control select:focus-visible { outline: 3px solid #c48b08; outline-offset: 3px; border-color: var(--select-active); }
+.lamis-platform .select-field .select-control select:disabled { background: #edf2f6; border-color: #ccd9e3; color: #526d82; cursor: not-allowed; opacity: 1; }
+.lamis-platform .select-field .select-control:has(select:disabled) > svg { color: #668196; }
+.lamis-platform .select-field .select-field-hint { display: block; margin: 6px 0 0; color: #355873; font-size: 12px; font-weight: 500; line-height: 1.7; }
+.lamis-platform .select-field-compact > label { font-size: 12px; margin-bottom: 5px; }
+.lamis-platform .select-field-compact .select-control select { min-height: 44px; padding: 7px 10px 7px 35px; font-size: 13px; border-radius: 9px; max-width: none; }
+.lamis-platform .select-field-compact .select-control > svg { left: 10px; width: 16px; }
+.lamis-platform .select-field-compact .select-field-hint { font-size: 11px; }
+.map-shell .studio-select-tools > .select-field { width: 100%; }
+.map-shell .esri-governorates-picker { top: 118px; right: 12px; z-index: 1200; width: min(300px, calc(100% - 24px)); max-height: calc(100% - 180px); overflow: auto; overscroll-behavior: contain; }
+.governorate-search { display: block; margin-bottom: 10px; font-size: 12px; font-weight: 700; }
+.lamis-platform .governorate-search input { display: block; width: 100%; min-height: 44px; margin: 5px 0 0; padding: 7px 10px; border: 1px solid #a9c7de; border-radius: 9px; background: white; color: #12365c; font-size: 13px; }
+.lamis-platform .governorate-search input::placeholder { color: #526d82; opacity: 1; }
+.lamis-platform .governorate-search input:focus-visible { outline: 3px solid #c48b08; outline-offset: 2px; }
+.governorate-search-status { margin: 7px 0; font-size: 11px; color: #355873; line-height: 1.7; }
+@media (max-width: 850px) { .lamis-platform .governorate-search input { font-size: 16px; } .lamis-platform .select-field .select-control select { font-size: 16px; min-height: 48px; } .lamis-platform .select-field-compact .select-control select { font-size: 16px; min-height: 44px; } }
+@media (prefers-reduced-motion: no-preference) { .lamis-platform .select-field .select-control select { transition: border-color .16s ease-out, background-color .16s ease-out; } }
+
+.map-shell .esri-governorates-picker > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: -8px; background: white; z-index: 1; padding-bottom: 5px; margin-bottom: 5px; font-size: 14px; }
+.map-shell .esri-governorates-picker > header button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 6px; border: 1px solid #d0e1ef; border-radius: 9px; background: #f1f7fc; color: #12365c; }
+.map-shell .basemap-gallery { top: 118px; right: 12px; z-index: 1200; max-height: calc(100% - 135px); }
+/* Keep map tools reachable while a side panel is open. */
+.map-shell .esri-map-surface { isolation: auto; }
+.map-shell .esri-map-toolbar { z-index: 1150; }

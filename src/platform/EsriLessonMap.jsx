@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { createPortal } from "react-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
@@ -14,7 +13,8 @@ import {
   Stack,
   CornersOut,
 } from "phosphor-react";
-import MapResourceSymbol from "../components/Map/MapResourceSymbol";
+import ResourcePin from "../components/Map/ResourcePin";
+import SelectField from "./SelectField";
 import { BASEMAPS, EGYPT_BOUNDS, readBasemap } from "./mapBasemaps";
 const textNode = (text) => {
   const node = document.createElement("span");
@@ -44,7 +44,6 @@ function GalleryThumbnail({ basemap }) {
 }
 export default function EsriLessonMap({
   sites,
-  toolsHost = null,
   activeResourceId,
   selectedLocationId,
   showNames,
@@ -54,11 +53,14 @@ export default function EsriLessonMap({
   focusRequest,
   waterLesson = false,
   onReset,
+  onToolOpen,
 }) {
   const host = useRef(null),
     mapRef = useRef(null),
     root = useRef(null),
     galleryButton = useRef(null),
+    governorateButton = useRef(null),
+    governorateSearchInput = useRef(null),
     focusSite = useRef(null),
     [ready, setReady] = useState(false),
     [basemap, setBasemap] = useState(readBasemap),
@@ -70,6 +72,7 @@ export default function EsriLessonMap({
     [waterHighlights, setWaterHighlights] = useState(true),
     [dataError, setDataError] = useState(""),
     [selectedGovernorate, setSelectedGovernorate] = useState(""),
+    [governorateQuery, setGovernorateQuery] = useState(""),
     [status, setStatus] = useState("loading"),
     [retry, setRetry] = useState(0),
     [notice, setNotice] = useState("");
@@ -156,7 +159,7 @@ export default function EsriLessonMap({
           color: f.properties.color,
           weight: 3,
           fillColor: f.properties.color,
-          fillOpacity: 0.18,
+          fillOpacity: 0.3,
         }),
         attribution:
           'Water areas © Natural Earth · <a href="https://www.naturalearthdata.com/about/terms-of-use/" target="_blank" rel="noopener noreferrer">Public domain</a>',
@@ -296,9 +299,9 @@ export default function EsriLessonMap({
       if (selectedLocationId === site.id)
         L.circleMarker([site.lat, site.lng], {
           radius: 24,
-          color: site.resource.kind === "mineral" ? "#ffb12b" : "#0789d9",
+          color: "#ffb12b",
           weight: 3,
-          fillColor: site.resource.kind === "mineral" ? "#ffc14d" : "#74d7ff",
+          fillColor: "#ffc14d",
           fillOpacity: 0.18,
           interactive: false,
           className: "selected-site-ring",
@@ -310,10 +313,10 @@ export default function EsriLessonMap({
         opacity: dim ? 0.2 : 1,
         icon: L.divIcon({
           className: `esri-resource-marker ${highlighted ? "is-highlighted" : ""} ${selectedLocationId === site.id ? "is-selected" : ""}`,
-          html: renderToStaticMarkup(<MapResourceSymbol resource={site.resource} />),
-          iconSize: [44, 56],
-          iconAnchor: [22, 53],
-          tooltipAnchor: [0, -42],
+          html: renderToStaticMarkup(<ResourcePin resource={site.resource} />),
+          iconSize: [38, 48],
+          iconAnchor: [19, 45],
+          tooltipAnchor: [0, -35],
         }),
       });
       marker.on("click", () => {
@@ -323,7 +326,7 @@ export default function EsriLessonMap({
         callback.current.onSelect(site);
       });
       marker.bindTooltip(textNode(site.name), {
-        permanent: showNames === true || selectedLocationId === site.id || (showNames === null && !activeResourceId && ["nile-river", "mediterranean-sea", "red-sea"].includes(site.resource.id)),
+        permanent: showNames || selectedLocationId === site.id,
         direction: "top",
         className: "resource-map-label",
       });
@@ -339,7 +342,6 @@ export default function EsriLessonMap({
         String(selectedLocationId === site.id),
       );
       element.dataset.siteId = site.id;
-      element.dataset.resourceKind = site.resource.kind;
       if (focusSite.current === site.id) {
         element.focus({ preventScroll: true });
         focusSite.current = null;
@@ -413,8 +415,28 @@ export default function EsriLessonMap({
     } catch {}
     if (close) galleryButton.current?.focus();
   }
+  const normalizeSearch = (text) => String(text || "").normalize("NFKD").replace(/[\u064b-\u065f]/g, "").replace(/[أإآ]/g, "ا").replace(/ى/g, "ي").trim();
+  const governorateOptions = features?.features || [];
+  const filteredGovernorates = governorateOptions.filter(f => normalizeSearch(f.properties.name_ar).includes(normalizeSearch(governorateQuery)));
+  const chosenGovernorate = governorateOptions.find(f => f.id === selectedGovernorate);
+  useEffect(() => {
+    if (!governorates) return;
+    governorateSearchInput.current?.focus({ preventScroll: true });
+    const escape = (e) => {
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      setGovernorates(false);
+      governorateButton.current?.focus({ preventScroll: true });
+    };
+    document.addEventListener("keydown", escape);
+    return () => document.removeEventListener("keydown", escape);
+  }, [governorates]);
   function chooseGovernorate(id) {
     setSelectedGovernorate(id);
+    if (!id) {
+      mapRef.current.fitBounds(EGYPT_BOUNDS, { padding: [24, 36], animate: false });
+      return;
+    }
     const feature = features?.features.find((f) => f.id === id);
     if (feature)
       mapRef.current.fitBounds(L.geoJSON(feature).getBounds(), {
@@ -427,59 +449,12 @@ export default function EsriLessonMap({
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
       else if (root.current.requestFullscreen)
-        await (root.current.closest(".studio-workspace") || root.current).requestFullscreen();
+        await root.current.requestFullscreen();
       else setNotice("ملء الشاشة غير متاح في هذا المتصفح.");
     } catch {
       setNotice("تعذّر فتح ملء الشاشة.");
     }
   }
-  const toolbar = (<div className="esri-map-toolbar">
-        <button
-          ref={galleryButton}
-          aria-expanded={gallery}
-          aria-controls="basemap-gallery"
-          onClick={() => setGallery((v) => !v)}
-        >
-          <SquaresFour size={21} />
-          معرض الخرائط
-        </button>
-        <button
-          aria-pressed={governorates}
-          onClick={() => setGovernorates((v) => !v)}
-        >
-          <Stack size={20} />
-          المحافظات
-        </button>
-      </div>);
-  const waterKey = waterLesson && (
-        <div className="water-source-key">
-          <label>
-            <input
-              type="checkbox"
-              checked={waterHighlights}
-              onChange={(e) => setWaterHighlights(e.target.checked)}
-            />
-            إبراز مصادر المياه
-          </label>
-          {waterHighlights && (
-            <div>
-              <span>
-                <i className="nile-water-swatch" />
-                نهر النيل · مياه عذبة
-              </span>
-              <span>
-                <i className="med-water-swatch" />
-                البحر المتوسط · مياه مالحة
-              </span>
-              <span>
-                <i className="red-water-swatch" />
-                البحر الأحمر · مياه مالحة
-              </span>
-              <small>مياه البحر تحتاج إلى التحلية للشرب.</small>
-            </div>
-          )}
-        </div>
-      );
   return (
     <section
       ref={root}
@@ -491,7 +466,26 @@ export default function EsriLessonMap({
         className="esri-leaflet-host"
         aria-label="خريطة مصر؛ استخدم أزرار التكبير أو اسحب الخريطة"
       />
-      {toolsHost ? createPortal(toolbar, toolsHost) : toolbar}
+      <div className="esri-map-toolbar">
+        <button
+          ref={galleryButton}
+          aria-expanded={gallery}
+          aria-controls="basemap-gallery"
+          onClick={() => { if (!gallery) { setGovernorates(false); onToolOpen?.(); } setGallery((v) => !v); }}
+        >
+          <SquaresFour size={21} />
+          معرض الخرائط
+        </button>
+        <button
+          ref={governorateButton}
+          aria-pressed={governorates}
+          aria-controls="governorate-tools"
+          onClick={() => { if (!governorates) { setGallery(false); onToolOpen?.(); } setGovernorates((v) => !v); setGovernorateQuery(""); }}
+        >
+          <Stack size={20} />
+          المحافظات
+        </button>
+      </div>
       <div className="esri-map-zoom" aria-label="أدوات الخريطة">
         <button
           aria-label="تكبير الخريطة"
@@ -522,7 +516,35 @@ export default function EsriLessonMap({
           <CornersOut size={21} />
         </button>
       </div>
-      {toolsHost ? createPortal(waterKey, toolsHost) : waterKey}
+      {waterLesson && (
+        <div className="water-source-key">
+          <label>
+            <input
+              type="checkbox"
+              checked={waterHighlights}
+              onChange={(e) => setWaterHighlights(e.target.checked)}
+            />
+            إبراز مصادر المياه
+          </label>
+          {waterHighlights && (
+            <div>
+              <span>
+                <i className="nile-water-swatch" />
+                نهر النيل · مياه عذبة
+              </span>
+              <span>
+                <i className="med-water-swatch" />
+                البحر المتوسط · مياه مالحة
+              </span>
+              <span>
+                <i className="red-water-swatch" />
+                البحر الأحمر · مياه مالحة
+              </span>
+              <small>مياه البحر تحتاج إلى التحلية للشرب.</small>
+            </div>
+          )}
+        </div>
+      )}
       <div className="esri-basemap-state" role="status">
         {usingLocal
           ? "الخريطة التعليمية المحلية"
@@ -620,21 +642,21 @@ export default function EsriLessonMap({
         </section>
       )}
       {governorates && (
-        <div className="esri-governorates-picker">
-          <label>
-            اختر محافظة
-            <select
-              value={selectedGovernorate}
-              onChange={(e) => chooseGovernorate(e.target.value)}
-            >
-              <option value="">جميع المحافظات</option>
-              {features?.features.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.properties.name_ar}
-                </option>
-              ))}
-            </select>
+        <div className="esri-governorates-picker" id="governorate-tools" role="region" aria-label="البحث واختيار المحافظة">
+          <header><strong>المحافظات</strong><button aria-label="إغلاق قائمة المحافظات" onClick={() => { setGovernorates(false); governorateButton.current?.focus({ preventScroll: true }); }}><X size={21} /></button></header>
+          <label className="governorate-search">
+            ابحث عن محافظة
+            <input ref={governorateSearchInput} type="search" value={governorateQuery} placeholder="اكتب اسم المحافظة…" disabled={!features} onChange={(e) => setGovernorateQuery(e.target.value)} aria-describedby="governorate-search-status" />
           </label>
+          <SelectField label="اختر محافظة" compact value={selectedGovernorate} disabled={!features} onChange={(e) => chooseGovernorate(e.target.value)}>
+            <option value="">جميع المحافظات</option>
+            {chosenGovernorate && !filteredGovernorates.some(f => f.id === selectedGovernorate) && <option value={chosenGovernorate.id}>المحدد: {chosenGovernorate.properties.name_ar}</option>}
+            {filteredGovernorates.map(f => <option key={f.id} value={f.id}>{f.properties.name_ar}</option>)}
+            {!filteredGovernorates.length && <option disabled>لا توجد نتائج مطابقة</option>}
+          </SelectField>
+          <p id="governorate-search-status" className="governorate-search-status" role="status">
+            {!features ? "جارٍ تحميل المحافظات…" : governorateQuery ? filteredGovernorates.length ? `${filteredGovernorates.length} نتيجة للبحث · الاختيار الحالي محفوظ حتى تختار محافظة أخرى.` : "لا توجد نتائج. جرّب اسمًا آخر أو امسح البحث." : `${governorateOptions.length} محافظة · اختيار المحافظة يقرّب حدودها على الخريطة.`}
+          </p>
           <small>حدود Natural Earth التعليمية المعمّمة.</small>
           {selectedGovernorate && (
             <span role="status">

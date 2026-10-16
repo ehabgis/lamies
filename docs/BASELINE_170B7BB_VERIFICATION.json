@@ -1,0 +1,72 @@
+[
+  {
+    "viewport": [
+      1440,
+      900
+    ],
+    "nativeSelect": true,
+    "dependentReset": true,
+    "lessons": 3,
+    "governorates": 27,
+    "arabicSearch": true,
+    "noMatchPreservesSelection": true,
+    "baselineLayout": true,
+    "noDocumentScroll": true
+  },
+  {
+    "viewport": [
+      1366,
+      768
+    ],
+    "nativeSelect": true,
+    "dependentReset": true,
+    "lessons": 3,
+    "governorates": 27,
+    "arabicSearch": true,
+    "noMatchPreservesSelection": true,
+    "baselineLayout": true,
+    "noDocumentScroll": true
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "nativeSelect": true,
+    "dependentReset": true,
+    "lessons": 3,
+    "governorates": 27,
+    "arabicSearch": true,
+    "noMatchPreservesSelection": true,
+    "baselineLayout": true,
+    "noDocumentScroll": true
+  },
+  {
+    "viewport": [
+      360,
+      740
+    ],
+    "nativeSelect": true,
+    "dependentReset": true,
+    "lessons": 3,
+    "governorates": 27,
+    "arabicSearch": true,
+    "noMatchPreservesSelection": true,
+    "baselineLayout": true,
+    "noDocumentScroll": true
+  },
+  {
+    "viewport": [
+      844,
+      390
+    ],
+    "nativeSelect": true,
+    "dependentReset": true,
+    "lessons": 3,
+    "governorates": 27,
+    "arabicSearch": true,
+    "noMatchPreservesSelection": true,
+    "baselineLayout": true,
+    "noDocumentScroll": true
+  }
+]

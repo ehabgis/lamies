@@ -165,6 +165,75 @@ export function legacyContent(id) {
       approved: false,
     });
   }
+  if (id === "lesson-3") {
+    // Energy, fish-farming and farming projects from the textbook map of
+    // national projects. Benban and Zafarana reuse the lesson-1 coordinates;
+    // the others are approximate positions traced from that map.
+    const approx = "موضع تقريبي مرسوم عن خريطة الكتاب، يحتاج مراجعة المعلم.";
+    content.resources.push(
+      {
+        id: "benban-solar",
+        label: "الطاقة الشمسية — بنبان",
+        kind: "project",
+        iconFamily: "solar-energy",
+        description:
+          "محطة بنبان في محافظة أسوان تستخدم أشعة الشمس لتوليد الكهرباء.",
+        importance:
+          "تساعد الطاقة الشمسية في توليد الكهرباء وتقليل الاعتماد على الوقود الذي قد ينفد.",
+        locations: [{ id: "benban-solar", name: "بنبان", lat: 24.48, lng: 32.73 }],
+        media: legacyResourceMedia("solar"),
+      },
+      {
+        id: "wind-farms",
+        label: "طاقة الرياح",
+        kind: "project",
+        iconFamily: "wind-energy",
+        description:
+          "تحرك الرياح ريش التوربينات لتوليد الكهرباء. من مشروعاتها الزعفرانة وجبل الزيت على ساحل البحر الأحمر.",
+        importance: "توفر كهرباء من مصدر متجدد وتقلل الحاجة إلى حرق الوقود.",
+        locations: [
+          { id: "wind-zafarana-3", name: "الزعفرانة", lat: 29.08, lng: 32.63 },
+          { id: "wind-gabal-elzeit", name: "جبل الزيت", lat: 27.85, lng: 33.45 },
+        ],
+        media: { image: null, video: null },
+        locationNote: "جبل الزيت: " + approx,
+      },
+      {
+        id: "birket-ghalioun",
+        label: "الاستزراع السمكي — بركة غليون",
+        kind: "project",
+        iconFamily: "fish-farming",
+        description:
+          "مشروع بركة غليون للاستزراع السمكي في محافظة كفر الشيخ، قرب ساحل البحر المتوسط.",
+        importance: "يزيد إنتاج مصر من الأسماك ويوفر غذاءً غنيًا بالبروتين.",
+        locations: [
+          { id: "birket-ghalioun", name: "بركة غليون", lat: 31.52, lng: 30.9 },
+        ],
+        media: { image: null, video: null },
+        locationNote: approx,
+      },
+      {
+        id: "east-owainat",
+        label: "شرق العوينات",
+        kind: "project",
+        iconFamily: "agriculture",
+        description:
+          "مشروع زراعي كبير في جنوب الصحراء الغربية يعتمد على المياه الجوفية.",
+        importance: "يزيد المساحة المزروعة وإنتاج المحاصيل مثل القمح.",
+        locations: [
+          { id: "east-owainat", name: "شرق العوينات", lat: 22.6, lng: 28.7 },
+        ],
+        media: { image: null, video: null },
+        locationNote: approx,
+      },
+    );
+    content.sources.push({
+      id: "national-projects-map-draft",
+      title: "خريطة المشروعات القومية في الكتاب — إضافة توضيحية تحتاج مراجعة المعلم",
+      text: "بنبان للطاقة الشمسية في أسوان. الزعفرانة وجبل الزيت لطاقة الرياح. بركة غليون للاستزراع السمكي. شرق العوينات والدلتا الجديدة مشروعات زراعية كبرى. القطار السريع يربط العلمين الجديدة بالعين السخنة والغردقة وأبو سمبل.",
+      approved: false,
+    });
+  }
   if (id !== "lesson-1") {
     const choices = content.concepts.map((c) => c.definition);
     const mapOptions = content.resources.slice(0, 6).map((r) => ({

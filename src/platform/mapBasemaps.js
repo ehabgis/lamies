@@ -35,10 +35,23 @@ export const BASEMAPS = [
   thumbnail: b.service ? `${base}/${b.service}/MapServer/tile/4/6/9` : null,
   source: b.service ? `${base}/${b.service}/MapServer` : null,
 }));
+// Egypt's own extent (Salloum to Halaib, Sudan border to the coast), so the
+// first view is mostly Egypt. The north edge reaches 32.05° to keep the
+// offshore Zohr gas field (31.78°N) and its pin inside the view.
 export const EGYPT_BOUNDS = [
-  [21.4, 24.0],
-  [32.6, 37.0],
+  [21.9, 24.7],
+  [32.05, 36.95],
 ];
+// Room for the map toolbars (top) and the learning bar (bottom), so no part of
+// Egypt starts hidden behind them.
+export const EGYPT_FIT = {
+  get paddingTopLeft() {
+    return [8, typeof window !== "undefined" && window.innerWidth <= 850 ? 104 : 56];
+  },
+  get paddingBottomRight() {
+    return [8, typeof window !== "undefined" && window.innerWidth <= 850 ? 112 : 92];
+  },
+};
 export function readBasemap() {
   try {
     const id = localStorage.getItem("lamis.basemap.v1");

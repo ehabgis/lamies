@@ -16,7 +16,7 @@ import {
 } from "phosphor-react";
 import ResourcePin from "../components/Map/ResourcePin";
 import SelectField from "./SelectField";
-import { BASEMAPS, EGYPT_BOUNDS, readBasemap } from "./mapBasemaps";
+import { BASEMAPS, EGYPT_BOUNDS, EGYPT_FIT, readBasemap } from "./mapBasemaps";
 const textNode = (text) => {
   const node = document.createElement("span");
   node.textContent = text;
@@ -109,6 +109,8 @@ export default function EsriLessonMap({
       scrollWheelZoom: true,
       minZoom: 4,
       maxZoom: 17,
+      zoomSnap: 0.25,
+      zoomDelta: 0.5,
       maxBounds: [
         [18, 20],
         [36, 42],
@@ -117,7 +119,7 @@ export default function EsriLessonMap({
       keyboard: true,
     });
     mapRef.current = map;
-    map.fitBounds(EGYPT_BOUNDS, { padding: [24, 36], animate: false });
+    map.fitBounds(EGYPT_BOUNDS, { ...EGYPT_FIT, animate: false });
     map.attributionControl.setPrefix(
       '<a href="https://leafletjs.com" target="_blank" rel="noopener noreferrer">Leaflet</a>',
     );
@@ -165,6 +167,34 @@ export default function EsriLessonMap({
       });
     return () => controller.abort();
   }, [waterLesson]);
+  // Softens everything outside Egypt so the country reads first. The holes are
+  // the governorate polygons, so the mask follows the real border.
+  useEffect(() => {
+    if (!ready || !features?.features?.length) return;
+    const map = mapRef.current;
+    if (!map.getPane("outside-egypt")) {
+      map.createPane("outside-egypt");
+      map.getPane("outside-egypt").style.zIndex = "350";
+      map.getPane("outside-egypt").style.pointerEvents = "none";
+    }
+    const swap = ([lng, lat]) => [lat, lng];
+    const holes = features.features.flatMap((f) => {
+      const g = f.geometry;
+      const polygons = g.type === "Polygon" ? [g.coordinates] : g.type === "MultiPolygon" ? g.coordinates : [];
+      return polygons.map((rings) => rings[0].map(swap));
+    });
+    const world = [[0, 0], [0, 60], [50, 60], [50, 0]];
+    const mask = L.polygon([world, ...holes], {
+      pane: "outside-egypt",
+      stroke: false,
+      fillColor: "#f2f8fc",
+      fillOpacity: 0.62,
+      fillRule: "evenodd",
+      interactive: false,
+      className: "outside-egypt-mask",
+    }).addTo(map);
+    return () => map.removeLayer(mask);
+  }, [ready, features]);
   useEffect(() => {
     if (!railLesson) return;
     const controller = new AbortController();
@@ -496,7 +526,7 @@ export default function EsriLessonMap({
     if (!ready) return;
     mapRef.current.stop();
     mapRef.current.fitBounds(EGYPT_BOUNDS, {
-      padding: [24, 36],
+      ...EGYPT_FIT,
       animate: false,
     });
     setSelectedGovernorate("");
@@ -509,7 +539,12 @@ export default function EsriLessonMap({
   function focusLocation(site) {
     const map = mapRef.current;
     const marine = ["mediterranean-sea", "red-sea"].includes(site.resource.id);
-    const zoom = marine ? 6 : Math.max(map.getZoom(), 8);
+    // National projects zoom closer, ahead of their 3D view.
+    const zoom = marine
+      ? 6
+      : site.resource.kind === "project"
+        ? Math.max(map.getZoom(), 11)
+        : Math.max(map.getZoom(), 8);
     const point = map.project([site.lat, site.lng], zoom);
     // Keep the chosen site in the part of the map that the resource card leaves
     // visible: above the bottom sheet on phones, beside the side panel in landscape.
@@ -553,7 +588,7 @@ export default function EsriLessonMap({
   function chooseGovernorate(id) {
     setSelectedGovernorate(id);
     if (!id) {
-      mapRef.current.fitBounds(EGYPT_BOUNDS, { padding: [24, 36], animate: false });
+      mapRef.current.fitBounds(EGYPT_BOUNDS, { ...EGYPT_FIT, animate: false });
       return;
     }
     const feature = features?.features.find((f) => f.id === id);
@@ -622,7 +657,7 @@ export default function EsriLessonMap({
           aria-label="عرض مصر كاملة"
           onClick={() => {
             mapRef.current.fitBounds(EGYPT_BOUNDS, {
-              padding: [24, 36],
+              ...EGYPT_FIT,
               animate: false,
             });
             setSelectedGovernorate("");

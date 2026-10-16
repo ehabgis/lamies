@@ -168,7 +168,8 @@ test("guest demo grades all eight types without publishing, answer leakage or du
 
       assert.equal(
         imported.data.lesson.content.resources.length,
-        id === "lesson-2" ? 8 : 6,
+        // lesson-3 gained Benban, wind farms, Birket Ghalioun and East Owainat.
+        id === "lesson-2" ? 8 : id === "lesson-3" ? 10 : 6,
       );
       assert(imported.data.lesson.content.sources.every((s) => !s.approved));
       assert(

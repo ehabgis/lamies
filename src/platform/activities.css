@@ -414,3 +414,206 @@
     animation: none;
   }
 }
+
+/* ================= Lesson questions ================= */
+.question-progress {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 6px 10px;
+  margin-bottom: 14px;
+}
+.question-progress .question-count {
+  font-size: 14px;
+  font-weight: 800;
+  color: #12365c;
+  font-variant-numeric: tabular-nums;
+}
+.question-progress .question-type {
+  justify-self: start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #e7f2fd;
+  color: #0b5aa6;
+  font-size: 12px;
+  font-weight: 800;
+}
+.question-progress .question-mastered {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #8a5a00;
+  font-variant-numeric: tabular-nums;
+}
+.question-progress .question-mastered svg {
+  width: 18px;
+  height: 18px;
+  color: #f4b400;
+}
+.question-progress-bar {
+  grid-column: 1 / -1;
+  height: 8px;
+  border-radius: 99px;
+  background: #e1ecf4;
+  overflow: hidden;
+}
+.question-progress-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f4b400, #ffcf46);
+  transition: width 300ms ease-out;
+}
+
+.p-question h3 {
+  font-size: 19px;
+  line-height: 1.5;
+  text-wrap: balance;
+}
+.p-question .choice-options,
+.p-question .boolean-options {
+  display: grid;
+  gap: 10px;
+}
+.p-question .boolean-options {
+  grid-template-columns: 1fr 1fr;
+}
+.p-question .choice-options button,
+.p-question .boolean-options button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 8px 14px;
+  border: 2px solid #d4e4ef;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #12365c;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: start;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease-out,
+    background-color 150ms ease-out,
+    transform 120ms ease-out;
+}
+.p-question .choice-options button:hover:not(:disabled),
+.p-question .boolean-options button:hover:not(:disabled) {
+  border-color: #7fb2dd;
+}
+.p-question .choice-options button:active:not(:disabled),
+.p-question .boolean-options button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.p-question .option-badge {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  background: #eef5fb;
+  border: 1.5px solid #c9deec;
+  color: #174766;
+  font-size: 15px;
+  font-weight: 900;
+}
+.p-question .option-badge svg {
+  width: 18px;
+  height: 18px;
+}
+.p-question .option-text {
+  flex: 1;
+  line-height: 1.4;
+}
+.p-question .option-mark {
+  width: 22px;
+  height: 22px;
+  color: #1a8a4c;
+}
+.p-question .choice-options button[aria-checked="true"],
+.p-question .boolean-options button[aria-checked="true"] {
+  border-color: #0869c4;
+  background: #eef6fe;
+}
+.p-question .choice-options button[aria-checked="true"] .option-badge,
+.p-question .boolean-options button[aria-checked="true"] .option-badge {
+  background: #0869c4;
+  border-color: #0869c4;
+  color: #ffffff;
+}
+/* True / false keep their own colours so the meaning is not colour-only (icon + word) */
+.p-question .boolean-options button:first-child .option-badge {
+  color: #1a8a4c;
+  border-color: #a9dcbc;
+  background: #f1faf4;
+}
+.p-question .boolean-options button:last-child .option-badge {
+  color: #b3261e;
+  border-color: #f1b8b3;
+  background: #fdf0ef;
+}
+.p-question .boolean-options button[aria-checked="true"]:first-child .option-badge {
+  background: #1a8a4c;
+  border-color: #1a8a4c;
+  color: #ffffff;
+}
+.p-question .boolean-options button[aria-checked="true"]:last-child .option-badge {
+  background: #b3261e;
+  border-color: #b3261e;
+  color: #ffffff;
+}
+/* After checking: only the child's own choice is marked; the answer is not revealed */
+.p-question .question-options button.is-correct {
+  border-color: #1a8a4c !important;
+  background: #effaf3 !important;
+}
+.p-question .question-options button.is-wrong {
+  border-color: #d9534f !important;
+  background: #fff4f3 !important;
+  animation: option-shake 300ms ease-out;
+}
+@keyframes option-shake {
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+.p-question .choice-options button:disabled,
+.p-question .boolean-options button:disabled {
+  cursor: default;
+}
+.p-question .choice-options button:focus-visible,
+.p-question .boolean-options button:focus-visible {
+  outline: 3px solid #0869c4;
+  outline-offset: 2px;
+}
+.p-question .p-success {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.p-question .feedback-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-inline-start: auto;
+}
+.p-question .feedback-next svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .p-question .choice-options button,
+  .p-question .boolean-options button,
+  .question-progress-bar > span {
+    transition: none;
+  }
+  .p-question .question-options button.is-wrong {
+    animation: none;
+  }
+}

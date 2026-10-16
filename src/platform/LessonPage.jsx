@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import {
   useParams,
   Link,
@@ -20,6 +20,9 @@ import {
   MapTrifold,
   ImageSquare,
   X,
+  Lightbulb,
+  Info,
+  Cube,
 } from "phosphor-react";
 import Shell, { PlatformNavigation } from "./Shell";
 import { useSession } from "./Session";
@@ -34,6 +37,8 @@ import "./map-header.css";
 import "./activities.css";
 import ActivityPicker, { ActivitySteps, activityMeta } from "./ActivityPicker";
 import MapVideoPanel from "./MapVideoPanel";
+const Site3DView = lazy(() => import("./Site3DView"));
+const has3D = (r) => r?.kind === "project";
 import Question from "./Question";
 import AIAssistant from "./AIAssistant";
 import ResourcePin from "../components/Map/ResourcePin";
@@ -128,7 +133,12 @@ export default function LessonPage({ demo = false }) {
     photoUrls.current.add(url);
     setLocalPhotos((old) => ({ ...old, [resource.id]: url }));
   }
+  useEffect(() => {
+    setView3d(null);
+    return () => clearTimeout(open3dTimer.current);
+  }, [id]);
   function showAll() {
+    setView3d(null);
     setResource(null);
     setLocation(null);
     setFull(true);
@@ -144,6 +154,8 @@ export default function LessonPage({ demo = false }) {
     [location, setLocation] = useState(null),
     [mode, setMode] = useState("interactive"),
     [pickActivity, setPickActivity] = useState(true),
+    [view3d, setView3d] = useState(null),
+    open3dTimer = useRef(null),
     [full, setFull] = useState(false),
     [panel, setPanel] = useState(null),
     [modal, setModal] = useState(null),
@@ -220,7 +232,8 @@ export default function LessonPage({ demo = false }) {
     return () => clearTimeout(timer);
   }, [stateReady, lesson, id, resource, location, mode, preview, demo]);
   useEffect(() => {
-    if (modal || videoOpen || (!infoOpen && !legendOpen && !panel)) return;
+    // The 3D view handles its own Escape; the card behind it stays open.
+    if (modal || videoOpen || view3d || (!infoOpen && !legendOpen && !panel)) return;
     const escape = (e) => {
       if (e.key !== "Escape") return;
       if (panel) {
@@ -237,7 +250,7 @@ export default function LessonPage({ demo = false }) {
     };
     document.addEventListener("keydown", escape);
     return () => document.removeEventListener("keydown", escape);
-  }, [modal, videoOpen, infoOpen, legendOpen, panel]);
+  }, [modal, videoOpen, infoOpen, legendOpen, panel, view3d]);
   if (error)
     return (
       <Shell>
@@ -440,6 +453,15 @@ export default function LessonPage({ demo = false }) {
         <p>{resource.description}</p>
         <h3>أهميته</h3>
         <p>{resource.importance}</p>
+        {location && has3D(resource) && (
+          <button
+            className="p-secondary resource-3d-button"
+            onClick={() => setView3d({ ...location, resource })}
+          >
+            <Cube size={20} weight="duotone" />
+            عرض ثلاثي الأبعاد
+          </button>
+        )}
         <button
           className="p-button resource-video-button"
           onClick={() => setVideoOpen(true)}
@@ -582,10 +604,10 @@ export default function LessonPage({ demo = false }) {
         </nav>
         <div className="lesson-top-actions" aria-label="تفاصيل الدرس">
           {[
-            ["objectives", "أهداف الدرس", Target],
-            ["concepts", "مفاهيم الدرس", BookOpen],
-            ["intro", "معلومات الدرس", BookOpen],
-          ].map(([key, title, Icon]) => (
+            ["objectives", "أهداف الدرس", Target, "orange"],
+            ["concepts", "مفاهيم الدرس", Lightbulb, "teal"],
+            ["intro", "معلومات الدرس", Info, "indigo"],
+          ].map(([key, title, Icon, tone]) => (
             <button
               key={key}
               id={`lesson-info-${key}`}
@@ -596,8 +618,10 @@ export default function LessonPage({ demo = false }) {
                 setInfoOpen(false);
               }}
             >
-              <Icon size={18} />
-              {title}
+              <span className={`info-tab-icon tone-${tone}`} aria-hidden="true">
+                <Icon weight="duotone" />
+              </span>
+              <b>{title}</b>
             </button>
           ))}
         </div>
@@ -612,7 +636,7 @@ export default function LessonPage({ demo = false }) {
         </div>
       </div>
       <div
-        className={`classroom-workspace studio-workspace ${videoOpen ? "has-video" : ""} ${legendOpen ? "" : "legend-hidden"} ${infoOpen ? "" : "guide-hidden"}`}
+        className={`classroom-workspace studio-workspace ${videoOpen ? "has-video" : ""} ${view3d ? "has-3d" : ""} ${legendOpen ? "" : "legend-hidden"} ${infoOpen ? "" : "guide-hidden"}`}
       >
         {panel && (
           <section
@@ -744,8 +768,8 @@ export default function LessonPage({ demo = false }) {
           </button>
           </div>
           <div className="map-handle-group">
-          <button aria-pressed={showLocationNames} aria-label={showLocationNames ? "إخفاء أسماء المواقع" : "إظهار أسماء المواقع"} title="إظهار أو إخفاء أسماء المواقع على الخريطة" onClick={() => setShowLocationNames(v => !v)}>
-            <span className="map-label-icon" aria-hidden="true">أ</span><span>الأسماء</span>
+          <button aria-pressed={showLocationNames} aria-label={showLocationNames ? "إخفاء أسماء المعالم" : "إظهار أسماء المعالم"} title="إظهار أو إخفاء أسماء المعالم على الخريطة" onClick={() => setShowLocationNames(v => !v)}>
+            <span className="map-label-icon" aria-hidden="true">أ</span><span className="ux-long">أسماء المعالم</span><span className="ux-short" aria-hidden="true">المعالم</span>
           </button>
           <button
             id="show-guide"
@@ -822,6 +846,13 @@ export default function LessonPage({ demo = false }) {
             onReset={showAll}
             onToolOpen={() => { setLegendOpen(false); setInfoOpen(false); setPanel(null); }}
             onSelect={(site) => {
+              clearTimeout(open3dTimer.current);
+              setView3d(null);
+              if (has3D(site.resource))
+                open3dTimer.current = setTimeout(
+                  () => setView3d(site),
+                  window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 750,
+                );
               setModal(null);
               setResource(site.resource);
               setLocation(site);
@@ -837,6 +868,18 @@ export default function LessonPage({ demo = false }) {
               setVideoOpen(true);
             }}
           />
+          {view3d && (
+            <Suspense fallback={<div className="site-3d-panel site-3d-loading" role="status">جارٍ تجهيز العرض ثلاثي الأبعاد…</div>}>
+              <Site3DView
+                key={view3d.id}
+                site={view3d}
+                onClose={() => {
+                  setView3d(null);
+                  document.querySelector(".resource-3d-button")?.focus({ preventScroll: true });
+                }}
+              />
+            </Suspense>
+          )}
           {videoOpen && resource && (
             <MapVideoPanel
               resource={resource}
@@ -1052,27 +1095,43 @@ export default function LessonPage({ demo = false }) {
                       />
                     ) : (
                       <>
-                        <div className="learning-progress-summary">
-                          <span>
-                            السؤال {index + 1} من {filtered.length}
+                        <div className="question-progress">
+                          <span className="question-count">
+                            السؤال <bdi>{index + 1}</bdi> من <bdi>{filtered.length}</bdi>
                           </span>
-                          <span>
-                            أتقنت{" "}
-                            {filtered.filter((q) => solved.includes(q.id)).length} /{" "}
-                            {filtered.length}
+                          <span className="question-type">
+                            {current.type === "boolean" ? "صح أم خطأ" : "اختر الإجابة"}
+                          </span>
+                          <span className="question-mastered">
+                            <Star weight="fill" aria-hidden="true" />
+                            أتقنت <bdi>{filtered.filter((q) => solved.includes(q.id)).length}</bdi>
+                          </span>
+                          <span
+                            className="question-progress-bar"
+                            role="progressbar"
+                            aria-label="الأسئلة المتقنة"
+                            aria-valuemin={0}
+                            aria-valuemax={filtered.length}
+                            aria-valuenow={filtered.filter((q) => solved.includes(q.id)).length}
+                          >
+                            <span
+                              style={{
+                                width: `${(filtered.filter((q) => solved.includes(q.id)).length / filtered.length) * 100}%`,
+                              }}
+                            />
                           </span>
                         </div>
-                        <progress
-                          value={index + 1}
-                          max={filtered.length}
-                          aria-label="موضع السؤال"
-                        />
                       </>
                     )}
                     <Question
                       key={current.id}
                       question={current}
                       presentation={modal === "build-map" ? "place" : undefined}
+                      onNext={
+                        index < filtered.length - 1
+                          ? () => setIndex((i) => i + 1)
+                          : undefined
+                      }
                       lessonId={id}
                       solved={solved.includes(current.id)}
                       onSolved={answered}

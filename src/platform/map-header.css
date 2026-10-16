@@ -144,18 +144,67 @@
   display: none !important;
 }
 
-/* Lesson details: quieter than the lesson tabs */
+/* Lesson details: same segmented look as the lesson tabs, icon badge instead of a number */
 .map-shell .map-header-v2 .lesson-top-actions {
   display: flex;
-  gap: 6px;
+  gap: 4px;
+  padding: 4px;
+  background: #ffffff;
+  border: 1px solid #cfe0ee;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px #12365c12;
 }
 .map-shell .map-header-v2 .lesson-top-actions button {
-  min-height: 44px;
-  padding: 6px 12px;
-  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 5px 12px 5px 14px;
+  border: 0;
   border-radius: 12px;
+  background: transparent;
+  color: #174766;
+  box-shadow: none;
   white-space: nowrap;
+  transition: background-color 150ms ease-out, color 150ms ease-out;
 }
+.map-shell .map-header-v2 .lesson-top-actions button:hover:not([aria-expanded="true"]) {
+  background: #eef5fb;
+}
+.map-shell .map-header-v2 .lesson-top-actions button[aria-expanded="true"] {
+  background: var(--info-tone, #0869c4);
+  color: #ffffff;
+  box-shadow: 0 3px 8px #12365c26;
+}
+.map-header-v2 .lesson-top-actions b {
+  font-size: 14px;
+  font-weight: 800;
+}
+.map-header-v2 .info-tab-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--info-bg);
+  border: 1.5px solid var(--info-border);
+  color: var(--info-tone);
+}
+.map-header-v2 .info-tab-icon svg {
+  width: 18px;
+  height: 18px;
+}
+.map-header-v2 button[aria-expanded="true"] .info-tab-icon {
+  background: #ffffff;
+  border-color: #ffffff;
+}
+.map-header-v2 .lesson-top-actions button:has(.tone-orange) { --info-tone: #b25a00; }
+.map-header-v2 .lesson-top-actions button:has(.tone-teal) { --info-tone: #0b7f86; }
+.map-header-v2 .lesson-top-actions button:has(.tone-indigo) { --info-tone: #2f4ab0; }
+.map-header-v2 .info-tab-icon.tone-orange { --info-tone: #b25a00; --info-bg: #fff0dc; --info-border: #f3c98f; }
+.map-header-v2 .info-tab-icon.tone-teal { --info-tone: #0b7f86; --info-bg: #ddf4f5; --info-border: #94d5d9; }
+.map-header-v2 .info-tab-icon.tone-indigo { --info-tone: #2f4ab0; --info-bg: #e7ebfb; --info-border: #b3bfee; }
 
 /* The student name now sits under the program name. */
 .map-shell .map-header-v2 .map-header-identity {
@@ -249,15 +298,27 @@
   .map-shell .map-header-v2 .lesson-top-actions button {
     flex: 1;
     justify-content: center;
+    min-height: 44px;
     padding: 4px 6px;
+    gap: 6px;
+  }
+  .map-header-v2 .lesson-top-actions b {
     font-size: 13px;
+  }
+  .map-header-v2 .info-tab-icon {
+    width: 26px;
+    height: 26px;
+  }
+  .map-header-v2 .info-tab-icon svg {
+    width: 16px;
+    height: 16px;
   }
 }
 @media (max-width: 420px) {
   .map-header-v2 .lesson-tab-number {
     display: none;
   }
-  .map-shell .map-header-v2 .lesson-top-actions button svg {
+  .map-header-v2 .info-tab-icon {
     display: none;
   }
 }
@@ -273,7 +334,8 @@
   }
   .map-header-v2 .map-brand-text small,
   .map-header-v2 .lesson-tab-text small,
-  .map-header-v2 .lesson-tab-number {
+  .map-header-v2 .lesson-tab-number,
+  .map-header-v2 .info-tab-icon {
     display: none;
   }
   .map-header-v2 .map-brand-text strong {
@@ -418,5 +480,181 @@
 @media (prefers-reduced-motion: reduce) {
   .map-shell .map-header-v2 .lesson-button-wrap button {
     transition: none;
+  }
+}
+
+/* ================= 3D site view ================= */
+.map-shell .site-3d-panel {
+  position: absolute;
+  z-index: 1500;
+  top: 62px;
+  left: 12px;
+  width: min(680px, calc(100% - 330px));
+  height: min(560px, calc(100% - 170px));
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #b9d3e5;
+  border-radius: 18px;
+  box-shadow: 0 16px 40px #12365c40;
+  overflow: hidden;
+  animation: site-3d-in 220ms ease-out;
+}
+@keyframes site-3d-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+.map-shell .site-3d-panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e1ecf4;
+}
+.map-shell .site-3d-panel h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 900;
+  color: #12365c;
+}
+.map-shell .site-3d-panel header p {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #4a6178;
+}
+.map-shell .site-3d-actions {
+  display: flex;
+  gap: 6px;
+}
+.map-shell .site-3d-actions button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid #c9deec;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #174766;
+  cursor: pointer;
+}
+.map-shell .site-3d-actions button:hover {
+  background: #edf5fc;
+}
+.map-shell .site-3d-actions button svg {
+  width: 20px;
+  height: 20px;
+}
+.map-shell .site-3d-map {
+  flex: 1;
+  min-height: 0;
+  background: #cfe3f1;
+}
+.map-shell .site-3d-note {
+  margin: 0;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a6178;
+  border-top: 1px solid #e1ecf4;
+}
+.map-shell .site-3d-fallback {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  text-align: center;
+  font-weight: 700;
+}
+.map-shell .site-3d-loading {
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: #174766;
+}
+.map-shell .resource-3d-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 8px;
+}
+.map-shell .site-3d-panel .maplibregl-ctrl-attrib {
+  font-size: 10px;
+}
+
+@media (max-width: 1100px) and (min-width: 851px) {
+  .map-shell .site-3d-panel {
+    width: calc(100% - 330px);
+  }
+}
+@media (max-width: 850px) {
+  .map-shell .site-3d-panel {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 126px;
+    width: auto;
+    height: auto;
+  }
+  .map-shell .studio-workspace.has-3d > .classroom-guide {
+    visibility: hidden;
+  }
+}
+@media (max-height: 500px) and (min-width: 650px) {
+  .map-shell .site-3d-panel {
+    top: 6px;
+    bottom: 76px;
+    height: auto;
+  }
+  .map-shell .site-3d-note {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-shell .site-3d-panel {
+    animation: none;
+  }
+}
+
+/* Map-layer keys (water / rail): on phones only the toggle remains, moved to
+   the lower-left corner (outside Egypt) so it never covers sites. */
+@media (max-width: 850px) {
+  .map-shell .water-source-key {
+    top: auto !important;
+    bottom: 172px;
+    left: 12px;
+    max-width: 62%;
+    padding: 2px 10px;
+    border-radius: 999px;
+    box-shadow: 0 2px 6px #12365c22;
+  }
+  .map-shell .water-source-key > div {
+    display: none;
+  }
+  .map-shell .water-source-key label {
+    min-height: 40px;
+    font-size: 12.5px;
+  }
+}
+@media (max-height: 500px) and (min-width: 650px) {
+  .map-shell .water-source-key {
+    bottom: 84px;
+  }
+}
+
+/* Short phones (e.g. 360×740): slightly tighter key rows so it still fits. */
+@media (max-width: 850px) and (max-height: 780px) {
+  .map-shell .classroom-legend > button:not(.mobile-panel-close) {
+    min-height: 40px !important;
+  }
+  .map-shell .classroom-legend > h2 {
+    margin-bottom: 2px;
   }
 }

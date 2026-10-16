@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { ArrowUp, ArrowDown, Star, Lightbulb } from "phosphor-react";
+import { ArrowUp, ArrowDown, Star, Lightbulb, Check, X, ArrowLeft } from "phosphor-react";
+
+const LETTERS = ["أ", "ب", "ج", "د", "هـ", "و"];
 import { api } from "./api";
 const label = (o) => (typeof o === "object" ? o.label || o.name || o.id : o);
 const value = (o) => (typeof o === "object" ? o.id : o);
@@ -12,6 +14,7 @@ export default function Question({
   preview = false,
   demo = false,
   presentation,
+  onNext,
 }) {
   const [showHint, setShowHint] = useState(false);
   const [answer, setAnswer] = useState(
@@ -187,22 +190,43 @@ export default function Question({
       )}
       {selections && (
         <div
-          className={`question-options ${q.type === "map" ? "map-answer-options" : ""}`}
+          className={`question-options ${q.type === "map" ? "map-answer-options" : ""} ${q.type === "boolean" ? "boolean-options" : ""} ${q.type === "choice" ? "choice-options" : ""}`}
+          role="radiogroup"
+          aria-label="الاختيارات"
         >
-          {options.map((o, i) => (
-            <button
-              type="button"
-              key={i}
-              disabled={done || busy}
-              aria-pressed={answer === value(o)}
-              onClick={() => {
-                setAnswer(value(o));
-                setFeedback(null);
-              }}
-            >
-              {typeof label(o) === "boolean" ? String(label(o)) : label(o)}
-            </button>
-          ))}
+          {options.map((o, i) => {
+            const picked = answer === value(o);
+            const state =
+              picked && feedback ? (feedback.correct ? "is-correct" : "is-wrong") : "";
+            return (
+              <button
+                type="button"
+                key={i}
+                role="radio"
+                aria-checked={picked}
+                className={state}
+                disabled={done || busy}
+                onClick={() => {
+                  setAnswer(value(o));
+                  setFeedback(null);
+                }}
+              >
+                {q.type === "boolean" ? (
+                  <span className="option-badge" aria-hidden="true">
+                    {value(o) ? <Check weight="bold" /> : <X weight="bold" />}
+                  </span>
+                ) : q.type === "choice" ? (
+                  <span className="option-badge" aria-hidden="true">
+                    {LETTERS[i] || i + 1}
+                  </span>
+                ) : null}
+                <span className="option-text">
+                  {typeof label(o) === "boolean" ? String(label(o)) : label(o)}
+                </span>
+                {state === "is-correct" && <Check className="option-mark" weight="bold" aria-hidden="true" />}
+              </button>
+            );
+          })}
         </div>
       )}
       {q.type === "blank" && (
@@ -362,6 +386,12 @@ export default function Question({
             <>
               <Star weight="fill" />
               أحسنت! {feedback.explanation}
+              {onNext && (
+                <button type="button" className="p-button feedback-next" onClick={onNext}>
+                  التالي
+                  <ArrowLeft aria-hidden="true" />
+                </button>
+              )}
             </>
           ) : (
             <>حاول مرة أخرى. {feedback.hint}</>

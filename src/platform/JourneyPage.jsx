@@ -14,6 +14,7 @@ import SelectField from "./SelectField";
 import { api } from "./api";
 import { useSession } from "./Session";
 import "./journey-workspace.css";
+import "./platform-polish.css";
 
 const steps = ["العام والصف", "الفصل الدراسي", "الوحدة والدروس"];
 const emptyProgress = { lessons: [], xp: 0, stars: 0 };

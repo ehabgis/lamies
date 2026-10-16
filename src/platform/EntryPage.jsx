@@ -11,6 +11,7 @@ import {
   Sparkle,
 } from "phosphor-react";
 import "./entry-experience.css";
+import "./platform-polish.css";
 import RobotGuide from "../components/Map/RobotGuide";
 import { api } from "./api";
 import { useSession } from "./Session";

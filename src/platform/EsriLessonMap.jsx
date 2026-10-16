@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "./map-motion.css";
 import {
   SquaresFour,
   X,
@@ -42,6 +43,24 @@ function GalleryThumbnail({ basemap }) {
     </span>
   );
 }
+// Gives each Nile path its own length so the CSS draw animation can run it
+// from its first point (south) to its last; afterwards the dash is cleared so
+// zooming (which rewrites the path) never shows a partial river.
+function prepareNileDraw(pane) {
+  if (!pane) return;
+  for (const path of pane.querySelectorAll("path.nile-draw")) {
+    const length = Math.ceil(path.getTotalLength?.() || 0);
+    if (!length) continue;
+    path.style.setProperty("--nile-length", length);
+    path.classList.add("is-drawing");
+    path.addEventListener(
+      "animationend",
+      () => path.classList.replace("is-drawing", "is-drawn"),
+      { once: true },
+    );
+  }
+}
+
 export default function EsriLessonMap({
   sites,
   activeResourceId,
@@ -160,22 +179,36 @@ export default function EsriLessonMap({
           weight: 3,
           fillColor: f.properties.color,
           fillOpacity: 0.3,
+          className: "water-sea-glow",
         }),
         attribution:
           'Water areas © Natural Earth · <a href="https://www.naturalearthdata.com/about/terms-of-use/" target="_blank" rel="noopener noreferrer">Public domain</a>',
       }).addTo(group);
     if (river) {
+      // Drawn south → north (the source geometry runs downstream), main
+      // river first, then the Delta branches; a shimmer then keeps flowing north.
+      const isBranch = (f) => /Branch/.test(f.properties?.name || "");
+      const drawStyle = (base) => (f) => ({
+        ...base,
+        className: `nile-draw ${isBranch(f) ? "nile-draw-branch" : "nile-draw-main"}`,
+      });
       L.geoJSON(river, {
         pane: "water-highlights",
         interactive: false,
-        style: { color: "white", weight: 9, opacity: 0.85 },
+        style: drawStyle({ color: "white", weight: 9, opacity: 0.85 }),
       }).addTo(group);
       L.geoJSON(river, {
         pane: "water-highlights",
         interactive: false,
-        style: { color: "#0983ff", weight: 5, opacity: 1 },
+        style: drawStyle({ color: "#0983ff", weight: 5, opacity: 1 }),
         attribution: "Nile geometry · Natural Earth",
       }).addTo(group);
+      L.geoJSON(river, {
+        pane: "water-highlights",
+        interactive: false,
+        style: { color: "#bfe6ff", weight: 2.4, opacity: 0.95, className: "nile-flow" },
+      }).addTo(group);
+      requestAnimationFrame(() => prepareNileDraw(map.getPane("water-highlights")));
     }
     return () => map.removeLayer(group);
   }, [ready, waterLesson, waterHighlights, river, seas]);
@@ -292,6 +325,7 @@ export default function EsriLessonMap({
     if (!ready) return;
     const map = mapRef.current;
     const group = L.layerGroup().addTo(map);
+    let glowIndex = 0;
     for (const site of sites) {
       if (!Number.isFinite(site.lat) || !Number.isFinite(site.lng)) continue;
       const highlighted = site.resource.id === activeResourceId,
@@ -312,7 +346,7 @@ export default function EsriLessonMap({
         zIndexOffset: highlighted ? 500 : 0,
         opacity: dim ? 0.2 : 1,
         icon: L.divIcon({
-          className: `esri-resource-marker ${highlighted ? "is-highlighted" : ""} ${selectedLocationId === site.id ? "is-selected" : ""}`,
+          className: `esri-resource-marker ${highlighted ? "is-highlighted" : ""} ${selectedLocationId === site.id ? "is-selected" : ""} ${waterLesson && site.resource.kind === "water" ? "water-source-glow" : ""}`,
           html: renderToStaticMarkup(<ResourcePin resource={site.resource} />),
           iconSize: [38, 48],
           iconAnchor: [19, 45],
@@ -342,6 +376,8 @@ export default function EsriLessonMap({
         String(selectedLocationId === site.id),
       );
       element.dataset.siteId = site.id;
+      element.style.setProperty("--glow-color", site.resource.color || "#0983ff");
+      element.style.setProperty("--glow-delay", `${(glowIndex++ % 6) * 0.45}s`);
       if (focusSite.current === site.id) {
         element.focus({ preventScroll: true });
         focusSite.current = null;
@@ -368,7 +404,7 @@ export default function EsriLessonMap({
       }
     }
     return () => map.removeLayer(group);
-  }, [ready, sites, activeResourceId, selectedLocationId, showNames]);
+  }, [ready, sites, activeResourceId, selectedLocationId, showNames, waterLesson]);
   useEffect(() => {
     if (!gallery) return;
     const escape = (e) => {

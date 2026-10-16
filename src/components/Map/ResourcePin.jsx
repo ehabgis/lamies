@@ -1,7 +1,15 @@
 import { useId } from "react";
+import LessonIconPin from "./LessonIconPin";
+import { iconFamily } from "./lessonIcons";
 
 // Illustrated teaching symbols, inspired by the reference; not ore photographs.
 export default function ResourcePin({ resource, className = "" }) {
+  const family = iconFamily(resource);
+  if (family) return <LessonIconPin family={family} className={className} />;
+  return <IllustratedPin resource={resource} className={className} />;
+}
+
+function IllustratedPin({ resource, className }) {
   const id = useId().replaceAll(":", "");
   const type = resource?.id;
   return (

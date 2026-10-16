@@ -1,0 +1,144 @@
+/* Map motion for the water lesson (2026-10-16). Transform/opacity/stroke only;
+   everything is static under prefers-reduced-motion. */
+
+/* ---------- Nile: drawn from the south (Lake Nasser) up to the Delta ---------- */
+.nile-draw.is-drawing {
+  stroke-dasharray: var(--nile-length);
+  stroke-dashoffset: var(--nile-length);
+  animation: nile-draw 2.8s cubic-bezier(0.45, 0, 0.25, 1) 0.3s forwards;
+}
+.nile-draw-branch.is-drawing {
+  animation-duration: 1.4s;
+  animation-delay: 2.9s;
+}
+@keyframes nile-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Moving shimmer = water flowing north (dash travels along the path direction). */
+.nile-flow {
+  stroke-dasharray: 3 18;
+  stroke-linecap: round;
+  opacity: 0;
+  animation:
+    nile-appear 0.6s ease-out 4.1s forwards,
+    nile-flow 1.6s linear 4.1s infinite;
+}
+@keyframes nile-flow {
+  to {
+    stroke-dashoffset: -21;
+  }
+}
+@keyframes nile-appear {
+  to {
+    opacity: 0.95;
+  }
+}
+
+/* ---------- Seas: fade in after the Nile, then breathe softly ---------- */
+.water-sea-glow {
+  opacity: 0;
+  filter: drop-shadow(0 0 6px rgb(120 210 255 / 0.55));
+  animation:
+    nile-appear 0.9s ease-out 3.4s forwards,
+    sea-breathe 4.5s ease-in-out 4.3s infinite;
+}
+@keyframes sea-breathe {
+  0%,
+  100% {
+    fill-opacity: 0.22;
+  }
+  50% {
+    fill-opacity: 0.4;
+  }
+}
+
+/* ---------- Water-source markers: a soft halo in each icon family's colour ---------- */
+.esri-resource-marker.water-source-glow::before,
+.esri-resource-marker.water-source-glow::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+}
+/* Light pool behind the pin */
+.esri-resource-marker.water-source-glow::before {
+  width: 76px;
+  height: 76px;
+  margin: -38px 0 0 -38px;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--glow-color, #0983ff) 75%, white) 0%,
+    color-mix(in srgb, var(--glow-color, #0983ff) 45%, transparent) 38%,
+    transparent 70%
+  );
+  opacity: 0.35;
+  animation: source-glow 3s ease-in-out var(--glow-delay, 0s) infinite;
+}
+/* Ripple ring spreading outward, like light on water */
+.esri-resource-marker.water-source-glow::after {
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: 2.5px solid color-mix(in srgb, var(--glow-color, #0983ff) 60%, white);
+  opacity: 0;
+  animation: source-ripple 3s ease-out var(--glow-delay, 0s) infinite;
+}
+.esri-resource-marker.water-source-glow.is-highlighted::before,
+.esri-resource-marker.water-source-glow.is-selected::before,
+.esri-resource-marker.water-source-glow.is-highlighted::after,
+.esri-resource-marker.water-source-glow.is-selected::after {
+  animation-duration: 1.8s;
+}
+@keyframes source-glow {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.1);
+  }
+}
+@keyframes source-ripple {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.9);
+  }
+  80%,
+  100% {
+    opacity: 0;
+    transform: scale(2.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nile-draw.is-drawing {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+  .nile-flow {
+    animation: none;
+    opacity: 0;
+  }
+  .water-sea-glow {
+    animation: none;
+    opacity: 1;
+  }
+  .esri-resource-marker.water-source-glow::before {
+    animation: none;
+    opacity: 0.6;
+    transform: none;
+  }
+  .esri-resource-marker.water-source-glow::after {
+    animation: none;
+    opacity: 0;
+  }
+}

@@ -35,6 +35,7 @@ import MapVideoPanel from "./MapVideoPanel";
 import Question from "./Question";
 import AIAssistant from "./AIAssistant";
 import ResourcePin from "../components/Map/ResourcePin";
+import { iconFamily } from "../components/Map/lessonIcons";
 import RobotGuide from "../components/Map/RobotGuide";
 const kindNames = {
   mineral: "خام معدني",
@@ -43,6 +44,8 @@ const kindNames = {
   water: "مورد مائي",
   project: "مشروع قومي",
 };
+const kindName = (r) =>
+  iconFamily(r)?.label || kindNames[r.kind];
 export const mapPosition = (l) => ({
   left: `${(75 + ((l.lng - 24) / 12) * 350) / 5}%`,
   top: `${(365 - ((l.lat - 21) / 11) * 330) / 4}%`,
@@ -255,6 +258,7 @@ export default function LessonPage({ demo = false }) {
     resources = (content.resources || []).map((r) => ({
       ...r,
       color:
+        iconFamily(r)?.color ||
         r.color ||
         {
           iron: "#426785",
@@ -415,7 +419,7 @@ export default function LessonPage({ demo = false }) {
         <dl className="site-facts">
           <div>
             <dt>النوع</dt>
-            <dd>{kindNames[resource.kind]}</dd>
+            <dd>{kindName(resource)}</dd>
           </div>
           {location && (
             <div>
@@ -776,7 +780,7 @@ export default function LessonPage({ demo = false }) {
               <ResourcePin resource={r} />
               <span>
                 {r.label}
-                <small>{kindNames[r.kind]}</small>
+                <small>{kindName(r)}</small>
               </span>
             </button>
           ))}

@@ -1,0 +1,462 @@
+/*
+ * Map page polish — 16 Oct 2026 (on top of adopted baseline 598b371 / 170b7bb).
+ * Loaded after map-workspace.css and map-studio.css. Changes layout collisions,
+ * hit areas, readable sizes and states only; colours, robot and identity unchanged.
+ */
+
+/* ---------- Overlay stacking: alerts sit above the learning dock, never under it ---------- */
+.esri-map-alerts {
+  position: absolute;
+  z-index: 1850; /* above side panels (1100) and dock (1800), below drawer close/notice */
+  bottom: 92px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(620px, max(320px, calc(100% - 600px)));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+.esri-map-alerts:empty {
+  display: none;
+}
+.map-shell .esri-map-alerts .esri-map-warning {
+  position: static;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px #60480e1f;
+  text-wrap: pretty;
+}
+.map-shell .esri-map-alerts .esri-map-warning button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  min-width: 40px;
+  justify-content: center;
+  padding: 6px 12px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+/* Basemap state badge and attribution stay readable but out of the dock's way. */
+.map-shell .esri-basemap-state {
+  font-size: 11px;
+}
+
+/* ---------- Side panels clear the basemap toolbar so their close buttons stay reachable ---------- */
+.map-shell .studio-workspace > .classroom-guide {
+  top: 118px;
+}
+
+/* Panel close buttons: a real, child-sized target instead of 30px text. */
+.map-shell .studio-workspace .mobile-panel-close,
+.map-shell .lesson-floating-information .p-close-text {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  min-height: 40px !important;
+  min-width: 44px;
+  padding: 6px 12px !important;
+  font-size: 13px !important;
+  font-weight: 700;
+  color: #174766;
+  background: #edf5fc !important;
+  border: 1px solid #c9deec !important;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+.map-shell .studio-workspace .mobile-panel-close:hover,
+.map-shell .lesson-floating-information .p-close-text:hover {
+  background: #dcebf7 !important;
+}
+
+/* ---------- Resource card: readable name/location, Arabic file attach control ---------- */
+.map-shell .classroom-resource h2 {
+  text-wrap: balance;
+}
+.map-shell .classroom-resource .selected-location {
+  font-size: 14px;
+  font-weight: 800;
+}
+.map-shell .site-facts dd {
+  font-variant-numeric: tabular-nums;
+}
+.map-shell .resource-photo-attach {
+  position: relative;
+  margin: 8px 0 4px;
+}
+.map-shell .resource-photo-attach input {
+  /* Visually hidden but focusable; the styled span is the visible control. */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.resource-photo-attach-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1.5px dashed #8db7d4;
+  border-radius: 12px;
+  background: #f5fafe;
+  color: #174766;
+  font-size: 13px;
+  font-weight: 700;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+.resource-photo-attach:hover .resource-photo-attach-button {
+  background: #e8f3fb;
+  border-color: #0869c4;
+}
+.resource-photo-attach:focus-within .resource-photo-attach-button {
+  outline: 3px solid #0869c4;
+  outline-offset: 2px;
+}
+.map-shell .resource-photo-note {
+  font-size: 11.5px;
+}
+
+/* ---------- Typography floor (UI/UX review): informational text >= 12px ---------- */
+.map-shell .map-header-identity,
+.map-shell .classroom-map-meta,
+.map-shell .studio-status,
+.map-shell .site-facts,
+.map-shell .site-facts dt,
+.map-shell .site-facts dd,
+.map-shell .media-pending,
+.map-shell .classroom-legend small {
+  font-size: 12px;
+}
+.map-shell .site-facts dd small {
+  font-size: 11px;
+}
+.map-shell .esri-basemap-state {
+  font-size: 12px;
+}
+.map-shell .floating-learning-dock button small {
+  font-size: 11px;
+}
+.map-shell .classroom-guide p,
+.map-shell .classroom-resource p {
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+/* ---------- Header: lesson buttons never break mid-label ---------- */
+.map-shell .lesson-button-wrap button,
+.map-shell .lesson-top-actions button {
+  white-space: nowrap;
+}
+
+/* ---------- Press feedback (subtle, interruptible) ---------- */
+.map-shell .floating-learning-dock button,
+.map-shell .map-sidebar-handles button,
+.map-shell .esri-map-toolbar button,
+.map-shell .esri-map-zoom button,
+.map-shell .lesson-button-wrap button,
+.map-shell .lesson-top-actions button,
+.map-shell .classroom-legend > button:not(.mobile-panel-close) {
+  transition: transform 120ms ease-out, background-color 160ms ease, color 160ms ease;
+}
+.map-shell .floating-learning-dock button:not(:disabled):active,
+.map-shell .map-sidebar-handles button:active,
+.map-shell .esri-map-toolbar button:active,
+.map-shell .esri-map-zoom button:active,
+.map-shell .lesson-button-wrap button:active,
+.map-shell .lesson-top-actions button:active,
+.map-shell .classroom-legend > button:not(.mobile-panel-close):active {
+  transform: scale(0.96);
+}
+.map-shell .floating-learning-dock button:disabled {
+  cursor: not-allowed;
+}
+
+/* Visible keyboard focus on every map control (some baseline rules removed outlines). */
+.map-shell button:focus-visible,
+.map-shell a:focus-visible,
+.map-shell select:focus-visible,
+.map-shell input:focus-visible,
+.map-shell .esri-resource-marker:focus-visible {
+  outline: 3px solid #0869c4 !important;
+  outline-offset: 2px;
+}
+.map-shell .esri-resource-marker:focus-visible {
+  border-radius: 50%;
+}
+
+/* ---------- Mid widths (both panels + alerts share the map) ---------- */
+@media (max-width: 1100px) and (min-width: 851px) {
+  .esri-map-alerts {
+    width: calc(100% - 24px);
+  }
+}
+
+/* ---------- Phones (portrait) ---------- */
+@media (max-width: 850px) {
+  /* Lift the dock so the map attribution (source/licence) stays visible under it. */
+  .floating-learning-dock {
+    bottom: 30px;
+  }
+  .esri-map-alerts {
+    bottom: 126px;
+    width: calc(100% - 20px);
+  }
+  .map-shell .classroom-map-meta {
+    bottom: 126px;
+  }
+  /* Basemap name sits opposite the caption; when an alert is shown it already says it. */
+  .map-shell .esri-basemap-state {
+    bottom: 126px;
+    left: auto;
+    right: 10px;
+    max-width: 45%;
+  }
+  .esri-map-surface:has(.esri-map-warning) .esri-basemap-state {
+    display: none;
+  }
+  .map-shell .studio-workspace > .learning-drawer {
+    bottom: 126px;
+  }
+  .map-shell .esri-map-alerts .esri-map-warning {
+    font-size: 12px;
+    padding: 6px 8px 6px 6px;
+  }
+  .map-shell .esri-map-alerts .esri-map-warning button {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  /* The map caption moves above an alert instead of hiding behind it. */
+  .classroom-map-region:has(.esri-map-warning) .classroom-map-meta {
+    bottom: 188px;
+  }
+
+  /* Legend on phones: one vertical list (baseline mixed grid + flex rules made
+     the resource buttons overflow sideways out of the panel). */
+  .map-shell .studio-workspace > .classroom-legend.mobile-open {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 4px;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .map-shell .studio-workspace > .classroom-legend > button:not(.mobile-panel-close) {
+    width: 100%;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    min-height: 48px;
+    padding: 4px 8px;
+    font-size: 13px;
+    text-align: start;
+  }
+  .map-shell .studio-workspace > .classroom-legend > button small {
+    display: block;
+    font-size: 11px;
+  }
+  .map-shell .studio-workspace > .classroom-legend .resource-pin {
+    flex: 0 0 auto;
+  }
+  /* Legend: below the toolbar row, above the dock; list scrolls inside. */
+  .map-shell .studio-workspace > .classroom-legend {
+    top: 110px;
+    bottom: 126px;
+    width: min(300px, calc(100% - 20px));
+    left: 10px;
+  }
+  /* Guide/resource card: a bottom sheet above the dock. The selected site is
+     kept in the upper part of the map by focusLocation(), so it stays visible. */
+  .map-shell .studio-workspace > .classroom-guide,
+  .map-shell .classroom-workspace > .classroom-guide.mobile-open {
+    top: auto;
+    bottom: 126px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-height: min(52%, calc(100% - 200px));
+  }
+  .map-shell .map-sidebar-handles button,
+  .map-shell .esri-map-toolbar button,
+  .map-shell .lesson-top-actions button,
+  .map-shell .classroom-map-meta {
+    font-size: 12px;
+  }
+  .map-shell .map-sidebar-handles button,
+  .map-shell .esri-map-toolbar button {
+    min-height: 44px;
+  }
+  .map-shell .floating-learning-dock button {
+    font-size: 11.5px;
+    text-wrap: balance;
+    line-height: 1.35;
+  }
+  .map-shell .floating-learning-dock button small {
+    font-size: 10px;
+  }
+  /* With an alert showing, open panels and drawers end above it (nothing is covered). */
+  .map-shell .studio-workspace:has(.esri-map-warning) > .classroom-legend,
+  .map-shell .studio-workspace:has(.esri-map-warning) > .classroom-guide,
+  .map-shell .studio-workspace:has(.esri-map-warning) > .learning-drawer {
+    bottom: 188px;
+  }
+  /* Sheet never climbs over the toolbar rows (top ~110px). */
+  /* Sheet height is a share of the map so the selected site (placed ~30% from the
+     top by focusLocation) and the toolbar rows stay visible above it. */
+  .map-shell .studio-workspace > .classroom-guide,
+  .map-shell .classroom-workspace > .classroom-guide.mobile-open {
+    max-height: 47%;
+  }
+  .map-shell .studio-workspace:has(.esri-map-warning) > .classroom-guide {
+    max-height: 37%;
+  }
+}
+
+/* ---------- Landscape phones: give height back to the map ---------- */
+@media (max-height: 500px) and (min-width: 650px) {
+  /* Dock leaves the bottom-right corner to the map attribution. */
+  .floating-learning-dock {
+    bottom: 10px;
+    left: 10px;
+    transform: none;
+    width: calc(100% - 170px);
+  }
+  .map-shell .esri-basemap-state {
+    bottom: 70px;
+  }
+  .esri-map-alerts {
+    bottom: 70px;
+    width: min(560px, calc(100% - 24px));
+  }
+  .map-shell .esri-map-alerts .esri-map-warning {
+    font-size: 11.5px;
+    padding: 4px 6px 4px 10px;
+    line-height: 1.4;
+  }
+  .map-shell .esri-map-alerts .esri-map-warning button {
+    min-height: 36px;
+    font-size: 11.5px;
+  }
+  /* Basemap tools join the first toolbar row (centred) instead of a second row. */
+  .map-shell .esri-map-toolbar {
+    top: 10px;
+    right: 50%;
+    transform: translateX(50%);
+  }
+  .map-shell .esri-map-zoom {
+    top: 62px;
+  }
+  .map-shell .esri-map-zoom button {
+    min-width: 40px;
+    min-height: 40px;
+  }
+  /* Side panels again (not a bottom sheet): the selected site stays visible. */
+  .map-shell .studio-workspace > .classroom-legend,
+  .map-shell .studio-workspace > .classroom-guide,
+  .map-shell .classroom-workspace > .classroom-guide.mobile-open,
+  .map-shell .studio-workspace:has(.esri-map-warning) > .classroom-legend,
+  .map-shell .studio-workspace:has(.esri-map-warning) > .classroom-guide {
+    top: 62px;
+    bottom: 68px;
+    max-height: none;
+  }
+  .map-shell .studio-workspace > .classroom-guide,
+  .map-shell .classroom-workspace > .classroom-guide.mobile-open {
+    left: auto;
+    right: 10px;
+    width: min(340px, 46%);
+  }
+  .map-shell .studio-workspace > .classroom-legend {
+    width: min(300px, 42%);
+  }
+  .map-shell .studio-workspace > .learning-drawer,
+  .map-shell .studio-workspace:has(.esri-map-warning) > .learning-drawer {
+    bottom: 68px;
+  }
+  /* Alert moves beside whichever side panel is open. */
+  .map-shell .studio-workspace:has(> .classroom-guide:not([hidden])) .esri-map-alerts {
+    left: 66px; /* clear of the zoom column */
+    transform: none;
+    width: calc(54% - 86px);
+  }
+  .map-shell .studio-workspace:has(> .classroom-legend:not([hidden])) .esri-map-alerts {
+    left: auto;
+    right: 10px;
+    transform: none;
+    width: calc(58% - 30px);
+  }
+  .classroom-map-region:has(.esri-map-warning) .classroom-map-meta {
+    bottom: 116px;
+  }
+  .map-shell .floating-learning-dock {
+    padding: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-shell .floating-learning-dock button,
+  .map-shell .map-sidebar-handles button,
+  .map-shell .esri-map-toolbar button,
+  .map-shell .esri-map-zoom button,
+  .map-shell .lesson-button-wrap button,
+  .map-shell .lesson-top-actions button,
+  .map-shell .classroom-legend > button,
+  .resource-photo-attach-button {
+    transition: none;
+  }
+  .map-shell button:active {
+    transform: none !important;
+  }
+}
+
+/* ---------- Tooltips & small panels (UI/UX review) ---------- */
+/* Lesson-name tooltip: show on hover or keyboard focus only. After a tap the
+   button keeps focus, and :focus-within left the tooltip stuck over other buttons. */
+.lesson-button-wrap:focus-within:not(:has(:focus-visible)):not(:hover) .lesson-name-tooltip {
+  display: none;
+}
+@media (hover: none) {
+  .lesson-button-wrap:hover:not(:has(:focus-visible)) .lesson-name-tooltip {
+    display: none;
+  }
+}
+.map-shell .governorate-search-status {
+  font-size: 12px;
+}
+.map-shell .esri-governorates-picker small,
+.map-shell .esri-governorates-picker > span {
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+.map-shell .water-source-key span {
+  font-size: 12px;
+}
+.map-shell .water-source-key small {
+  font-size: 11.5px;
+}
+@media (max-width: 850px) {
+  .map-shell .water-source-key span {
+    font-size: 11.5px;
+  }
+}

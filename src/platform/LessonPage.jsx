@@ -18,6 +18,7 @@ import {
   Plus,
   Minus,
   MapTrifold,
+  ImageSquare,
 } from "phosphor-react";
 import Shell, { PlatformNavigation } from "./Shell";
 import SelectField from "./SelectField";
@@ -27,6 +28,7 @@ import LearningDrawer from "./LearningDrawer";
 import EsriLessonMap from "./EsriLessonMap";
 import "./map-workspace.css";
 import "./map-studio.css";
+import "./map-polish.css";
 import MapVideoPanel from "./MapVideoPanel";
 import Question from "./Question";
 import AIAssistant from "./AIAssistant";
@@ -282,11 +284,18 @@ export default function LessonPage({ demo = false }) {
   const current = filtered[index];
   const answered = (id) => setSolved((s) => (s.includes(id) ? s : [...s, id]));
   function pick(r) {
+    const singleSite =
+      ["water", "project"].includes(r.kind) && r.locations?.length === 1;
+    // On narrow screens the guide panel covers the map. When the child still
+    // needs to tap one of the resource's sites, keep the map visible and guide
+    // them from the map caption instead; the card opens once a site is chosen.
+    const mustTapSite = !singleSite && Boolean(r.locations?.length);
+    const narrow = window.matchMedia("(max-width: 850px)").matches;
     setLegendOpen(false);
-    setInfoOpen(true);
+    setInfoOpen(!(narrow && mustTapSite));
     setVideoOpen(false);
     setResource(r);
-    if (["water", "project"].includes(r.kind) && r.locations?.length === 1) {
+    if (singleSite) {
       setLocation({ ...r.locations[0], resource: r });
       setFocusRequest({ siteId: r.locations[0].id, nonce: Date.now() });
     } else setLocation(null);
@@ -314,7 +323,6 @@ export default function LessonPage({ demo = false }) {
   function help(q, answer) {
     if (demo) {
       setNotice(q.hint || "راجع بطاقة المورد ثم حاول مرة أخرى.");
-      window.alert(q.hint || "راجع بطاقة المورد ثم حاول مرة أخرى.");
       return;
     }
     ai(
@@ -377,18 +385,27 @@ export default function LessonPage({ demo = false }) {
           label={`صورة ${resource.label}`}
         />
         <label className="resource-photo-attach">
-          إرفاق صورة للمعاينة
           <input
             type="file"
             accept="image/png,image/jpeg,image/webp,image/gif"
+            aria-describedby="resource-photo-attach-help"
             onChange={(e) => {
               attachPhoto(e.target.files[0]);
               e.target.value = "";
             }}
           />
+          <span className="resource-photo-attach-button">
+            <ImageSquare size={20} aria-hidden="true" />
+            {localPhotos[resource.id] ? "استبدل صورة المعاينة" : "إرفاق صورة للمعاينة"}
+          </span>
         </label>
+        {!localPhotos[resource.id] && (
+          <small id="resource-photo-attach-help" className="resource-photo-note">
+            معاينة مؤقتة على هذا الجهاز فقط؛ لا تُرفع إلى الخادم.
+          </small>
+        )}
         {localPhotos[resource.id] && (
-          <small className="resource-photo-note">
+          <small id="resource-photo-attach-help" className="resource-photo-note">
             معاينة مؤقتة على هذا الجهاز. لحفظ الصورة للمستخدمين، ارفعها من محرر
             المورد بالإدارة.
           </small>
@@ -734,7 +751,10 @@ export default function LessonPage({ demo = false }) {
             <BookOpen />
             مفتاح الخريطة
           </h2>
-          <details className="map-settings" open>
+          <details
+            className="map-settings"
+            open={!window.matchMedia("(max-width: 850px)").matches}
+          >
             <summary>إعدادات العرض</summary>
             <div className="studio-select-tools">
               <SelectField label="وضع الخريطة" compact value={mode}
@@ -763,7 +783,9 @@ export default function LessonPage({ demo = false }) {
         <section className="classroom-map-region" aria-label="خريطة موارد مصر">
           <div className="classroom-map-meta">
             <span>
-              {resource
+              {resource && !location && resource.locations?.length
+                ? `اضغط أحد مواقع ${resource.label} على الخريطة`
+                : resource
                 ? `المورد المختار: ${resource.label}`
                 : discovery && !full
                   ? "اختر رمزًا لتظهر مواقعه"

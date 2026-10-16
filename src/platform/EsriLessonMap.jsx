@@ -399,7 +399,13 @@ export default function EsriLessonMap({
     const marine = ["mediterranean-sea", "red-sea"].includes(site.resource.id);
     const zoom = marine ? 6 : Math.max(map.getZoom(), 8);
     const point = map.project([site.lat, site.lng], zoom);
-    if (window.innerWidth <= 850) point.y += map.getSize().y * 0.24;
+    // Keep the chosen site in the part of the map that the resource card leaves
+    // visible: above the bottom sheet on phones, beside the side panel in landscape.
+    if (window.innerWidth <= 850) {
+      const size = map.getSize();
+      if (window.innerHeight <= 500) point.x += size.x * 0.23;
+      else point.y += size.y * 0.2;
+    }
     map.stop();
     map.setView(map.unproject(point, zoom), zoom, {
       animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -415,7 +421,8 @@ export default function EsriLessonMap({
     } catch {}
     if (close) galleryButton.current?.focus();
   }
-  const normalizeSearch = (text) => String(text || "").normalize("NFKD").replace(/[\u064b-\u065f]/g, "").replace(/[أإآ]/g, "ا").replace(/ى/g, "ي").trim();
+  // Arabic-tolerant matching: ignore diacritics/tatweel and common spelling variants (أ/إ/آ، ى/ي، ة/ه).
+  const normalizeSearch = (text) => String(text || "").normalize("NFKD").replace(/[\u064b-\u065f\u0670\u0640]/g, "").replace(/[أإآ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه").replace(/\s+/g, " ").trim();
   const governorateOptions = features?.features || [];
   const filteredGovernorates = governorateOptions.filter(f => normalizeSearch(f.properties.name_ar).includes(normalizeSearch(governorateQuery)));
   const chosenGovernorate = governorateOptions.find(f => f.id === selectedGovernorate);
@@ -553,23 +560,25 @@ export default function EsriLessonMap({
             : chosen.label}
         {status === "partial" && " · بعض الصور لم تُحمّل"}
       </div>
-      {status === "error" && basemap !== "local" && (
-        <div className="esri-map-warning" role="status">
-          تعذر تحميل Esri؛ نعرض خريطة محلية وليست صورة قمر صناعي.
-          <button onClick={() => setRetry((n) => n + 1)}>
-            <ArrowClockwise size={16} />
-            إعادة المحاولة
-          </button>
-        </div>
-      )}
-      {notice && (
-        <div className="esri-map-warning" role="status">
-          {notice}
-          <button aria-label="إغلاق التنبيه" onClick={() => setNotice("")}>
-            <X />
-          </button>
-        </div>
-      )}
+      <div className="esri-map-alerts">
+        {status === "error" && basemap !== "local" && (
+          <div className="esri-map-warning" role="status">
+            <span>تعذر تحميل Esri؛ نعرض خريطة محلية وليست صورة قمر صناعي.</span>
+            <button onClick={() => setRetry((n) => n + 1)}>
+              <ArrowClockwise size={16} aria-hidden="true" />
+              إعادة المحاولة
+            </button>
+          </div>
+        )}
+        {notice && (
+          <div className="esri-map-warning" role="status">
+            <span>{notice}</span>
+            <button aria-label="إغلاق التنبيه" onClick={() => setNotice("")}>
+              <X aria-hidden="true" />
+            </button>
+          </div>
+        )}
+      </div>
       {gallery && (
         <section
           id="basemap-gallery"

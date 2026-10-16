@@ -1,0 +1,422 @@
+/* Map page header (program name + lesson tabs) and a map key that fits the
+   map height without scrolling. 2026-10-16. Loaded after map-ux.css. */
+
+/* ================= Header ================= */
+.map-shell .studio-titlebar.map-header-v2 {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 16px;
+  min-height: 0;
+  padding: 6px 6px 10px;
+}
+
+/* Program name */
+.map-header-v2 .map-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  min-width: 0;
+}
+.map-header-v2 .map-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #e0efff;
+  color: #0869c4;
+  flex: none;
+}
+.map-header-v2 .map-brand-mark svg {
+  width: 26px;
+  height: 26px;
+}
+.map-header-v2 .map-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  min-width: 0;
+}
+.map-header-v2 .map-brand-text strong {
+  font-size: 19px;
+  font-weight: 900;
+  color: #12365c;
+  white-space: nowrap;
+}
+.map-header-v2 .map-brand-text small {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #4a6178;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The cluster only groups markup; its children are laid out by the header. */
+.map-shell .map-header-v2 .map-top-button-cluster {
+  display: contents;
+}
+.map-shell .map-header-v2 .lesson-number-buttons {
+  order: 2;
+  margin-inline: auto;
+}
+.map-shell .map-header-v2 .lesson-top-actions {
+  order: 3;
+}
+
+/* Lesson tabs: one segmented control, number + lesson title */
+.map-shell .map-header-v2 .lesson-number-buttons {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: #ffffff;
+  border: 1px solid #cfe0ee;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px #12365c12;
+  justify-content: center;
+}
+.map-shell .map-header-v2 .lesson-button-wrap button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  max-width: 220px;
+  padding: 5px 12px 5px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--lesson-ink);
+  text-align: start;
+  box-shadow: none;
+  transition: background-color 150ms ease-out, color 150ms ease-out;
+}
+.map-shell .map-header-v2 .lesson-button-wrap button:hover:not([aria-current]) {
+  background: var(--lesson-bg);
+}
+.map-shell .map-header-v2 .lesson-button-wrap button[aria-current] {
+  background: var(--lesson-active);
+  color: #ffffff;
+  box-shadow: 0 3px 8px #12365c26;
+}
+.map-header-v2 .lesson-tab-number {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--lesson-bg);
+  border: 1.5px solid var(--lesson-border);
+  color: var(--lesson-ink);
+  font-size: 15px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.map-header-v2 button[aria-current] .lesson-tab-number {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--lesson-active);
+}
+.map-header-v2 .lesson-tab-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+.map-header-v2 .lesson-tab-text b {
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.map-header-v2 .lesson-tab-text small {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Titles are visible in the tab now; the hover tooltip is redundant. */
+.map-header-v2 .lesson-name-tooltip {
+  display: none !important;
+}
+
+/* Lesson details: quieter than the lesson tabs */
+.map-shell .map-header-v2 .lesson-top-actions {
+  display: flex;
+  gap: 6px;
+}
+.map-shell .map-header-v2 .lesson-top-actions button {
+  min-height: 44px;
+  padding: 6px 12px;
+  font-size: 13.5px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+/* The student name now sits under the program name. */
+.map-shell .map-header-v2 .map-header-identity {
+  display: none !important;
+}
+
+/* Medium screens: name + lesson details on row 1, lesson tabs on row 2 */
+@media (max-width: 1320px) {
+  .map-shell .studio-titlebar.map-header-v2 {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .map-header-v2 .map-brand {
+    order: 1;
+    flex: 1;
+  }
+  .map-shell .map-header-v2 .lesson-top-actions {
+    order: 2;
+  }
+  .map-shell .map-header-v2 .lesson-number-buttons {
+    order: 3;
+    flex: 0 1 auto;
+    margin-inline: auto;
+  }
+  /* Forces the lesson tabs onto their own row. */
+  .map-shell .studio-titlebar.map-header-v2::after {
+    content: "";
+    order: 2;
+    flex-basis: 100%;
+    height: 0;
+  }
+}
+
+/* Phones and small tablets */
+@media (max-width: 850px) {
+  .map-shell .studio-titlebar.map-header-v2 {
+    gap: 6px 8px;
+    padding: 2px 2px 6px;
+  }
+  .map-header-v2 .map-brand-mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  .map-header-v2 .map-brand-mark svg {
+    width: 22px;
+    height: 22px;
+  }
+  .map-header-v2 .map-brand-text strong {
+    font-size: 16px;
+  }
+  .map-header-v2 .map-brand-text small {
+    font-size: 11.5px;
+  }
+  .map-header-v2 .map-brand {
+    flex: 1 1 100%;
+  }
+  .map-shell .map-header-v2 .lesson-number-buttons {
+    order: 2;
+  }
+  .map-shell .map-header-v2 .lesson-top-actions {
+    order: 3;
+  }
+  .map-shell .map-header-v2 .lesson-number-buttons {
+    width: 100%;
+  }
+  .map-shell .map-header-v2 .lesson-button-wrap {
+    flex: 1;
+    min-width: 0;
+  }
+  .map-shell .map-header-v2 .lesson-button-wrap button {
+    width: 100%;
+    max-width: none;
+    padding: 4px 6px;
+    gap: 6px;
+  }
+  .map-header-v2 .lesson-tab-number {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+  }
+  .map-header-v2 .lesson-tab-text b {
+    font-size: 13px;
+  }
+  .map-header-v2 .lesson-tab-text small {
+    font-size: 11px;
+  }
+  .map-shell .map-header-v2 .lesson-top-actions {
+    width: 100%;
+  }
+  .map-shell .map-header-v2 .lesson-top-actions button {
+    flex: 1;
+    justify-content: center;
+    padding: 4px 6px;
+    font-size: 13px;
+  }
+}
+@media (max-width: 420px) {
+  .map-header-v2 .lesson-tab-number {
+    display: none;
+  }
+  .map-shell .map-header-v2 .lesson-top-actions button svg {
+    display: none;
+  }
+}
+
+/* Landscape phones: one compact row */
+@media (max-height: 500px) and (min-width: 650px) {
+  .map-shell .studio-titlebar.map-header-v2::after {
+    display: none;
+  }
+  .map-shell .studio-titlebar.map-header-v2 {
+    flex-wrap: nowrap;
+    padding: 2px 2px 4px;
+  }
+  .map-header-v2 .map-brand-text small,
+  .map-header-v2 .lesson-tab-text small,
+  .map-header-v2 .lesson-tab-number {
+    display: none;
+  }
+  .map-header-v2 .map-brand-text strong {
+    font-size: 14px;
+  }
+  .map-header-v2 .map-brand-mark {
+    width: 34px;
+    height: 34px;
+  }
+  .map-header-v2 .map-brand {
+    flex: none;
+  }
+  .map-shell .map-header-v2 .lesson-number-buttons {
+    order: 2;
+    margin-inline: auto;
+  }
+  .map-shell .map-header-v2 .lesson-number-buttons,
+  .map-shell .map-header-v2 .lesson-top-actions {
+    width: auto;
+  }
+  .map-shell .map-header-v2 .lesson-button-wrap button,
+  .map-shell .map-header-v2 .lesson-top-actions button {
+    min-height: 44px;
+    padding: 4px 8px;
+  }
+}
+
+/* ================= Map key: whole list visible, no scrolling ================= */
+.map-shell .studio-workspace > .classroom-legend[hidden] {
+  display: none !important;
+}
+.map-shell .classroom-legend > .map-menu-heading {
+  display: none;
+}
+.map-shell .studio-workspace > .classroom-legend {
+  bottom: 12px !important;
+  max-height: none !important;
+  overflow: auto;
+  gap: 2px;
+}
+.map-shell .classroom-legend > button:not(.mobile-panel-close) {
+  min-height: 44px !important;
+  padding: 3px 8px !important;
+  gap: 10px;
+  border-radius: 10px;
+}
+.map-shell .classroom-legend > button:not(.mobile-panel-close) .resource-pin {
+  width: 30px !important;
+  height: 38px !important;
+  flex: none;
+}
+.map-shell .classroom-legend > button:not(.mobile-panel-close) > span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  font-size: 14px;
+  font-weight: 800;
+}
+.map-shell .classroom-legend > button:not(.mobile-panel-close) small {
+  font-size: 12px !important;
+  font-weight: 600;
+}
+.map-shell .classroom-legend > h2 {
+  margin-bottom: 6px;
+}
+
+/* Medium widths: the bottom bar would reach the key, so the key ends above it
+   and uses two columns to stay scroll-free. */
+@media (min-width: 851px) and (max-width: 1250px) {
+  .map-shell .studio-workspace > .classroom-legend {
+    bottom: 100px !important;
+    width: min(460px, calc(100% - 24px)) !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    align-content: start;
+    gap: 2px 6px;
+  }
+  .map-shell .classroom-legend > .mobile-panel-close,
+  .map-shell .classroom-legend > h2,
+  .map-shell .classroom-legend > .map-menu-navigation {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Phones: a wider, two-column key so every resource shows at once */
+@media (max-width: 850px) {
+  .map-shell .studio-workspace > .classroom-legend.mobile-open,
+  .map-shell .studio-workspace > .classroom-legend {
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    bottom: 126px !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    align-content: start;
+    gap: 4px 6px;
+  }
+  .map-shell .classroom-legend > .mobile-panel-close,
+  .map-shell .classroom-legend > h2,
+  .map-shell .classroom-legend > .map-menu-navigation {
+    grid-column: 1 / -1;
+  }
+  .map-shell .classroom-legend > button:not(.mobile-panel-close) {
+    padding: 3px 6px !important;
+    gap: 6px;
+  }
+  .map-shell .classroom-legend > button:not(.mobile-panel-close) > span {
+    font-size: 13px;
+  }
+  .map-shell .classroom-legend > button:not(.mobile-panel-close) small {
+    font-size: 11px !important;
+  }
+}
+@media (max-height: 500px) and (min-width: 650px) {
+  .map-shell .studio-workspace > .classroom-legend,
+  .map-shell .studio-workspace > .classroom-legend.mobile-open {
+    width: auto !important;
+    left: 10px !important;
+    right: 10px !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-content: start;
+    gap: 2px 6px;
+    bottom: 76px !important;
+  }
+  .map-shell .classroom-legend > .mobile-panel-close,
+  .map-shell .classroom-legend > h2 {
+    grid-column: 1 / -1;
+  }
+  .map-shell .classroom-legend > button:not(.mobile-panel-close) small {
+    display: none;
+  }
+  .map-shell .classroom-legend > button:not(.mobile-panel-close) {
+    min-height: 40px !important;
+  }
+  .map-shell .classroom-legend > h2 {
+    margin: 0;
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-shell .map-header-v2 .lesson-button-wrap button {
+    transition: none;
+  }
+}

@@ -118,6 +118,71 @@
   }
 }
 
+/* ---------- Lesson 3: high-speed rail drawn in travel order ---------- */
+.rail-draw.is-drawing {
+  stroke-dasharray: var(--nile-length);
+  stroke-dashoffset: var(--nile-length);
+  animation: nile-draw 2.2s cubic-bezier(0.45, 0, 0.25, 1) 0.3s forwards;
+}
+.rail-south.is-drawing {
+  animation-duration: 3s;
+  animation-delay: 1.5s;
+}
+.rail-east.is-drawing {
+  animation-duration: 1.1s;
+  animation-delay: 3.6s;
+}
+.rail-ties {
+  opacity: 0;
+  animation: nile-appear 0.6s ease-out 4.6s forwards;
+}
+.rail-station {
+  opacity: 0;
+  animation: nile-appear 0.4s ease-out forwards;
+}
+.rail-station-0 { animation-delay: 0.3s; }
+.rail-station-1 { animation-delay: 2.4s; }
+.rail-station-3 { animation-delay: 4.4s; }
+.rail-station-2 { animation-delay: 4.7s; }
+.leaflet-tooltip.rail-station-label {
+  background: #ffffff;
+  color: #12365c;
+  border: 1.5px solid #d61f26;
+  border-radius: 8px;
+  padding: 3px 8px;
+  font: 800 12.5px/1.3 Cairo, sans-serif;
+  box-shadow: 0 2px 6px #12365c33;
+}
+.leaflet-tooltip-top.rail-station-label::before {
+  border-top-color: #d61f26;
+}
+.rail-route-swatch {
+  display: inline-block;
+  width: 26px;
+  height: 4px;
+  margin-inline-end: 6px;
+  vertical-align: middle;
+  background: repeating-linear-gradient(90deg, #d61f26 0 6px, #d61f26 6px 8px) ;
+  box-shadow: 0 0 0 2px #ffffff, inset 0 0 0 0 #d61f26;
+  position: relative;
+}
+.rail-route-swatch::after {
+  content: "";
+  position: absolute;
+  inset: -4px 0;
+  background: repeating-linear-gradient(90deg, transparent 0 7px, #d61f26 7px 9px);
+}
+.rail-station-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-inline-end: 6px;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: #12365c;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px #12365c55;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .nile-draw.is-drawing {
     animation: none;
@@ -127,6 +192,16 @@
   .nile-flow {
     animation: none;
     opacity: 0;
+  }
+  .rail-draw.is-drawing {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+  .rail-ties,
+  .rail-station {
+    animation: none;
+    opacity: 1;
   }
   .water-sea-glow {
     animation: none;

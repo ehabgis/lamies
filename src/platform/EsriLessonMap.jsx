@@ -46,9 +46,9 @@ function GalleryThumbnail({ basemap }) {
 // Gives each Nile path its own length so the CSS draw animation can run it
 // from its first point (south) to its last; afterwards the dash is cleared so
 // zooming (which rewrites the path) never shows a partial river.
-function prepareNileDraw(pane) {
+function prepareNileDraw(pane, selector = "path.nile-draw") {
   if (!pane) return;
-  for (const path of pane.querySelectorAll("path.nile-draw")) {
+  for (const path of pane.querySelectorAll(selector)) {
     const length = Math.ceil(path.getTotalLength?.() || 0);
     if (!length) continue;
     path.style.setProperty("--nile-length", length);
@@ -71,6 +71,7 @@ export default function EsriLessonMap({
   resetKey = 0,
   focusRequest,
   waterLesson = false,
+  railLesson = false,
   onReset,
   onToolOpen,
 }) {
@@ -89,6 +90,8 @@ export default function EsriLessonMap({
     [river, setRiver] = useState(null),
     [seas, setSeas] = useState(null),
     [waterHighlights, setWaterHighlights] = useState(true),
+    [rail, setRail] = useState(null),
+    [showRail, setShowRail] = useState(true),
     [dataError, setDataError] = useState(""),
     [selectedGovernorate, setSelectedGovernorate] = useState(""),
     [governorateQuery, setGovernorateQuery] = useState(""),
@@ -162,6 +165,79 @@ export default function EsriLessonMap({
       });
     return () => controller.abort();
   }, [waterLesson]);
+  useEffect(() => {
+    if (!railLesson) return;
+    const controller = new AbortController();
+    fetch("/geodata/egypt-fast-train.geojson", { signal: controller.signal })
+      .then((r) => {
+        if (!r.ok) throw Error();
+        return r.json();
+      })
+      .then(setRail)
+      .catch((e) => {
+        if (e.name !== "AbortError")
+          setNotice("تعذّر تحميل مسار القطار السريع؛ علامات المواقع ما زالت متاحة.");
+      });
+    return () => controller.abort();
+  }, [railLesson]);
+  useEffect(() => {
+    if (!ready || !railLesson || !showRail || !rail) return;
+    const map = mapRef.current;
+    if (!map.getPane("rail-route")) {
+      map.createPane("rail-route");
+      map.getPane("rail-route").style.zIndex = "450";
+    }
+    const group = L.layerGroup().addTo(map);
+    const lines = {
+      ...rail,
+      features: rail.features.filter((f) => f.properties.kind === "line"),
+    };
+    // Drawn in travel order: New Alamein → Ain Sokhna, then south to Abu
+    // Simbel, then the Hurghada branch (see map-motion.css for the timing).
+    const draw = (base) => (f) => ({
+      ...base,
+      className: `rail-draw rail-${f.properties.segment}`,
+    });
+    L.geoJSON(lines, {
+      pane: "rail-route",
+      interactive: false,
+      style: draw({ color: "#ffffff", weight: 9, opacity: 0.9, lineCap: "round" }),
+    }).addTo(group);
+    L.geoJSON(lines, {
+      pane: "rail-route",
+      interactive: false,
+      style: draw({ color: "#d61f26", weight: 4, opacity: 1, lineCap: "round" }),
+      attribution: "مسار القطار: رسم تعليمي تقريبي",
+    }).addTo(group);
+    // Short wide dashes read as railway sleepers.
+    L.geoJSON(lines, {
+      pane: "rail-route",
+      interactive: false,
+      style: { color: "#d61f26", weight: 11, opacity: 1, dashArray: "2 16", lineCap: "butt", className: "rail-ties" },
+    }).addTo(group);
+    for (const f of rail.features.filter((f) => f.properties.kind === "station")) {
+      const [lng, lat] = f.geometry.coordinates;
+      L.circleMarker([lat, lng], {
+        pane: "rail-route",
+        radius: 6,
+        color: "#ffffff",
+        weight: 2.5,
+        fillColor: "#12365c",
+        fillOpacity: 1,
+        interactive: false,
+        className: `rail-station rail-station-${f.properties.order}`,
+      })
+        .bindTooltip(textNode(f.properties.name), {
+          permanent: true,
+          direction: "top",
+          offset: [0, -6],
+          className: "rail-station-label",
+        })
+        .addTo(group);
+    }
+    requestAnimationFrame(() => prepareNileDraw(map.getPane("rail-route"), "path.rail-draw"));
+    return () => map.removeLayer(group);
+  }, [ready, railLesson, showRail, rail]);
   useEffect(() => {
     if (!ready || !waterLesson || !waterHighlights) return;
     const map = mapRef.current;
@@ -584,6 +660,31 @@ export default function EsriLessonMap({
                 البحر الأحمر · مياه مالحة
               </span>
               <small>مياه البحر تحتاج إلى التحلية للشرب.</small>
+            </div>
+          )}
+        </div>
+      )}
+      {railLesson && rail && (
+        <div className="water-source-key rail-route-key">
+          <label>
+            <input
+              type="checkbox"
+              checked={showRail}
+              onChange={(e) => setShowRail(e.target.checked)}
+            />
+            مسار القطار السريع
+          </label>
+          {showRail && (
+            <div>
+              <span>
+                <i className="rail-route-swatch" />
+                خط القطار السريع
+              </span>
+              <span>
+                <i className="rail-station-swatch" />
+                محطة رئيسية
+              </span>
+              <small>من العلمين الجديدة إلى العين السخنة والغردقة وأبو سمبل. مسار تعليمي تقريبي عن خريطة الكتاب.</small>
             </div>
           )}
         </div>

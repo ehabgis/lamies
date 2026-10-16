@@ -1,0 +1,9 @@
+{"type":"FeatureCollection","properties":{"note":"مسار تعليمي تقريبي رُسم يدويًا عن خريطة الكتاب المدرسي (درس المشروعات القومية) التي أرسلها المعلم في 16 أكتوبر 2026. ليس مسارًا هندسيًا أو مساحيًا رسميًا."},"features":[
+{"type":"Feature","properties":{"kind":"line","segment":"north","name":"العلمين الجديدة – العين السخنة"},"geometry":{"type":"LineString","coordinates":[[28.95,30.83],[29.55,30.62],[30.10,30.45],[30.55,30.25],[30.95,30.00],[31.20,29.93],[31.45,29.97],[31.75,30.02],[32.05,29.85],[32.32,29.60]]}},
+{"type":"Feature","properties":{"kind":"line","segment":"south","name":"السادس من أكتوبر – أبو سمبل"},"geometry":{"type":"LineString","coordinates":[[30.95,30.00],[30.80,29.40],[30.65,28.70],[30.60,28.10],[30.75,27.50],[31.05,27.00],[31.55,26.55],[32.10,26.15],[32.55,26.05],[32.58,25.70],[32.84,24.98],[32.90,24.47],[32.85,24.09],[32.55,23.55],[32.10,22.95],[31.62,22.35]]}},
+{"type":"Feature","properties":{"kind":"line","segment":"east","name":"قنا – الغردقة"},"geometry":{"type":"LineString","coordinates":[[32.55,26.05],[32.75,26.18],[33.15,26.55],[33.55,26.95],[33.80,27.22]]}},
+{"type":"Feature","properties":{"kind":"station","name":"العلمين الجديدة","order":0},"geometry":{"type":"Point","coordinates":[28.95,30.83]}},
+{"type":"Feature","properties":{"kind":"station","name":"العين السخنة","order":1},"geometry":{"type":"Point","coordinates":[32.32,29.60]}},
+{"type":"Feature","properties":{"kind":"station","name":"الغردقة","order":2},"geometry":{"type":"Point","coordinates":[33.80,27.22]}},
+{"type":"Feature","properties":{"kind":"station","name":"أبو سمبل","order":3},"geometry":{"type":"Point","coordinates":[31.62,22.35]}}
+]}

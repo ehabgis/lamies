@@ -22,7 +22,6 @@ import {
   X,
 } from "phosphor-react";
 import Shell, { PlatformNavigation } from "./Shell";
-import SelectField from "./SelectField";
 import { useSession } from "./Session";
 import { api } from "./api";
 import LearningDrawer from "./LearningDrawer";
@@ -31,6 +30,9 @@ import "./map-workspace.css";
 import "./map-studio.css";
 import "./map-polish.css";
 import "./map-ux.css";
+import "./map-header.css";
+import "./activities.css";
+import ActivityPicker, { ActivitySteps, activityMeta } from "./ActivityPicker";
 import MapVideoPanel from "./MapVideoPanel";
 import Question from "./Question";
 import AIAssistant from "./AIAssistant";
@@ -141,6 +143,7 @@ export default function LessonPage({ demo = false }) {
     [resource, setResource] = useState(null),
     [location, setLocation] = useState(null),
     [mode, setMode] = useState("interactive"),
+    [pickActivity, setPickActivity] = useState(true),
     [full, setFull] = useState(false),
     [panel, setPanel] = useState(null),
     [modal, setModal] = useState(null),
@@ -184,7 +187,8 @@ export default function LessonPage({ demo = false }) {
           restoredResource?.locations?.find((l) => l.id === state.locationId) ||
             null,
         );
-        setMode(state.mode === "discover" ? "discover" : "interactive");
+        // The mode picker was removed from the map key; always open in free exploration.
+        setMode("interactive");
         setStateReady(true);
       })
       .catch((e) => {
@@ -506,7 +510,19 @@ export default function LessonPage({ demo = false }) {
   return (
     <Shell mapPage>
       <h1 className="studio-page-title">{lesson.title}</h1>
-      <div className="studio-titlebar">
+      <div className="studio-titlebar map-header-v2">
+        <div className="map-brand">
+          <span className="map-brand-mark" aria-hidden="true">
+            <BookOpen weight="duotone" />
+          </span>
+          <span className="map-brand-text">
+            <strong>الخرائط التعليمية الذكية</strong>
+            <small>
+              {unitTitle || "الوحدة: جارٍ التحميل…"} ·{" "}
+              {user?.name || user?.username || "مستكشف زائر"}
+            </small>
+          </span>
+        </div>
         <div className="map-top-button-cluster">
         <nav className="lesson-number-buttons" aria-label="دروس الوحدة">
           {[0, 1, 2].map((i) => {
@@ -522,9 +538,7 @@ export default function LessonPage({ demo = false }) {
                 key={i}
               >
                 <button
-                  aria-label={
-                    ["الدرس الأول", "الدرس الثاني", "الدرس الثالث"][i]
-                  }
+                  aria-label={`${["الدرس الأول", "الدرس الثاني", "الدرس الثالث"][i]}: ${title}`}
                   aria-current={selected ? "page" : undefined}
                   aria-disabled={!next || next.available === false}
                   aria-describedby={`lesson-title-${i}`}
@@ -542,7 +556,17 @@ export default function LessonPage({ demo = false }) {
                     );
                   }}
                 >
-                  {["الدرس الأول", "الدرس الثاني", "الدرس الثالث"][i]}
+                  <span className="lesson-tab-number" aria-hidden="true">
+                    {i + 1}
+                  </span>
+                  <span className="lesson-tab-text">
+                    <b>{["الدرس الأول", "الدرس الثاني", "الدرس الثالث"][i]}</b>
+                    <small>
+                      {next?.available === false
+                        ? "قيد التجهيز"
+                        : title.replace(/^الدرس\s+\S+\s*[:：]\s*/, "")}
+                    </small>
+                  </span>
                 </button>
                 <span
                   role="tooltip"
@@ -757,19 +781,6 @@ export default function LessonPage({ demo = false }) {
             <BookOpen />
             مفتاح الخريطة
           </h2>
-          <details
-            className="map-settings"
-            open={!window.matchMedia("(max-width: 850px)").matches}
-          >
-            <summary>إعدادات العرض</summary>
-            <div className="studio-select-tools">
-              <SelectField label="وضع الخريطة" compact value={mode}
-                onChange={(e) => { setMode(e.target.value); showAll(); }}>
-                <option value="interactive">الاستكشاف الحر</option>
-                <option value="discover">اكتشف الرموز</option>
-              </SelectField>
-            </div>
-          </details>
           <h3 className="map-menu-heading">الموارد الطبيعية</h3>
           {resources.map((r) => (
             <button
@@ -807,6 +818,7 @@ export default function LessonPage({ demo = false }) {
             resetKey={resetMap}
             focusRequest={focusRequest}
             waterLesson={demo && id === "lesson-2"}
+            railLesson={demo && id === "lesson-3"}
             onReset={showAll}
             onToolOpen={() => { setLegendOpen(false); setInfoOpen(false); setPanel(null); }}
             onSelect={(site) => {
@@ -914,6 +926,7 @@ export default function LessonPage({ demo = false }) {
             aria-expanded={modal === "activities"}
             onClick={() => {
               setIndex(0);
+              setPickActivity(true);
               openLearning("activities");
             }}
           >
@@ -1004,55 +1017,58 @@ export default function LessonPage({ demo = false }) {
               />
             ) : (
               <>
-                {modal === "activities" && (
-                  <div className="activity-selector">
-                    <button
-                      onClick={() => {
-                        setIndex(0);
-                        openLearning("build-map");
-                      }}
-                    >
-                      اصنع خريطتك
-                    </button>
-                    {filtered.map((q, i) => (
-                      <button
-                        className={i === index ? "active" : ""}
-                        key={q.id}
-                        onClick={() => setIndex(i)}
-                      >
-                        {q.type === "map"
-                          ? "اكتشف الموقع"
-                          : q.type === "drag"
-                            ? "صنّف الموارد"
-                            : q.type === "match"
-                              ? "صل المورد باستخدامه"
-                              : q.type === "order"
-                                ? "رتّب الخطوات"
-                                : q.type === "blank"
-                                  ? "أكمل الفراغ"
-                                  : "طابق الرموز"}
-                        {solved.includes(q.id) ? " ✓" : ""}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {current ? (
+                {modal === "activities" && pickActivity ? (
+                  <ActivityPicker
+                    activities={filtered}
+                    solved={solved}
+                    hasBuildMap={questions.some((q) => q.type === "map")}
+                    onBuildMap={() => {
+                      setIndex(0);
+                      setPickActivity(false);
+                      openLearning("build-map");
+                    }}
+                    onPick={(i) => {
+                      setIndex(i);
+                      setPickActivity(false);
+                    }}
+                  />
+                ) : current ? (
                   <>
-                    <div className="learning-progress-summary">
-                      <span>
-                        السؤال {index + 1} من {filtered.length}
-                      </span>
-                      <span>
-                        أتقنت{" "}
-                        {filtered.filter((q) => solved.includes(q.id)).length} /{" "}
-                        {filtered.length}
-                      </span>
-                    </div>
-                    <progress
-                      value={index + 1}
-                      max={filtered.length}
-                      aria-label="موضع السؤال"
-                    />
+                    {["activities", "build-map"].includes(modal) ? (
+                      <ActivitySteps
+                        activities={filtered}
+                        index={index}
+                        solved={solved}
+                        title={
+                          modal === "build-map"
+                            ? "اصنع خريطتك"
+                            : activityMeta(current).title
+                        }
+                        onStep={setIndex}
+                        onAll={() => {
+                          setPickActivity(true);
+                          openLearning("activities");
+                        }}
+                      />
+                    ) : (
+                      <>
+                        <div className="learning-progress-summary">
+                          <span>
+                            السؤال {index + 1} من {filtered.length}
+                          </span>
+                          <span>
+                            أتقنت{" "}
+                            {filtered.filter((q) => solved.includes(q.id)).length} /{" "}
+                            {filtered.length}
+                          </span>
+                        </div>
+                        <progress
+                          value={index + 1}
+                          max={filtered.length}
+                          aria-label="موضع السؤال"
+                        />
+                      </>
+                    )}
                     <Question
                       key={current.id}
                       question={current}
@@ -1070,14 +1086,14 @@ export default function LessonPage({ demo = false }) {
                         className="p-secondary"
                         onClick={() => setIndex((i) => i - 1)}
                       >
-                        السؤال السابق
+                        {modal === "questions" ? "السؤال السابق" : "النشاط السابق"}
                       </button>
                       <button
                         className="p-secondary"
                         disabled={index >= filtered.length - 1}
                         onClick={() => setIndex((i) => i + 1)}
                       >
-                        السؤال التالي
+                        {modal === "questions" ? "السؤال التالي" : "النشاط التالي"}
                       </button>
                     </div>
                   </>

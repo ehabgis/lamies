@@ -24,8 +24,25 @@ export default function Question({
     [feedback, setFeedback] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  const pairItems = ["match", "image-match"].includes(q.type)
+    ? (q.pairs || []).map((p) => p.id)
+    : q.type === "drag"
+      ? (q.options || []).map((o) => String(value(o)))
+      : [];
+  const missing = pairItems.filter((k) => !answer[k]).length;
+  const [incomplete, setIncomplete] = useState(false);
+  const choose = (key, choice) => {
+    setAnswer({ ...answer, [key]: choice });
+    setFeedback(null);
+    setIncomplete(false);
+  };
   async function submit(e) {
     e.preventDefault();
+    // Unfinished answers get a friendly nudge instead of a wasted server attempt.
+    if (missing) {
+      setIncomplete(true);
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -204,6 +221,9 @@ export default function Question({
         <ol className="question-order">
           {answer.map((o, i) => (
             <li key={i}>
+              <span className="order-step" aria-hidden="true">
+                {i + 1}
+              </span>
               <span>{label(o)}</span>
               <button
                 type="button"
@@ -226,59 +246,63 @@ export default function Question({
         </ol>
       )}
       {["match", "image-match"].includes(q.type) && (
-        <div className="question-pairs">
+        <div className="question-pairs choice-pairs">
           {(q.pairs || []).map((p) => (
-            <label key={p.id}>
-              <span>
-                {p.image && <img src={p.image} alt={p.alt || p.label} />}{" "}
+            <fieldset key={p.id} className={answer[p.id] ? "is-answered" : ""}>
+              <legend>
+                {p.image && <img src={p.image} alt={p.alt || p.label} />}
                 {p.label}
-              </span>
-              <select
-                disabled={done || busy}
-                value={answer[p.id] || ""}
-                onChange={(e) =>
-                  setAnswer({ ...answer, [p.id]: e.target.value })
-                }
-              >
-                <option value="">اختر المطابقة</option>
+              </legend>
+              <div className="choice-chips">
                 {(p.choices || q.options || []).map((o, i) => (
-                  <option value={value(o)} key={i}>
+                  <button
+                    type="button"
+                    key={i}
+                    role="radio"
+                    aria-checked={answer[p.id] === value(o)}
+                    disabled={done || busy}
+                    onClick={() => choose(p.id, value(o))}
+                  >
                     {label(o)}
-                  </option>
+                  </button>
                 ))}
-              </select>
-            </label>
+              </div>
+            </fieldset>
           ))}
         </div>
       )}
       {q.type === "drag" && (
         <>
-          <p>اسحب المورد إلى مجموعته، أو اختر المجموعة من القائمة.</p>
+          <p className="p-muted">اضغط المجموعة المناسبة لكل مورد، أو اسحبه إلى صندوقها.</p>
           <div className="question-drag-items">
             {(q.options || []).map((o, i) => (
               <div
                 key={i}
+                className={answer[value(o)] ? "is-answered" : ""}
                 draggable={!done}
                 onDragStart={(e) =>
                   e.dataTransfer.setData("text/plain", value(o))
                 }
               >
                 <strong>{label(o)}</strong>
-                <label>
-                  مجموعة {label(o)}
-                  <select
-                    value={answer[value(o)] || ""}
-                    disabled={done || busy}
-                    onChange={(e) =>
-                      setAnswer({ ...answer, [value(o)]: e.target.value })
-                    }
-                  >
-                    <option value="">اختر المجموعة</option>
-                    {(q.groups || []).map((g) => (
-                      <option key={g}>{g}</option>
-                    ))}
-                  </select>
-                </label>
+                <div
+                  className="choice-chips"
+                  role="radiogroup"
+                  aria-label={`مجموعة ${label(o)}`}
+                >
+                  {(q.groups || []).map((g) => (
+                    <button
+                      type="button"
+                      key={g}
+                      role="radio"
+                      aria-checked={answer[value(o)] === g}
+                      disabled={done || busy}
+                      onClick={() => choose(String(value(o)), g)}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
@@ -294,15 +318,20 @@ export default function Question({
                     !done &&
                     (q.options || []).some((o) => String(value(o)) === id)
                   )
-                    setAnswer({ ...answer, [id]: g });
+                    choose(id, g);
                 }}
               >
                 <strong>{g}</strong>
                 <p>
-                  {Object.entries(answer)
-                    .filter(([, v]) => v === g)
-                    .map(([k]) => k)
-                    .join("، ") || "ضع الموارد هنا"}
+                  {(q.options || [])
+                    .filter((o) => answer[value(o)] === g)
+                    .map((o) => (
+                      <span className="placed-chip" key={value(o)}>
+                        {label(o)}
+                      </span>
+                    ))}
+                  {!(q.options || []).some((o) => answer[value(o)] === g) &&
+                    "ضع الموارد هنا"}
                 </p>
               </div>
             ))}
@@ -312,6 +341,11 @@ export default function Question({
       {q.type === "map" && (
         <p className="p-muted">
           اختر اسم الموقع من الخيارات؛ الأسماء بديل ميسّر عن النقر على العلامات.
+        </p>
+      )}
+      {incomplete && missing > 0 && (
+        <p className="p-feedback" role="status">
+          لم تختر إجابة بعد لـ <bdi>{missing}</bdi> من <bdi>{pairItems.length}</bdi>. أكمل الاختيار ثم اضغط «تحقق من إجابتي».
         </p>
       )}
       {error && (
@@ -333,6 +367,11 @@ export default function Question({
             <>حاول مرة أخرى. {feedback.hint}</>
           )}
         </div>
+      )}
+      {pairItems.length > 0 && !done && (
+        <p className="pair-progress" aria-live="polite">
+          اخترت <bdi>{pairItems.length - missing}</bdi> من <bdi>{pairItems.length}</bdi>
+        </p>
       )}
       <div className="p-actions">
         <button className="p-button" disabled={done || busy || answer === ""}>

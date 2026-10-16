@@ -121,3 +121,14 @@ Natural Earth public domain. Marine geometry clipped to the Egypt teaching regio
 Coastline refinement (15 October 2026):
 https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_ocean.geojson
 Marine regions including Gulf of Suez and Gulf of Aqaba intersected with ocean coastline polygons; clipped to the teaching extent. Public domain. Not survey or navigation data.
+
+------------------------------------------------------------------------
+Educational high-speed rail sketch / مسار القطار السريع التعليمي
+
+File: egypt-fast-train.geojson
+Hand-traced, approximate educational route drawn from the school textbook map
+(national projects lesson) supplied by the teacher on 2026-10-16, following the
+teacher's instruction: New Alamein → Ain Sokhna, and south to Abu Simbel with a
+branch to Hurghada. Waypoints are rounded to 0.05°. This is NOT an engineering,
+survey or official route and must not be used for distances or navigation.
+Requires teacher review before publication, like the rest of the lesson content.

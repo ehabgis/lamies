@@ -889,8 +889,11 @@ export function createApp({
                   .replace(/ى/g, "ي")
                   .replace(/[\u064B-\u065F]/g, "")
               : v;
-          const correct =
-            canonical(clean(q.answer)) === canonical(clean(b.answer));
+          const accepted =
+            q.type === "blank" && Array.isArray(q.answer) ? q.answer : [q.answer];
+          const correct = accepted.some(
+            (a) => canonical(clean(a)) === canonical(clean(b.answer)),
+          );
           db.prepare(
             "INSERT INTO answers(user_id,lesson_id,question_id,correct) VALUES(?,?,?,?) ON CONFLICT(user_id,lesson_id,question_id) DO UPDATE SET correct=MAX(answers.correct,excluded.correct),attempts=answers.attempts+1",
           ).run(user.id, n.id, q.id, +correct);

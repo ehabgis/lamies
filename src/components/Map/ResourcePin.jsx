@@ -39,7 +39,9 @@ function IllustratedPin({ resource, className }) {
                   ? "#efefce"
                   : type === "manganese"
                     ? "#c2a4d5"
-                    : "#b8c1c8"
+                    : type === "copper"
+                      ? "#e8a06b"
+                      : "#b8c1c8"
             }
           />
           <stop
@@ -73,7 +75,7 @@ function IllustratedPin({ resource, className }) {
         stroke="#ffffff85"
         strokeWidth="2"
       />
-      {["iron", "manganese", "phosphate", "coal"].includes(type) && (
+      {["iron", "manganese", "phosphate", "coal", "copper"].includes(type) && (
         <g stroke="#ffffff45" strokeWidth=".8" fill={`url(#${id}-rock)`}>
           <path d="M17 47l9-20 14-4 11 11-3 18-19 9Z" />
           <path d="M40 50l7-21 14 7 8 17-11 13-15-3Z" />

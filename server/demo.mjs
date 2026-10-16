@@ -1,4 +1,5 @@
 import { legacyContent, legacyResourceMedia } from "./legacy-content.mjs";
+import { applyTextbook } from "./textbook-unit3.mjs";
 import { readFileSync } from "node:fs";
 const seed = JSON.parse(
   readFileSync(new URL("./seed-content.json", import.meta.url), "utf8"),
@@ -6,6 +7,9 @@ const seed = JSON.parse(
 export const DEMO_ID = "lesson-1";
 export const DEMO_IDS = ["lesson-1", "lesson-2", "lesson-3"];
 function fullContent(id) {
+  return applyTextbook(id, assembledContent(id));
+}
+function assembledContent(id) {
   const old = legacyContent(id);
   if (!old) return null;
   if (id !== DEMO_ID) return old;
@@ -84,7 +88,12 @@ export function demoAnswer(questionId, answer, lessonId = DEMO_ID) {
           .replace(/ى/g, "ي")
           .replace(/[\u064B-\u065F]/g, "")
       : v;
-  const correct = canonical(clean(q.answer)) === canonical(clean(answer));
+  // A blank may list several accepted spellings (e.g. «النحاس» / «نحاس»).
+  const accepted =
+    q.type === "blank" && Array.isArray(q.answer) ? q.answer : [q.answer];
+  const correct = accepted.some(
+    (a) => canonical(clean(a)) === canonical(clean(answer)),
+  );
   return {
     demo: true,
     correct,

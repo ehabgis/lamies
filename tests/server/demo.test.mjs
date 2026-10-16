@@ -168,8 +168,10 @@ test("guest demo grades all eight types without publishing, answer leakage or du
 
       assert.equal(
         imported.data.lesson.content.resources.length,
-        // lesson-3 gained Benban, wind farms, Birket Ghalioun and East Owainat.
-        id === "lesson-2" ? 8 : id === "lesson-3" ? 10 : 6,
+        // From the student book (unit 3): lesson-2 adds the northern lakes and
+        // Bahr El-Baqar; lesson-3 adds Benban, wind farms, Birket Ghalioun, East
+        // Owainat, slum development and the Rod El-Farag axis.
+        id === "lesson-2" ? 10 : id === "lesson-3" ? 12 : 6,
       );
       assert(imported.data.lesson.content.sources.every((s) => !s.approved));
       assert(

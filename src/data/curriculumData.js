@@ -269,7 +269,7 @@ export const CURRICULUM_DATA = {
 
       id: "lesson-2",
 
-      title: "موارد المياه في مصر",
+      title: "موارد المياه",
 
       icon: "💧",
 
@@ -456,7 +456,7 @@ export const CURRICULUM_DATA = {
 
       id: "lesson-3",
 
-      title: "المشروعات القومية",
+      title: "المشروعات القومية (رؤية مصر للمستقبل)",
 
       icon: "🚀",
 

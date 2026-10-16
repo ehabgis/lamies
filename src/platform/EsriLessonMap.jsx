@@ -167,34 +167,6 @@ export default function EsriLessonMap({
       });
     return () => controller.abort();
   }, [waterLesson]);
-  // Softens everything outside Egypt so the country reads first. The holes are
-  // the governorate polygons, so the mask follows the real border.
-  useEffect(() => {
-    if (!ready || !features?.features?.length) return;
-    const map = mapRef.current;
-    if (!map.getPane("outside-egypt")) {
-      map.createPane("outside-egypt");
-      map.getPane("outside-egypt").style.zIndex = "350";
-      map.getPane("outside-egypt").style.pointerEvents = "none";
-    }
-    const swap = ([lng, lat]) => [lat, lng];
-    const holes = features.features.flatMap((f) => {
-      const g = f.geometry;
-      const polygons = g.type === "Polygon" ? [g.coordinates] : g.type === "MultiPolygon" ? g.coordinates : [];
-      return polygons.map((rings) => rings[0].map(swap));
-    });
-    const world = [[0, 0], [0, 60], [50, 60], [50, 0]];
-    const mask = L.polygon([world, ...holes], {
-      pane: "outside-egypt",
-      stroke: false,
-      fillColor: "#f2f8fc",
-      fillOpacity: 0.62,
-      fillRule: "evenodd",
-      interactive: false,
-      className: "outside-egypt-mask",
-    }).addTo(map);
-    return () => map.removeLayer(mask);
-  }, [ready, features]);
   useEffect(() => {
     if (!railLesson) return;
     const controller = new AbortController();

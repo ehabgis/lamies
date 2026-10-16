@@ -60,11 +60,24 @@ export function legacyAssetAvailable(path) {
     return false;
   }
 }
+// A teacher may drop the file in any common format under the expected name,
+// e.g. lesson1_gold_mine.mp4 instead of .webm, or lesson3_toshka.png.
+const MEDIA_EXTENSIONS = {
+  image: [".jpg", ".jpeg", ".png", ".webp"],
+  video: [".webm", ".mp4"],
+};
+function firstAvailable(path, kind) {
+  if (!path) return null;
+  const base = path.replace(/\.[a-z0-9]+$/i, "");
+  return [path, ...MEDIA_EXTENSIONS[kind].map((ext) => base + ext)].find(
+    legacyAssetAvailable,
+  ) || null;
+}
 export function legacyResourceMedia(id) {
   const candidates = MEDIA_BINDINGS[id] || {};
   return {
-    image: legacyAssetAvailable(candidates.image) ? candidates.image : null,
-    video: legacyAssetAvailable(candidates.video) ? candidates.video : null,
+    image: firstAvailable(candidates.image, "image"),
+    video: firstAvailable(candidates.video, "video"),
   };
 }
 export function legacyContent(id) {

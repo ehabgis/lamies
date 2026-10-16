@@ -529,6 +529,10 @@ export default function LessonPage({ demo = false }) {
         </button>
       </section>
     );
+  const currentLessonIndex = Math.max(
+    0,
+    lessonOptions.findIndex((n) => n && (n.id === id || n.demoLessonId === id)),
+  );
   return (
     <Shell mapPage>
       <h1 className="studio-page-title">{lesson.title}</h1>
@@ -545,7 +549,9 @@ export default function LessonPage({ demo = false }) {
             </small>
           </span>
         </div>
-        <div className="map-top-button-cluster">
+        <div
+          className={`map-top-button-cluster lesson-switcher lesson-color-${currentLessonIndex + 1}`}
+        >
         <nav className="lesson-number-buttons" aria-label="دروس الوحدة">
           {[0, 1, 2].map((i) => {
             const next = lessonOptions[i];
@@ -602,7 +608,10 @@ export default function LessonPage({ demo = false }) {
             );
           })}
         </nav>
-        <div className="lesson-top-actions" aria-label="تفاصيل الدرس">
+        <div className="lesson-top-actions" role="group" aria-labelledby="lesson-sub-label">
+          <span className="lesson-sub-label" id="lesson-sub-label">
+            داخل {["الدرس الأول", "الدرس الثاني", "الدرس الثالث"][currentLessonIndex]}:
+          </span>
           {[
             ["objectives", "أهداف الدرس", Target, "orange"],
             ["concepts", "مفاهيم الدرس", Lightbulb, "teal"],

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   BookOpen,
@@ -13,7 +13,6 @@ import {
 import "./entry-experience.css";
 import "./platform-polish.css";
 import "./entry-v2.css";
-import RobotGuide from "../components/Map/RobotGuide";
 import { api } from "./api";
 import { useSession } from "./Session";
 import BrandMark from "./BrandMark";
@@ -28,25 +27,14 @@ export default function EntryPage() {
     [error, setError] = useState("");
   const [motion, setMotion] = useState(true);
   const [guest, setGuest] = useState(loadGuest);
-  const [catalog, setCatalog] = useState([]);
   const [accountOpen, setAccountOpen] = useState(false);
   const resume = savedProgress();
-  useEffect(() => {
-    api("/demo/catalog")
-      .then((r) => setCatalog(r.nodes))
-      .catch(() => setCatalog([]));
-  }, []);
-  // Grades and terms come from the catalog, so new ones appear without code changes.
-  const grades = catalog.filter((n) => n.kind === "grade");
-  const terms = catalog.filter((n) => n.kind === "term" && n.parentId === guest.gradeId);
-  const welcome = "أهلًا يا مستكشف! اكتب اسمك، واختر صفك وفصلك، ثم اضغط ابدأ المغامرة.";
+  const welcome = "أهلًا يا مستكشف! اكتب اسمك ثم اضغط ابدأ المغامرة، وبعدها تختار صفك وفصلك الدراسي.";
+  // Grade and term are chosen on the next page (/explore).
   function startAdventure() {
     saveGuest(guest);
     play("project");
-    const q = new URLSearchParams();
-    if (guest.gradeId) q.set("grade", guest.gradeId);
-    if (guest.termId) q.set("term", guest.termId);
-    navigate(`/explore${q.toString() ? `?${q}` : ""}`);
+    navigate("/explore");
   }
   async function submit(e) {
     e.preventDefault();
@@ -100,10 +88,10 @@ export default function EntryPage() {
           </div>
           <img
             src="/welcome/hero.webp"
-            alt="طفل مستكشف مع كرة أرضية يشير إلى مصر"
+            alt="طفل مستكشف وروبوت المرشد يشيران إلى مصر على كرة أرضية"
           />
-          <div className="entry-robot-companion">
-            <RobotGuide />
+          {/* The artwork already has the guide robot, so the bubble stands alone. */}
+          <div className="entry-robot-companion is-bubble-only">
             <div className="entry-robot-say">
               <p>{welcome}</p>
               <NarrationControls text={welcome} compact />
@@ -138,47 +126,6 @@ export default function EntryPage() {
                   onChange={(e) => setGuest({ ...guest, name: e.target.value })}
                 />
               </label>
-              <fieldset className="entry-chips">
-                <legend>صفّك</legend>
-                {grades.length ? (
-                  grades.map((g) => (
-                    <button
-                      type="button"
-                      key={g.id}
-                      aria-pressed={guest.gradeId === g.id}
-                      onClick={() => {
-                        play("select");
-                        const t = catalog.filter((n) => n.kind === "term" && n.parentId === g.id);
-                        setGuest({ ...guest, gradeId: g.id, termId: t[0]?.id });
-                      }}
-                    >
-                      {g.title.replace("الصف ", "").replace(" الابتدائي", "")}
-                    </button>
-                  ))
-                ) : (
-                  <small>جارٍ تحميل الصفوف…</small>
-                )}
-              </fieldset>
-              <fieldset className="entry-chips">
-                <legend>الفصل الدراسي</legend>
-                {terms.length ? (
-                  terms.map((t) => (
-                    <button
-                      type="button"
-                      key={t.id}
-                      aria-pressed={guest.termId === t.id}
-                      onClick={() => {
-                        play("select");
-                        setGuest({ ...guest, termId: t.id });
-                      }}
-                    >
-                      {t.title.replace("الفصل الدراسي ", "")}
-                    </button>
-                  ))
-                ) : (
-                  <small>اختر صفّك أولًا.</small>
-                )}
-              </fieldset>
             </div>
           )}
           <button type="button" className="p-button demo-entry-link" onClick={startAdventure}>

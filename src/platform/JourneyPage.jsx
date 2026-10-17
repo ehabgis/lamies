@@ -17,8 +17,25 @@ import "./journey-workspace.css";
 import "./platform-polish.css";
 import "./journey-tiles.css";
 
-const steps = ["العام والصف", "الفصل الدراسي", "الوحدة والدروس"];
+const steps = ["الصف والفصل الدراسي", "الوحدة والدروس"];
 const emptyProgress = { lessons: [], xp: 0, stars: 0 };
+
+// The guide-with-map artwork; until the file is added the robot stands in.
+function GuideArt() {
+  const [failed, setFailed] = useState(false);
+  return failed ? (
+    <div className="journey-guide-fallback" aria-hidden="true">
+      <RobotGuide />
+    </div>
+  ) : (
+    <img
+      className="journey-guide-art"
+      src="/welcome/guide-map.webp"
+      alt="روبوت المرشد يحمل بوصلة ويشير إلى خريطة رحلة على نهر النيل"
+      onError={() => setFailed(true)}
+    />
+  );
+}
 export default function JourneyPage({ demo = false }) {
   const { user, setUser } = useSession();
   const navigate = useNavigate();
@@ -67,7 +84,7 @@ export default function JourneyPage({ demo = false }) {
         const y = t && catalog.nodes.find((n) => n.kind === "year" && n.parentId === t.id);
         if (g && t && y) {
           setSelection({ yearTitle: y.title, stageId: g.parentId, gradeId: g.id, termId: t.id });
-          setStep(2);
+          setStep(1);
         } else {
           setSelection(year ? { ...enrolled, yearTitle: year.title } : {});
           setStep(0);
@@ -137,12 +154,7 @@ export default function JourneyPage({ demo = false }) {
     });
     setError("");
   }
-  const ready =
-    step === 0
-      ? selection.yearTitle && selection.stageId && selection.gradeId
-      : step === 1
-        ? year && subject
-        : selection.unitId;
+  const ready = step === 0 ? selection.gradeId && year && subject : selection.unitId;
   const name = (id) => nodes.find((n) => n.id === id)?.title;
   async function openLesson(lesson) {
     if (saving || lesson.available === false) return;
@@ -256,11 +268,7 @@ export default function JourneyPage({ demo = false }) {
           aria-busy={loading || saving}
         >
           <h2 id="journey-step-title" ref={heading} tabIndex={-1}>
-            {step === 0
-              ? "لنبدأ بالسنة والصف"
-              : step === 1
-                ? "اختر الفصل الدراسي"
-                : "اختر الوحدة، وابدأ الدرس"}
+            {step === 0 ? "اختر صفّك وفصلك الدراسي" : "اختر الوحدة، وابدأ الدرس"}
           </h2>
           {loading ? (
             <p role="status">جارٍ تحميل الخيارات…</p>
@@ -269,29 +277,36 @@ export default function JourneyPage({ demo = false }) {
               <div className="journey-fields">
                 {step === 0 && (
                   <>
-                    {tiles("yearTitle", "العام الدراسي", years)}
-                    {tiles("stageId", "المرحلة التعليمية", stages, {
-                      disabled: !selection.yearTitle,
-                      prerequisite: "اختر العام الدراسي أولًا.",
-                    })}
+                    {/* Year and stage are only asked when there is a real choice. */}
+                    {years.length > 1 && tiles("yearTitle", "العام الدراسي", years)}
+                    {stages.length > 1 &&
+                      tiles("stageId", "المرحلة التعليمية", stages, {
+                        disabled: !selection.yearTitle,
+                        prerequisite: "اختر العام الدراسي أولًا.",
+                      })}
                     {tiles("gradeId", "الصف الدراسي", grades, {
                       disabled: !selection.stageId,
                       prerequisite: "اختر المرحلة التعليمية أولًا.",
                     })}
-                  </>
-                )}
-                {step === 1 && (
-                  <>
-                    {tiles("termId", "الفصل الدراسي", terms)}
+                    {tiles("termId", "الفصل الدراسي", terms, {
+                      disabled: !selection.gradeId,
+                      prerequisite: "اختر صفّك أولًا، ثم الفصل الدراسي.",
+                    })}
                     <p className="journey-fixed-subject">
                       <BookOpen size={20} />
                       المادة: الدراسات الاجتماعية
+                      {years.length === 1 && stages.length === 1 && (
+                        <small>
+                          {" "}
+                          · العام {selection.yearTitle} · {stages[0].title}
+                        </small>
+                      )}
                     </p>
                   </>
                 )}
-                {step === 2 && tiles("unitId", "الوحدة", units, { wide: true })}
+                {step === 1 && tiles("unitId", "الوحدة", units, { wide: true })}
               </div>
-              {step === 2 && (
+              {step === 1 && (
                 <section
                   className="journey-lesson-list"
                   aria-label="الدروس المتاحة"
@@ -354,12 +369,12 @@ export default function JourneyPage({ demo = false }) {
                   )}
                 </section>
               )}
-              {step === 1 && selection.termId && !subjects.length && (
+              {step === 0 && selection.termId && !subjects.length && (
                 <p className="journey-inline-help">
                   لا توجد مواد منشورة لهذا الفصل. جرّب اختيار فصل آخر.
                 </p>
               )}
-              {step === 2 && !units.length && (
+              {step === 1 && !units.length && (
                 <p className="journey-inline-help">
                   لا توجد وحدات منشورة لهذه المادة.{" "}
                   {!demo && <Link to="/explore">يمكنك تجربة درس كنوز مصر</Link>}
@@ -391,7 +406,7 @@ export default function JourneyPage({ demo = false }) {
                 السابق
               </button>
             )}
-            {step < 2 && (
+            {step < 1 && (
               <button
                 className="p-button"
                 disabled={!ready || loading}
@@ -411,16 +426,11 @@ export default function JourneyPage({ demo = false }) {
             <RobotGuide />
             <p>
               {step === 0
-                ? "أهلًا يا مستكشف! اختر عامك الدراسي، ثم مرحلتك وصفّك."
-                : step === 1
-                  ? "خطوة جميلة! اختر الفصل الدراسي لنجد وحداتك."
-                  : "وصلنا! اختر الوحدة، ثم اضغط «ابدأ الدرس»."}
+                ? "أهلًا يا مستكشف! اختر صفّك، ثم الفصل الدراسي."
+                : "وصلنا! اختر الوحدة، ثم اضغط «ابدأ الدرس»."}
             </p>
           </div>
-          <img
-            src="/welcome/hero.webp"
-            alt="المستكشف يشير إلى مصر على الكرة الأرضية"
-          />
+          <GuideArt />
           <div className="journey-selection-summary">
             <Compass size={24} />
             <div>

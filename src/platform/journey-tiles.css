@@ -306,3 +306,24 @@
     min-height: 52px;
   }
 }
+
+/* Stand-in for the guide-with-map artwork until public/welcome/guide-map.webp exists. */
+.journey-guide-fallback {
+  display: grid;
+  place-items: center;
+  min-height: 200px;
+}
+.journey-guide-fallback svg,
+.journey-guide-fallback img {
+  width: 170px;
+  height: auto;
+}
+.journey-fixed-subject small {
+  color: #4a6178;
+  font-weight: 600;
+}
+@media (max-width: 900px) {
+  .journey-guide-fallback {
+    display: none;
+  }
+}

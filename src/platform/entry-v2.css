@@ -186,7 +186,7 @@
   z-index: 2;
 }
 .entry-experience .platform-welcome-art img {
-  height: min(38dvh, 400px);
+  height: min(44dvh, 450px);
 }
 @media (max-width: 700px) {
   .entry-experience .entry-robot-say p {
@@ -196,4 +196,7 @@
     padding: 4px;
     border-radius: 999px;
   }
+}
+.entry-experience .entry-robot-companion.is-bubble-only {
+  justify-content: center;
 }

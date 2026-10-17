@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { legacyContent, legacyResourceMedia } from "./legacy-content.mjs";
 import { applyTextbook } from "./textbook-unit3.mjs";
 import { readFileSync } from "node:fs";
@@ -7,7 +9,34 @@ const seed = JSON.parse(
 export const DEMO_ID = "lesson-1";
 export const DEMO_IDS = ["lesson-1", "lesson-2", "lesson-3"];
 function fullContent(id) {
-  return applyTextbook(id, assembledContent(id));
+  return attachSiteMedia(applyTextbook(id, assembledContent(id)));
+}
+
+// Photos and short videos for one place: put files named after the place id
+// in public/lesson-media/sites/ (e.g. iron-bahariya.jpg, iron-bahariya-2.jpg,
+// iron-bahariya.mp4). Only files that exist are listed.
+const SITE_DIR = fileURLToPath(new URL("../public/lesson-media/sites/", import.meta.url));
+const IMAGE_EXT = ["jpg", "jpeg", "png", "webp"];
+const VIDEO_EXT = ["mp4", "webm"];
+function siteFiles(id) {
+  const find = (base, exts) => exts.map((e) => `${base}.${e}`).find((f) => existsSync(SITE_DIR + f));
+  const images = [];
+  for (const n of ["", "-2", "-3", "-4", "-5", "-6"]) {
+    const f = find(id + n, IMAGE_EXT);
+    if (f) images.push(`/lesson-media/sites/${f}`);
+  }
+  const video = find(id, VIDEO_EXT);
+  return { images, video: video ? `/lesson-media/sites/${video}` : null };
+}
+function attachSiteMedia(content) {
+  if (!content || !existsSync(SITE_DIR)) return content;
+  for (const r of content.resources || [])
+    for (const l of r.locations || []) {
+      if (!/^[a-z0-9-]+$/i.test(l.id || "")) continue;
+      const media = siteFiles(l.id);
+      if (media.images.length || media.video) l.media = media;
+    }
+  return content;
 }
 function assembledContent(id) {
   const old = legacyContent(id);

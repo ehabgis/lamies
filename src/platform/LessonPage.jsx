@@ -51,6 +51,7 @@ import ExplorerChip from "./ExplorerChip";
 import LessonMontage from "./LessonMontage";
 import { buildScenes, SECTIONS } from "./montageScenes";
 import { loadGuest } from "./guestProfile";
+import SiteMedia from "./SiteMedia";
 import "./montage.css";
 import "./site-card.css";
 import { play, resourceSound } from "./sfx";
@@ -67,6 +68,33 @@ export const mapPosition = (l) => ({
   left: `${(75 + ((l.lng - 24) / 12) * 350) / 5}%`,
   top: `${(365 - ((l.lat - 21) / 11) * 330) / 4}%`,
 });
+// The place's own photos first, then the teacher's preview, then the resource photo.
+function siteImages(resource, location, localPhoto) {
+  const list = [
+    ...(location?.media?.images || []).map((src) => ({ src, credit: "صورة الموقع — تحتاج مراجعة المصدر" })),
+    localPhoto && { src: localPhoto, credit: "معاينة على هذا الجهاز فقط" },
+    resource.media?.image && { src: resource.media.image, credit: resource.media.imageCredit },
+  ].filter(Boolean);
+  return list.filter((img, i) => list.findIndex((x) => x.src === img.src) === i);
+}
+
+// Up to two short book facts that mention this resource.
+function relatedFacts(content, resource) {
+  const extras = content?.legacyExtras || {};
+  const stem = resource.label.replace(/^ال/, "");
+  const words = (t) => new Set(String(t).replace(/[^\u0600-\u06FF\s]/g, " ").split(/\s+/).filter((w) => w.length > 2));
+  const said = words(`${resource.description} ${resource.importance}`);
+  // A fact that mostly repeats the card's own sentences adds nothing.
+  const isNew = (t) => {
+    const w = [...words(t)];
+    return w.filter((x) => said.has(x)).length / Math.max(1, w.length) < 0.5;
+  };
+  return [...(extras.funFacts || []), ...(extras.keyPoints || []), ...(extras.examples || [])]
+    .filter((t) => typeof t === "string" && t.includes(stem) && isNew(t))
+    .filter((t, i, all) => all.indexOf(t) === i)
+    .slice(0, 2);
+}
+
 function Photo({ src, label }) {
   const [failed, setFailed] = useState(false);
   return src && !failed ? (
@@ -423,16 +451,12 @@ export default function LessonPage({ demo = false }) {
             </span>
           </p>
         )}
-        <figure className="site-card-photo">
-          <Photo
-            key={localPhotos[resource.id] || resource.media?.image || resource.id}
-            src={localPhotos[resource.id] || resource.media?.image}
-            label={`صورة ${resource.label}`}
-          />
-          {!localPhotos[resource.id] && resource.media?.imageCredit && (
-            <figcaption>{resource.media.imageCredit}</figcaption>
-          )}
-        </figure>
+        <SiteMedia
+          key={`${resource.id}-${location?.id || ""}-${localPhotos[resource.id] || ""}`}
+          label={location?.name || resource.label}
+          images={siteImages(resource, location, localPhotos[resource.id])}
+          video={location?.media?.video || resource.media?.video}
+        />
         <div className="site-card-facts">
           <section>
             <h3>
@@ -453,6 +477,37 @@ export default function LessonPage({ demo = false }) {
           <p className="site-card-note">
             <Info size={18} aria-hidden="true" /> {resource.locationNote}
           </p>
+        )}
+        {relatedFacts(content, resource).map((fact, i) => (
+          <p className="site-card-fact" key={i}>
+            <Lightbulb size={20} weight="duotone" aria-hidden="true" />
+            <span>
+              <b>هل تعلم؟ </b>
+              {fact}
+            </span>
+          </p>
+        ))}
+        {location && resource.locations?.length > 1 && (
+          <section className="site-card-others" aria-label={`مواقع أخرى لـ${resource.label}`}>
+            <h3>مواقع أخرى لـ{resource.label}</h3>
+            <div>
+              {resource.locations
+                .filter((l) => l.id !== location.id)
+                .map((l) => (
+                  <button
+                    type="button"
+                    key={l.id}
+                    onClick={() => {
+                      play(resourceSound(resource));
+                      setLocation({ ...l, resource });
+                      setFocusRequest({ siteId: l.id, nonce: Date.now() });
+                    }}
+                  >
+                    <MapPin size={16} aria-hidden="true" /> {l.name}
+                  </button>
+                ))}
+            </div>
+          </section>
         )}
         <div className="site-card-actions">
           <button
@@ -956,7 +1011,7 @@ export default function LessonPage({ demo = false }) {
         <aside
           id="lesson-guide"
           hidden={!infoOpen}
-          className={`classroom-guide ${infoOpen ? "mobile-open" : ""}`}
+          className={`classroom-guide ${infoOpen ? "mobile-open" : ""} ${resourceDetails ? "has-site-card" : ""}`}
           aria-label="المعلم ومعلومات المورد"
         >
           <button

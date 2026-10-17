@@ -176,3 +176,214 @@
     max-height: 120px;
   }
 }
+
+/* ---- Tall site card (v2) ---------------------------------------------- */
+/* The panel runs the full height of the map on wide screens and becomes a
+   tall bottom sheet on phones, so most of the information fits at once. */
+.map-shell .studio-workspace > .classroom-guide.has-site-card,
+.map-shell .classroom-workspace > .classroom-guide.has-site-card.mobile-open {
+  top: 12px;
+  bottom: 12px;
+  width: min(460px, 36vw);
+  max-height: none;
+  height: auto;
+  left: auto;
+  right: 12px;
+  z-index: 1200;
+  padding: 16px 18px 18px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 22px;
+}
+.map-shell .classroom-guide.has-site-card .mobile-panel-close {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  float: left;
+}
+.map-shell .site-card {
+  gap: 14px;
+}
+.map-shell .site-card-head h2 {
+  font-size: 27px;
+}
+
+/* Media: big photo, thumbnails, video tab */
+.map-shell .site-media {
+  display: grid;
+  gap: 8px;
+}
+.map-shell .site-media.is-empty {
+  place-items: center;
+  padding: 22px 12px;
+  border: 2px dashed #c9d8e6;
+  border-radius: 16px;
+  background: #f5f9fd;
+  color: #4a6178;
+  text-align: center;
+}
+.map-shell .site-media.is-empty p {
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+.map-shell .site-media-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 14px;
+  background: #eef4fa;
+}
+.map-shell .site-media-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  font: inherit;
+  font-weight: 800;
+  color: #36506b;
+}
+.map-shell .site-media-tabs button[aria-selected="true"] {
+  background: #fff;
+  color: #0b5cad;
+  box-shadow: 0 2px 6px rgb(11 47 87 / 0.12);
+}
+.map-shell .site-media-photo,
+.map-shell .site-media-video {
+  margin: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #0b2f57;
+}
+.map-shell .site-media-photo > img,
+.map-shell .site-media-video video {
+  display: block;
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  border-radius: 0;
+  margin: 0;
+}
+.map-shell .site-media-video video {
+  object-fit: contain;
+  background: #000;
+}
+.map-shell .site-media-photo figcaption {
+  padding: 6px 10px;
+  background: #fff;
+  font-size: 12px;
+  color: #4a6178;
+}
+.map-shell .site-media-thumbs {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  overflow-x: auto;
+  background: #fff;
+}
+.map-shell .site-media-thumbs button {
+  flex: none;
+  width: 64px;
+  height: 46px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #eef4fa;
+}
+.map-shell .site-media-thumbs button[aria-pressed="true"] {
+  border-color: #1f8bff;
+}
+.map-shell .site-media-thumbs img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  margin: 0;
+  border-radius: 0;
+}
+
+/* Extra facts and other places */
+.map-shell .site-card-fact {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #fff8e6;
+  color: #5a4300;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.map-shell .site-card-fact svg {
+  flex: none;
+  margin-top: 3px;
+  color: #e0a100;
+}
+.map-shell .site-card-others h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: #0b5cad;
+}
+.map-shell .site-card-others div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.map-shell .site-card-others button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 4px 12px;
+  border: 1px solid #c9d8e6;
+  border-radius: 999px;
+  background: #f5f9fd;
+  font: inherit;
+  font-weight: 700;
+  color: #12345a;
+}
+.map-shell .site-card-others button:hover {
+  border-color: #1f8bff;
+}
+
+@media (max-width: 850px) {
+  .map-shell .studio-workspace > .classroom-guide.has-site-card,
+  .map-shell .classroom-workspace > .classroom-guide.has-site-card.mobile-open {
+    top: 22%;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    border-radius: 22px 22px 18px 18px;
+  }
+  .map-shell .site-media-photo > img,
+  .map-shell .site-media-video video {
+    height: 190px;
+  }
+  /* The photo goes back to the top of the sheet now that the sheet is tall. */
+  .map-shell .site-card-facts,
+  .map-shell .site-card .site-media {
+    order: 0;
+  }
+}
+
+/* While the tall card is open: the guide's own listen button is not needed,
+   the bottom bar moves out of the card's way (desktop) or hides (phone). */
+.map-shell .classroom-guide.has-site-card > .p-secondary {
+  display: none;
+}
+@media (min-width: 851px) {
+  .map-shell .studio-workspace:has(> .classroom-guide.has-site-card:not([hidden])) .floating-learning-dock {
+    translate: -240px 0;
+  }
+}
+@media (max-width: 850px) {
+  .map-shell .studio-workspace:has(> .classroom-guide.has-site-card:not([hidden])) .floating-learning-dock {
+    display: none;
+  }
+}

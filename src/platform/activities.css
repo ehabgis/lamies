@@ -617,3 +617,14 @@
     animation: none;
   }
 }
+.activity-expedition {
+  margin-bottom: 12px;
+  min-height: 92px;
+  border-width: 2.5px;
+  border-color: #1565d8;
+  background: linear-gradient(135deg, #eaf3ff, #ffffff);
+  text-decoration: none;
+}
+.activity-expedition strong {
+  font-size: 19px !important;
+}

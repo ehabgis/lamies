@@ -18,6 +18,7 @@ export default function Question({
   onNext,
 }) {
   const [showHint, setShowHint] = useState(false);
+  const [attempts, setAttempts] = useState(0);
   const [answer, setAnswer] = useState(
       q.type === "order"
         ? [...(q.options || [])].reverse()
@@ -63,10 +64,11 @@ export default function Question({
         `${demo ? "/demo" : ""}/lessons/${lessonId}/answers`,
         {
           method: "POST",
-          body: { questionId: q.id, answer },
+          body: { questionId: q.id, answer, attempt: attempts + 1 },
         },
       );
-      setFeedback(result);
+      if (!result.correct) setAttempts(attempts + 1);
+      setFeedback({ ...result, attempt: attempts + 1 });
       play(result.correct ? "correct" : "wrong");
       if (result.correct) onSolved(q.id);
     } catch (e) {
@@ -96,7 +98,7 @@ export default function Question({
       <h3>{q.prompt}</h3>
       {showHint && (
         <p className="p-feedback" role="status">
-          تلميح مكتوب: {q.hint || "راجع بطاقة المورد ثم حاول مرة أخرى."}
+          تلميح: {feedback?.hint || q.hint || "راجع بطاقة المورد ثم حاول مرة أخرى."}
         </p>
       )}
       {solved && !feedback && (
@@ -397,7 +399,11 @@ export default function Question({
               )}
             </>
           ) : (
-            <>حاول مرة أخرى. {feedback.hint}</>
+            <>
+              <Lightbulb size={20} aria-hidden="true" />
+              {feedback.attempt > 1 ? `تلميح ${Math.min(feedback.attempt, 3)} من 3: ` : "ليست هذه الإجابة، حاول مرة أخرى. "}
+              {feedback.hint}
+            </>
           )}
         </div>
       )}

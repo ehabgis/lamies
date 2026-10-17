@@ -1,4 +1,5 @@
-import { DEMO_IDS, demoLesson, demoAnswer, demoCatalog } from "./demo.mjs";
+import { expeditionPublic, checkExpedition } from "./expedition.mjs";
+import { DEMO_IDS, demoLesson, demoAnswer, demoCatalog, gradedHint } from "./demo.mjs";
 import http from "node:http";
 import {
   randomBytes,
@@ -384,6 +385,7 @@ export function createApp({
           "/api/auth/login",
           "/api/auth/register",
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/answers`),
+          ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/expedition/check`),
         ].includes(path)
       ) {
         if (!user) fail(401, "سجّل الدخول أولًا");
@@ -411,6 +413,26 @@ export function createApp({
       };
       if (path === "/api/demo/catalog" && method === "GET")
         return send({ nodes: demoCatalog(), demo: true });
+      // Exploration activity (رحلة الاستكشاف): public content without answers,
+      // graded here. Stateless, like the rest of the demo.
+      const expMatch = path.match(
+        /^\/api\/demo\/lessons\/([^/]+)\/expedition(?:\/(check))?$/,
+      );
+      if (expMatch) {
+        if (method === "GET" && !expMatch[2]) {
+          const expedition = expeditionPublic(expMatch[1]);
+          if (!expedition) fail(404, "لا توجد رحلة استكشاف لهذا الدرس");
+          return send({ expedition });
+        }
+        if (method === "POST" && expMatch[2]) {
+          rate(`exp:${req.socket.remoteAddress}`, 120);
+          const b = await body(req);
+          const result = checkExpedition(expMatch[1], b);
+          if (!result) fail(400, "الخطوة غير موجودة");
+          return send(result);
+        }
+        fail(405, "العملية غير متاحة");
+      }
       const demoMatch = path.match(
         /^\/api\/demo\/lessons\/([^/]+)(?:\/(answers))?$/,
       );
@@ -427,7 +449,7 @@ export function createApp({
           const b = await body(req);
           if (b.answer === undefined || JSON.stringify(b.answer).length > 20000)
             fail(400, "الإجابة غير صالحة");
-          const result = demoAnswer(b.questionId, b.answer, demoMatch[1]);
+          const result = demoAnswer(b.questionId, b.answer, demoMatch[1], b.attempt);
           if (!result) fail(400, "السؤال غير موجود");
           return send(result);
         }
@@ -800,9 +822,9 @@ export function createApp({
             "INSERT INTO learning_state(user_id,lesson_id,state,updated_at) VALUES(?,?,'{}',?) ON CONFLICT(user_id,lesson_id) DO UPDATE SET updated_at=excluded.updated_at",
           ).run(user.id, n.id, Date.now());
           if (!["super_admin", "content_admin"].includes(user.role))
-            lesson.content.questions = qs.map(
-              ({ answer, explanation, ...rest }) => rest,
-            );
+            lesson.content.questions = qs
+              .filter((q) => !q.duplicateOf)
+              .map(({ answer, explanation, hints, ...rest }) => rest);
           return send({
             lesson,
             progress: {
@@ -899,7 +921,7 @@ export function createApp({
           ).run(user.id, n.id, q.id, +correct);
           return send({
             correct,
-            hint: correct ? null : q.hint || "حاول مرة أخرى",
+            hint: correct ? null : gradedHint(q, b.attempt, b.answer),
             explanation: correct ? q.explanation || "" : "",
             questionId: q.id,
           });
@@ -1041,7 +1063,7 @@ export function createApp({
           .filter(
             (q) => !resource || !q.resourceId || q.resourceId === resource.id,
           )
-          .map(({ answer, explanation, ...q }) => q);
+          .map(({ answer, explanation, hints, ...q }) => q);
         const context = {
           title: lesson.title,
           assessment,

@@ -508,6 +508,92 @@ const LESSON_3 = {
   ],
 };
 
+// Older practice questions that ask the same thing as a book question (or each
+// other). They stay gradable for saved progress but are no longer listed.
+LESSON_1.duplicates = {
+  "doc-choice-2": "book-l1-blank-2",
+  "doc-choice-3": "book-l1-blank-3",
+  "doc-choice-6": "book-l1-choice-5",
+  "doc-choice-7": "book-l1-tf-3",
+  "doc-boolean-1": "book-l1-tf-4",
+  "doc-boolean-4": "book-l1-choice-5",
+  "doc-boolean-5": "book-l1-tf-2",
+  "doc-boolean-6": "book-l1-blank-4",
+  "solar-classification": "book-l1-drag-energy",
+  "iron-where": "book-l1-choice-1",
+  "lesson-1-iron-bahariya-2": "book-l1-choice-1",
+  "lesson-1-practice-2": "doc-choice-1",
+  "lesson-1-solar-benban-1": "doc-choice-1",
+  "lesson-1-gas-zohr-1": "doc-choice-4",
+  "lesson-1-gas-zohr-2": "doc-boolean-3",
+  "lesson-1-phosphate-abu-tartur-1": "lesson-1-practice-4",
+  "lesson-1-manganese-umm-bogma-1": "book-l1-choice-6",
+  "lesson-1-oil-gulf-suez-2": "book-l1-choice-3",
+};
+// New kinds of thinking: a real-life situation and a comparison of two resources.
+LESSON_1.questions.push(
+  {
+    id: "l1-life-1",
+    type: "choice",
+    kind: "life",
+    resourceId: "phosphate",
+    prompt: "مزارع يريد أن ينمو محصول القمح في أرضه بشكل أفضل. أي مورد يساعده أكثر؟",
+    options: ["الذهب", "الفوسفات", "المنجنيز"],
+    answer: "الفوسفات",
+    hints: [
+      "فكّر: ماذا يحتاج النبات حتى ينمو جيدًا؟",
+      "المورد المطلوب يدخل في صناعة الأسمدة، ويُستخرج من أبو طرطور.",
+    ],
+    explanation: "الفوسفات يدخل في صناعة الأسمدة التي تساعد المحاصيل على النمو.",
+  },
+  {
+    id: "l1-life-2",
+    type: "choice",
+    kind: "life",
+    resourceId: "solar",
+    prompt: "قرية في أسوان الشمس فيها ساطعة طوال العام، وتحتاج كهرباء نظيفة. ما أنسب مصدر؟",
+    options: ["الفحم", "الطاقة الشمسية", "البترول"],
+    answer: "الطاقة الشمسية",
+    hints: [
+      "ابحث عن مصدر لا ينفد ولا يلوث الهواء.",
+      "انظر إلى ما تتميز به أسوان في نص السؤال.",
+    ],
+    explanation: "الطاقة الشمسية متجددة ونظيفة، ومحطة بنبان بأسوان مثال عليها.",
+  },
+  {
+    id: "l1-compare-1",
+    type: "choice",
+    kind: "compare",
+    resourceId: "wind",
+    prompt: "قارن بين البترول وطاقة الرياح: ما الفرق الأهم بينهما؟",
+    options: [
+      "البترول ينفد، أما الرياح فمتجددة",
+      "كلاهما ينفد مع الوقت",
+      "الرياح تلوث الهواء أكثر من البترول",
+    ],
+    answer: "البترول ينفد، أما الرياح فمتجددة",
+    hints: [
+      "فكّر: هل يمكن أن تنتهي الرياح يومًا؟ وماذا عن البترول؟",
+      "واحد منهما متجدد والآخر غير متجدد.",
+    ],
+    explanation: "البترول مصدر غير متجدد مُعرّض للنفاد، وطاقة الرياح متجددة ونظيفة.",
+  },
+  {
+    id: "l1-compare-2",
+    type: "choice",
+    kind: "compare",
+    resourceId: "iron",
+    prompt: "قارن بين الحديد والذهب: أيهما يُستخدم أكثر في صناعة القطارات والآلات؟",
+    options: ["الحديد", "الذهب", "كلاهما بالقدر نفسه"],
+    answer: "الحديد",
+    hints: [
+      "فكّر: أي المعدنين قوي ومتوفر أكثر، وأيهما نادر وغالٍ؟",
+      "المعدن المطلوب يُستخرج من الواحات البحرية.",
+    ],
+    explanation: "الحديد قوي ويُستخدم في الآلات ووسائل النقل، أما الذهب فنادر ويُستخدم في الحلي.",
+  },
+);
+
 export const TEXTBOOK_UNIT3 = { "lesson-1": LESSON_1, "lesson-2": LESSON_2, "lesson-3": LESSON_3 };
 
 // Applies the book layer on top of the assembled demo content.
@@ -547,7 +633,9 @@ export function applyTextbook(id, content) {
     resources,
     questions: [
       ...book.questions.map((q) => structuredClone(q)),
-      ...content.questions.filter((q) => !bookIds.has(q.id)),
+      ...content.questions
+        .filter((q) => !bookIds.has(q.id))
+        .map((q) => (book.duplicates?.[q.id] ? { ...q, duplicateOf: book.duplicates[q.id] } : q)),
     ],
     sources: [
       {

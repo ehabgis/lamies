@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   BookOpen,
@@ -18,6 +18,8 @@ import { api } from "./api";
 import { useSession } from "./Session";
 import BrandMark from "./BrandMark";
 import { play } from "./sfx";
+import NarrationControls from "./NarrationControls";
+import { loadGuest, saveGuest, savedProgress } from "./guestProfile";
 export default function EntryPage() {
   const { setUser, user } = useSession(),
     navigate = useNavigate();
@@ -25,6 +27,27 @@ export default function EntryPage() {
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const [motion, setMotion] = useState(true);
+  const [guest, setGuest] = useState(loadGuest);
+  const [catalog, setCatalog] = useState([]);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const resume = savedProgress();
+  useEffect(() => {
+    api("/demo/catalog")
+      .then((r) => setCatalog(r.nodes))
+      .catch(() => setCatalog([]));
+  }, []);
+  // Grades and terms come from the catalog, so new ones appear without code changes.
+  const grades = catalog.filter((n) => n.kind === "grade");
+  const terms = catalog.filter((n) => n.kind === "term" && n.parentId === guest.gradeId);
+  const welcome = "أهلًا يا مستكشف! اكتب اسمك، واختر صفك وفصلك، ثم اضغط ابدأ المغامرة.";
+  function startAdventure() {
+    saveGuest(guest);
+    play("project");
+    const q = new URLSearchParams();
+    if (guest.gradeId) q.set("grade", guest.gradeId);
+    if (guest.termId) q.set("term", guest.termId);
+    navigate(`/explore${q.toString() ? `?${q}` : ""}`);
+  }
   async function submit(e) {
     e.preventDefault();
     setBusy(true);
@@ -81,6 +104,10 @@ export default function EntryPage() {
           />
           <div className="entry-robot-companion">
             <RobotGuide />
+            <div className="entry-robot-say">
+              <p>{welcome}</p>
+              <NarrationControls text={welcome} compact />
+            </div>
           </div>
           <div className="entry-journey-steps" aria-label="مراحل الرحلة">
             <span className="step-blue">
@@ -98,11 +125,71 @@ export default function EntryPage() {
         </section>
         <section className="platform-signin">
           <h1>مرحبًا يا مستكشف!</h1>
-          <p>سجّل دخولك لنحفظ اكتشافاتك.</p>
-          <Link to="/explore" className="p-button demo-entry-link" onClick={() => play("project")}>
+          <p className="entry-tagline">مصر مليئة بالكنوز… هل أنت مستعد لاكتشافها؟</p>
+          {!user && (
+            <div className="entry-guest">
+              <label className="entry-name">
+                <span>ما اسمك؟</span>
+                <input
+                  value={guest.name || ""}
+                  maxLength={30}
+                  autoComplete="nickname"
+                  placeholder="اسمك أو اسم مستعار"
+                  onChange={(e) => setGuest({ ...guest, name: e.target.value })}
+                />
+              </label>
+              <fieldset className="entry-chips">
+                <legend>صفّك</legend>
+                {grades.length ? (
+                  grades.map((g) => (
+                    <button
+                      type="button"
+                      key={g.id}
+                      aria-pressed={guest.gradeId === g.id}
+                      onClick={() => {
+                        play("select");
+                        const t = catalog.filter((n) => n.kind === "term" && n.parentId === g.id);
+                        setGuest({ ...guest, gradeId: g.id, termId: t[0]?.id });
+                      }}
+                    >
+                      {g.title.replace("الصف ", "").replace(" الابتدائي", "")}
+                    </button>
+                  ))
+                ) : (
+                  <small>جارٍ تحميل الصفوف…</small>
+                )}
+              </fieldset>
+              <fieldset className="entry-chips">
+                <legend>الفصل الدراسي</legend>
+                {terms.length ? (
+                  terms.map((t) => (
+                    <button
+                      type="button"
+                      key={t.id}
+                      aria-pressed={guest.termId === t.id}
+                      onClick={() => {
+                        play("select");
+                        setGuest({ ...guest, termId: t.id });
+                      }}
+                    >
+                      {t.title.replace("الفصل الدراسي ", "")}
+                    </button>
+                  ))
+                ) : (
+                  <small>اختر صفّك أولًا.</small>
+                )}
+              </fieldset>
+            </div>
+          )}
+          <button type="button" className="p-button demo-entry-link" onClick={startAdventure}>
             <Play size={23} weight="fill" /> ابدأ المغامرة
-          </Link>
-          <p className="p-muted">دون حساب · تجربة غير معتمدة</p>
+          </button>
+          {resume && (
+            <Link to={resume.href} className="entry-resume" onClick={() => play("open")}>
+              أكمل رحلتك: {resume.label} ({resume.done} موارد مكتشفة) <ArrowLeft size={18} />
+            </Link>
+          )}
+          <p className="p-muted">دون حساب · يُحفظ تقدمك على هذا الجهاز فقط · تجربة غير معتمدة</p>
           {user ? (
             <div>
               <p>أهلًا {user.name || user.username}، حسابك جاهز.</p>
@@ -114,7 +201,8 @@ export default function EntryPage() {
               </Link>
             </div>
           ) : (
-            <>
+            <details className="entry-account" open={accountOpen} onToggle={(e) => setAccountOpen(e.currentTarget.open)}>
+              <summary>لديّ حساب أو أريد حسابًا لحفظ نتائجي</summary>
               <div className="p-tabs" role="group" aria-label="نوع الدخول">
                 <button
                   aria-pressed={mode === "login"}
@@ -195,11 +283,11 @@ export default function EntryPage() {
                   <ArrowLeft size={22} />
                 </button>
               </form>
-            </>
+              <p className="entry-privacy">
+                الحساب يحفظ التقدم والنتائج على الخادم. لا نطلب بريدًا أو هاتفًا.
+              </p>
+            </details>
           )}
-          <p className="entry-privacy">
-            نحفظ التقدم والنتائج في حساب خاص. لا نطلب بريدًا أو هاتفًا.
-          </p>
           <Link to="/legacy" className="p-text-link">
             فتح النسخة السابقة
           </Link>

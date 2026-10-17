@@ -78,3 +78,122 @@
   min-height: 60px;
   font-size: 20px;
 }
+
+/* Unified opening card (2026-10-17) */
+.entry-experience .entry-tagline {
+  margin: -4px 0 14px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #2a4a6b;
+}
+.entry-experience .entry-guest {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.entry-experience .entry-name {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 800;
+}
+.entry-experience .entry-name input {
+  min-height: 48px;
+  font-size: 17px;
+}
+.entry-experience .entry-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.entry-experience .entry-chips legend {
+  width: 100%;
+  margin-bottom: 4px;
+  font-weight: 800;
+}
+.entry-experience .entry-chips button {
+  flex: 1;
+  min-height: 48px;
+  min-width: 90px;
+  padding: 6px 12px;
+  border: 2px solid #cfe0ee;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #12365c;
+  font-size: 16px;
+  font-weight: 900;
+}
+.entry-experience .entry-chips button[aria-pressed="true"] {
+  border-color: #0869c4;
+  background: #0869c4;
+  color: #ffffff;
+}
+.entry-experience .entry-resume {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  margin-top: 10px;
+  border: 2px solid #1a8a4c;
+  border-radius: 14px;
+  background: #effaf3;
+  color: #0f5c35;
+  font-weight: 900;
+  text-decoration: none;
+}
+.entry-experience .entry-account {
+  margin-top: 10px;
+  border-top: 1px solid #e1ecf4;
+  padding-top: 8px;
+}
+.entry-experience .entry-account summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 800;
+  color: #0b5aa6;
+}
+.entry-experience .entry-robot-say {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 300px;
+  padding: 10px 12px;
+  border-radius: 16px 16px 16px 4px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px #12365c22;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.entry-experience .entry-robot-say p {
+  margin: 0;
+}
+.entry-experience .entry-robot-companion {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.entry-experience .entry-robot-companion {
+  margin-top: 6px;
+  position: relative;
+  z-index: 2;
+}
+.entry-experience .platform-welcome-art img {
+  height: min(38dvh, 400px);
+}
+@media (max-width: 700px) {
+  .entry-experience .entry-robot-say p {
+    display: none;
+  }
+  .entry-experience .entry-robot-say {
+    padding: 4px;
+    border-radius: 999px;
+  }
+}

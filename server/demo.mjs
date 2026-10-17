@@ -52,9 +52,9 @@ export function demoLesson(id = DEMO_ID) {
     ...s,
     approved: false,
   }));
-  content.questions = content.questions.map(
-    ({ answer, explanation, ...question }) => question,
-  );
+  content.questions = content.questions
+    .filter((q) => !q.duplicateOf)
+    .map(({ answer, explanation, hints, ...question }) => question);
   return {
     id,
     title: id === DEMO_ID ? "الثروة المعدنية ومصادر الطاقة" : content.title,
@@ -76,7 +76,33 @@ const canonical = (v) =>
         ? v.map((x) => JSON.parse(canonical(x)))
         : v,
   );
-export function demoAnswer(questionId, answer, lessonId = DEMO_ID) {
+// Hints get more specific with each wrong attempt but never name the answer:
+// 1) the question's own hint, 2) where to look, 3) rule out one wrong option.
+export function gradedHint(q, attempt = 1, answer) {
+  const n = Math.max(1, Math.min(3, Number(attempt) || 1));
+  const levels = Array.isArray(q.hints) && q.hints.length ? [...q.hints] : [];
+  if (!levels.length) levels.push(q.hint || "اقرأ السؤال مرة أخرى وابحث عن الكلمة المهمة فيه.");
+  if (levels.length < 2)
+    levels.push(
+      q.type === "map"
+        ? "افتح بطاقة المورد على الخريطة وانظر إلى المواقع المحددة له."
+        : "راجع بطاقة المورد أو معلومات الدرس، ثم فكّر في استخدامه أو مكانه.",
+    );
+  if (levels.length < 3) {
+    const options = (q.options || []).map((o) => (typeof o === "object" ? o.id : o));
+    const wrong = ["choice", "map"].includes(q.type)
+      ? options.find((o) => o !== q.answer && o !== answer)
+      : null;
+    const label = (q.options || []).find((o) => (typeof o === "object" ? o.id : o) === wrong);
+    levels.push(
+      wrong != null && options.length > 2
+        ? `«${typeof label === "object" ? label.label || label.name : label}» ليست الإجابة الصحيحة.`
+        : "لا بأس، التعلّم يحتاج محاولات. اقرأ المعلومة في بطاقة المورد ثم جرّب من جديد.",
+    );
+  }
+  return levels[Math.min(n, levels.length) - 1];
+}
+export function demoAnswer(questionId, answer, lessonId = DEMO_ID, attempt = 1) {
   const q = fullContent(lessonId)?.questions.find((q) => q.id === questionId);
   if (!q) return null;
   const clean = (v) =>
@@ -98,7 +124,7 @@ export function demoAnswer(questionId, answer, lessonId = DEMO_ID) {
     demo: true,
     correct,
     questionId: q.id,
-    hint: correct ? null : q.hint || "حاول مرة أخرى",
+    hint: correct ? null : gradedHint(q, attempt, answer),
     explanation: correct ? q.explanation || "" : "",
     awarded: 0,
   };

@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 import {
+  Compass,
   MapPin,
   LinkSimple,
   ListNumbers,
@@ -8,6 +10,10 @@ import {
   MapTrifold,
   CheckCircle,
   ArrowRight,
+  Question as QuestionIcon,
+  CheckSquare,
+  House,
+  Scales,
 } from "phosphor-react";
 
 // What each activity type asks the child to do, in one short line.
@@ -18,12 +24,22 @@ const META = {
   order: { title: "رتّب الخطوات", hint: "ضع الخطوات بالترتيب الصحيح", Icon: ListNumbers, tone: "orange" },
   blank: { title: "أكمل الفراغ", hint: "اكتب الكلمة الناقصة", Icon: PencilSimple, tone: "teal" },
   "image-match": { title: "طابق الرموز", hint: "صِل كل رمز بمعناه", Icon: ImageSquare, tone: "pink" },
+  choice: { title: "اختر الإجابة", hint: "اقرأ السؤال واختر الإجابة الصحيحة", Icon: QuestionIcon, tone: "blue" },
+  boolean: { title: "صواب أم خطأ؟", hint: "احكم على العبارة", Icon: CheckSquare, tone: "teal" },
+  life: { title: "موقف من الحياة", hint: "اختر المورد المناسب للموقف", Icon: House, tone: "green" },
+  compare: { title: "قارن بين موردين", hint: "اكتشف الفرق الأهم بينهما", Icon: Scales, tone: "purple" },
 };
 const FALLBACK = { title: "نشاط", hint: "أجب ثم اضغط تحقق", Icon: PencilSimple, tone: "blue" };
 
-export const activityMeta = (q) => META[q?.type] || FALLBACK;
+// The question itself tells two activities of the same type apart.
+const brief = (t = "") => {
+  const s = String(t).replace(/^أكمل:\s*/, "").trim();
+  return s.length > 48 ? s.slice(0, 46).trimEnd() + "…" : s;
+};
 
-export default function ActivityPicker({ activities, solved, hasBuildMap, onPick, onBuildMap }) {
+export const activityMeta = (q) => META[q?.kind] || META[q?.type] || FALLBACK;
+
+export default function ActivityPicker({ activities, solved, hasBuildMap, onPick, onBuildMap, expedition }) {
   const done = activities.filter((q) => solved.includes(q.id)).length;
   return (
     <section className="activity-picker" aria-labelledby="activity-picker-title">
@@ -33,6 +49,18 @@ export default function ActivityPicker({ activities, solved, hasBuildMap, onPick
           أنجزت <bdi>{done}</bdi> من <bdi>{activities.length}</bdi> أنشطة
         </p>
       </header>
+      {expedition && (
+        <Link to={expedition.href} className="activity-card activity-expedition tone-blue">
+          <span className="activity-card-icon" aria-hidden="true">
+            <Compass weight="duotone" />
+          </span>
+          <span className="activity-card-text">
+            <small>رحلة الاستكشاف</small>
+            <strong>{expedition.title}</strong>
+            <small>اكتشف المعادن ومصادر الطاقة خطوة بخطوة على الخريطة</small>
+          </span>
+        </Link>
+      )}
       <ul className="activity-cards">
         {hasBuildMap && (
           <li>
@@ -63,7 +91,7 @@ export default function ActivityPicker({ activities, solved, hasBuildMap, onPick
                 </span>
                 <span className="activity-card-text">
                   <strong>{meta.title}</strong>
-                  <small>{meta.hint}</small>
+                  <small>{brief(q.prompt) || meta.hint}</small>
                 </span>
                 {isDone && (
                   <span className="activity-card-done" aria-hidden="true">

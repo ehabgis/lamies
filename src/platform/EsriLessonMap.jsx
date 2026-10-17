@@ -72,6 +72,7 @@ export default function EsriLessonMap({
   focusRequest,
   waterLesson = false,
   railLesson = false,
+  spotlight = null,
   onReset,
   onToolOpen,
 }) {
@@ -531,6 +532,42 @@ export default function EsriLessonMap({
     });
     setSelectedGovernorate("");
   }, [ready, resetKey]);
+  // Montage spotlight: a glowing ring + name at the place being explained.
+  // `side` says where the montage card is, so the place is framed in the
+  // other half of the map.
+  useEffect(() => {
+    if (!ready || !spotlight) return;
+    const map = mapRef.current;
+    const group = L.layerGroup().addTo(map);
+    L.circleMarker([spotlight.lat, spotlight.lng], {
+      radius: 26,
+      color: "#ffb800",
+      weight: 4,
+      fillColor: "#ffd34d",
+      fillOpacity: 0.25,
+      interactive: false,
+      className: "montage-spot",
+    })
+      .bindTooltip(textNode(spotlight.label), {
+        permanent: true,
+        direction: "top",
+        offset: [0, -24],
+        className: "montage-spot-label",
+      })
+      .addTo(group);
+    const zoom = spotlight.zoom || 6;
+    const size = map.getSize();
+    const point = map.project([spotlight.lat, spotlight.lng], zoom);
+    if (window.innerWidth > 850)
+      point.x += (spotlight.side === "right" ? 1 : -1) * size.x * 0.2;
+    else point.y += size.y * 0.17;
+    map.stop();
+    map.flyTo(map.unproject(point, zoom), zoom, {
+      animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      duration: 0.9,
+    });
+    return () => map.removeLayer(group);
+  }, [ready, spotlight?.lat, spotlight?.lng, spotlight?.label, spotlight?.side]);
   useEffect(() => {
     if (!ready || !focusRequest) return;
     const site = sites.find((s) => s.id === focusRequest.siteId);

@@ -46,6 +46,10 @@ import { iconFamily } from "../components/Map/lessonIcons";
 import RobotGuide from "../components/Map/RobotGuide";
 import BrandMark from "./BrandMark";
 import ExplorerChip from "./ExplorerChip";
+import LessonMontage from "./LessonMontage";
+import { buildScenes, firstSceneOf } from "./montageScenes";
+import { loadGuest } from "./guestProfile";
+import "./montage.css";
 import { play, resourceSound } from "./sfx";
 const kindNames = {
   mineral: "خام معدني",
@@ -158,6 +162,8 @@ export default function LessonPage({ demo = false }) {
     [mode, setMode] = useState("interactive"),
     [pickActivity, setPickActivity] = useState(true),
     [view3d, setView3d] = useState(null),
+    [montage, setMontage] = useState(null),
+    [spotlight, setSpotlight] = useState(null),
     open3dTimer = useRef(null),
     [full, setFull] = useState(false),
     [panel, setPanel] = useState(null),
@@ -304,8 +310,8 @@ export default function LessonPage({ demo = false }) {
     modal === "build-map"
       ? q.type === "map"
       : modal === "activities"
-        ? !["choice", "boolean"].includes(q.type)
-        : ["choice", "boolean"].includes(q.type),
+        ? !["choice", "boolean"].includes(q.type) || q.kind
+        : ["choice", "boolean"].includes(q.type) && !q.kind,
   );
   const current = filtered[index];
   const answered = (id) => setSolved((s) => (s.includes(id) ? s : [...s, id]));
@@ -538,6 +544,7 @@ export default function LessonPage({ demo = false }) {
         </button>
       </section>
     );
+  const scenes = buildScenes(id, content);
   const currentLessonIndex = Math.max(
     0,
     lessonOptions.findIndex((n) => n && (n.id === id || n.demoLessonId === id)),
@@ -626,11 +633,17 @@ export default function LessonPage({ demo = false }) {
             <button
               key={key}
               id={`lesson-info-${key}`}
-              aria-expanded={panel === key}
-              aria-controls="lesson-information-panel"
+              aria-expanded={montage?.section === key || panel === key}
               onClick={() => {
-                setPanel(panel === key ? null : key);
+                // Opens the scene-by-scene explanation over the map at this section.
+                setPanel(null);
                 setInfoOpen(false);
+                setLegendOpen(false);
+                setModal(null);
+                play("open");
+                setMontage((m) =>
+                  m?.section === key ? null : { section: key, start: firstSceneOf(scenes, key) },
+                );
               }}
             >
               <span className={`info-tab-icon tone-${tone}`} aria-hidden="true">
@@ -642,7 +655,7 @@ export default function LessonPage({ demo = false }) {
         </div>
         </div>
         <ExplorerChip
-          name={user?.name || user?.username || "مستكشف زائر"}
+          name={user?.name || user?.username || loadGuest().name || "مستكشف زائر"}
           solved={solved.length}
           total={questions.length}
         />
@@ -868,6 +881,7 @@ export default function LessonPage({ demo = false }) {
             focusRequest={focusRequest}
             waterLesson={demo && id === "lesson-2"}
             railLesson={demo && id === "lesson-3"}
+            spotlight={montage ? spotlight : null}
             onReset={showAll}
             onToolOpen={() => { setLegendOpen(false); setInfoOpen(false); setPanel(null); }}
             onSelect={(site) => {
@@ -894,6 +908,20 @@ export default function LessonPage({ demo = false }) {
               setVideoOpen(true);
             }}
           />
+          {montage && (
+            <LessonMontage
+              lessonId={id}
+              demo={demo || preview}
+              scenes={scenes}
+              startAt={montage.start}
+              onSpotlight={setSpotlight}
+              onClose={() => setMontage(null)}
+              onReadAll={() => {
+                setMontage(null);
+                setPanel("intro");
+              }}
+            />
+          )}
           {view3d && (
             <Suspense fallback={<div className="site-3d-panel site-3d-loading" role="status">جارٍ تجهيز العرض ثلاثي الأبعاد…</div>}>
               <Site3DView
@@ -1088,6 +1116,11 @@ export default function LessonPage({ demo = false }) {
               <>
                 {modal === "activities" && pickActivity ? (
                   <ActivityPicker
+                    expedition={
+                      id === "lesson-1"
+                        ? { href: "/demo/lesson-1/expedition", title: "رحلة كنوز مصر" }
+                        : null
+                    }
                     activities={filtered}
                     solved={solved}
                     hasBuildMap={questions.some((q) => q.type === "map")}

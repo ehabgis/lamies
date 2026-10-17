@@ -1,6 +1,6 @@
 import RobotGuide from "../components/Map/RobotGuide";
 import { useEffect, useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,6 +22,7 @@ const emptyProgress = { lessons: [], xp: 0, stars: 0 };
 export default function JourneyPage({ demo = false }) {
   const { user, setUser } = useSession();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const [nodes, setNodes] = useState([]);
   const [sample, setSample] = useState(demo);
   const [selection, setSelection] = useState({});
@@ -60,8 +61,17 @@ export default function JourneyPage({ demo = false }) {
         const enrolled = user?.enrollment;
         const year =
           !useSample && catalog.nodes.find((n) => n.id === enrolled?.yearId);
-        setSelection(year ? { ...enrolled, yearTitle: year.title } : {});
-        setStep(0);
+        // Coming from the opening screen with a grade and term: jump to units.
+        const g = useSample && catalog.nodes.find((n) => n.id === params.get("grade"));
+        const t = g && catalog.nodes.find((n) => n.id === params.get("term") && n.parentId === g.id);
+        const y = t && catalog.nodes.find((n) => n.kind === "year" && n.parentId === t.id);
+        if (g && t && y) {
+          setSelection({ yearTitle: y.title, stageId: g.parentId, gradeId: g.id, termId: t.id });
+          setStep(2);
+        } else {
+          setSelection(year ? { ...enrolled, yearTitle: year.title } : {});
+          setStep(0);
+        }
       })
       .catch((e) => active && setError(e.message))
       .finally(() => active && setLoading(false));

@@ -599,10 +599,15 @@
 /* Map-layer keys (water / rail): on phones only the toggle remains, moved to
    the lower-left corner (outside Egypt) so it never covers sites. */
 @media (max-width: 850px) {
+  /* Sits on the bottom map row (where the basemap name was) so it covers no sites. */
+  .map-shell .esri-basemap-state {
+    display: none;
+  }
   .map-shell .water-source-key {
     top: auto !important;
-    bottom: 172px;
-    left: 12px;
+    bottom: 126px;
+    left: auto;
+    right: 12px;
     max-width: 62%;
     padding: 2px 10px;
     border-radius: 999px;
@@ -651,4 +656,28 @@
 .basemap-gallery img[alt="معاينة خريطة الكتاب"] {
   background: #ffffff;
   object-fit: cover;
+}
+
+/* Textbook map inside «معلومات الدرس» */
+.map-shell .lesson-book-map {
+  margin: 4px 0 14px;
+}
+.map-shell .lesson-book-map img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #d4e4ef;
+  border-radius: 12px;
+}
+.map-shell .lesson-book-map figcaption {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #174766;
+}
+.map-shell .lesson-book-map figcaption small {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #4a6178;
 }

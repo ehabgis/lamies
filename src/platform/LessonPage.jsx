@@ -407,6 +407,9 @@ export default function LessonPage({ demo = false }) {
           src={localPhotos[resource.id] || resource.media?.image}
           label={`صورة ${resource.label}`}
         />
+        {!localPhotos[resource.id] && resource.media?.imageCredit && (
+          <small className="resource-photo-note">{resource.media.imageCredit}</small>
+        )}
         <label className="resource-photo-attach">
           <input
             type="file"
@@ -700,6 +703,19 @@ export default function LessonPage({ demo = false }) {
             ) : (
               <>
                 <h2>هيا نبدأ الاستكشاف</h2>
+                {content.legacyExtras?.bookMap && (
+                  <figure className="lesson-book-map">
+                    <img
+                      src={content.legacyExtras.bookMap.src}
+                      alt={content.legacyExtras.bookMap.caption}
+                      loading="lazy"
+                    />
+                    <figcaption>
+                      {content.legacyExtras.bookMap.caption}
+                      <small>{content.legacyExtras.bookMap.credit}</small>
+                    </figcaption>
+                  </figure>
+                )}
                 <p>{content.intro}</p>
                 <h3>ملخص الدرس</h3>
                 <p>{content.summary}</p>

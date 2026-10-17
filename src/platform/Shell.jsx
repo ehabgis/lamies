@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { BookOpen, Compass, SignOut, Star, Gear } from "phosphor-react";
 import { useSession } from "./Session";
+import BrandMark from "./BrandMark";
 export default function Shell({
   children,
   mapPage = false,
@@ -18,9 +19,7 @@ export default function Shell({
       {!mapPage && (
         <header className="platform-header">
           <Link className="platform-brand" to={user ? "/journey" : "/"}>
-            <span>
-              <BookOpen size={30} weight="duotone" />
-            </span>
+            <BrandMark size={46} />
             <div>الخرائط التعليمية الذكية</div>
           </Link>
           <PlatformNavigation />

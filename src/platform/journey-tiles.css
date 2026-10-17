@@ -1,0 +1,308 @@
+/* Journey picker: tap tiles instead of drop-downs, sized so each step fits one
+   screen. 2026-10-17. */
+
+.journey-picker .journey-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.journey-tiles {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.journey-tiles legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #12365c;
+}
+.journey-tiles [role="radiogroup"] {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.journey-tiles.is-wide [role="radiogroup"] {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+.journey-tiles-hint {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1.5px dashed #c9dbe8;
+  border-radius: 14px;
+  color: #5b6f82;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.journey-tile {
+  --tile: #0869c4;
+  --tile-bg: #eaf4fe;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-height: 64px;
+  padding: 10px 14px;
+  border: 2px solid #d4e4ef;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #12365c;
+  text-align: start;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease-out,
+    background-color 150ms ease-out,
+    transform 120ms ease-out,
+    box-shadow 150ms ease-out;
+}
+.journey-tile b {
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.3;
+}
+.journey-tile small {
+  font-size: 13px;
+  font-weight: 700;
+  color: #4a6178;
+  line-height: 1.35;
+}
+.journey-tile:hover:not(:disabled) {
+  border-color: var(--tile);
+  box-shadow: 0 4px 12px #12365c14;
+}
+.journey-tile:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.journey-tile[aria-checked="true"] {
+  border-color: var(--tile);
+  background: var(--tile-bg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tile) 22%, transparent);
+}
+.journey-tile[aria-checked="true"] b {
+  color: var(--tile);
+}
+.journey-tile:focus-visible {
+  outline: 3px solid #0869c4;
+  outline-offset: 2px;
+}
+.journey-tile-check {
+  position: absolute;
+  top: 8px;
+  inset-inline-end: 8px;
+  width: 22px;
+  height: 22px;
+  color: var(--tile);
+}
+.journey-tiles:disabled .journey-tile {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.tile-tone-0 { --tile: #0869c4; --tile-bg: #eaf4fe; }
+.tile-tone-1 { --tile: #1a7f4b; --tile-bg: #e8f7ef; }
+.tile-tone-2 { --tile: #6c35a6; --tile-bg: #f3ecfc; }
+.tile-tone-3 { --tile: #b25a00; --tile-bg: #fff3e2; }
+
+/* Lessons under the chosen unit: compact rows */
+.journey-picker .journey-lesson-list {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.journey-picker .journey-lesson {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1.5px solid #d4e4ef;
+  border-radius: 14px;
+  background: #fbfdff;
+}
+.journey-picker .journey-lesson + .journey-lesson {
+  border-top: 1.5px solid #d4e4ef;
+}
+.journey-picker .journey-lesson > div {
+  flex: 1;
+  min-width: 0;
+}
+.journey-picker .journey-lesson h3 {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.35;
+}
+.journey-picker .journey-lesson small {
+  font-size: 12px;
+}
+.journey-picker .journey-lesson-icon {
+  width: 42px;
+  height: 42px;
+  flex: none;
+}
+.journey-picker .journey-lesson .p-button {
+  flex: none;
+  min-height: 44px;
+  padding: 6px 14px;
+  white-space: nowrap;
+}
+
+/* The picker card no longer needs its fixed tall body. */
+.journey-picker {
+  padding: 22px 24px;
+}
+.journey-picker h2 {
+  margin-bottom: 14px;
+}
+
+@media (max-width: 760px) {
+  .journey-tiles [role="radiogroup"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .journey-tiles.is-wide [role="radiogroup"] {
+    grid-template-columns: 1fr;
+  }
+  .journey-tile {
+    min-height: 56px;
+    padding: 8px 10px;
+  }
+  .journey-tile b {
+    font-size: 15px;
+  }
+  .journey-tile small {
+    font-size: 12px;
+  }
+  .journey-picker .journey-fields {
+    gap: 12px;
+  }
+  .journey-picker .journey-lesson {
+    flex-wrap: wrap;
+  }
+  .journey-picker .journey-lesson .p-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-tile {
+    transition: none;
+  }
+  .journey-tile:active:not(:disabled) {
+    transform: none;
+  }
+}
+.journey-tile:has(.journey-tile-check) {
+  padding-inline-end: 38px;
+}
+
+/* Phones: units as a 3-up row, lessons as one-line rows, guide bubble hidden
+   on the last step, so the whole step fits without scrolling. */
+@media (max-width: 760px) {
+  .journey-tiles.is-wide [role="radiogroup"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .journey-tiles.is-wide .journey-tile {
+    min-height: 70px;
+    padding: 8px;
+    text-align: center;
+    align-items: center;
+  }
+  .journey-tiles.is-wide .journey-tile b {
+    font-size: 14px;
+  }
+  .journey-tiles.is-wide .journey-tile small {
+    font-size: 11px;
+  }
+  .journey-tile:has(.journey-tile-check) {
+    padding-inline-end: 10px;
+  }
+  .journey-tile-check {
+    top: 4px;
+    inset-inline-end: 4px;
+    width: 18px;
+    height: 18px;
+  }
+  .journey-picker .journey-lesson {
+    flex-wrap: nowrap;
+    padding: 6px 8px;
+    gap: 8px;
+  }
+  .journey-picker .journey-lesson-icon {
+    display: none;
+  }
+  .journey-picker .journey-lesson small {
+    display: none;
+  }
+  .journey-picker .journey-lesson h3 {
+    font-size: 14px;
+  }
+  .journey-picker .journey-lesson .p-button {
+    width: auto;
+    padding: 4px 10px;
+    font-size: 13.5px;
+  }
+  .journey-shell:has(.journey-tiles.is-wide) .journey-companion {
+    display: none;
+  }
+}
+
+/* Short screens (e.g. 1366×768 laptops, 360×740 phones): tighter rhythm so the
+   last step fits without scrolling. */
+@media (max-height: 820px) {
+  .journey-shell .journey-heading h1 {
+    font-size: 30px;
+    margin: 0;
+  }
+  .journey-shell .journey-heading p {
+    margin: 2px 0 0;
+  }
+  .journey-picker {
+    padding: 14px 18px;
+  }
+  .journey-picker h2 {
+    margin-bottom: 8px;
+    font-size: 20px;
+  }
+  .journey-picker .journey-fields {
+    gap: 10px;
+  }
+  .journey-tile {
+    min-height: 54px;
+    padding-block: 6px;
+  }
+  .journey-picker .journey-lesson-list {
+    margin-top: 10px;
+    gap: 6px;
+  }
+  .journey-picker .journey-lesson {
+    padding: 4px 8px;
+  }
+  .journey-picker .journey-lesson small {
+    display: none;
+  }
+  .journey-picker .journey-lesson-icon {
+    width: 34px;
+    height: 34px;
+  }
+  .journey-picker .journey-actions {
+    padding-top: 10px;
+  }
+}
+@media (max-width: 420px) {
+  .journey-shell .journey-heading h1 {
+    font-size: 23px;
+  }
+  .journey-shell .journey-heading p {
+    display: none;
+  }
+  .journey-tiles.is-wide .journey-tile small {
+    display: none;
+  }
+  .journey-tiles.is-wide .journey-tile {
+    min-height: 52px;
+  }
+}

@@ -1,0 +1,80 @@
+/* Start page refresh (2026-10-17): colourful stage behind the hero image,
+   coloured journey steps, and a warmer sign-in card. Loaded last. */
+.entry-experience.entry-platform {
+  background:
+    radial-gradient(circle at 12% 18%, #fff1c9 0, transparent 28%),
+    radial-gradient(circle at 88% 82%, #d9f4e6 0, transparent 30%),
+    radial-gradient(circle at 70% 10%, #e2efff 0, transparent 35%),
+    linear-gradient(160deg, #eef8ff 0%, #f7fbff 55%, #fff8ec 100%);
+}
+.entry-experience .entry-platform-brand > .brand-mark {
+  flex: none;
+  filter: drop-shadow(0 4px 10px #e2456b33);
+}
+.entry-experience .entry-platform-brand > div {
+  background: linear-gradient(90deg, #12365c, #0869c4);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Hero on a soft circular stage */
+.entry-experience .platform-welcome-art {
+  position: relative;
+  isolation: isolate;
+}
+.entry-experience .platform-welcome-art::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 52%;
+  width: min(520px, 92%);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, #ffffff 0, #ffffff00 45%),
+    conic-gradient(from 200deg, #bfe6ff, #d6f5e3, #fff0c2, #ffd9e2, #bfe6ff);
+  opacity: 0.75;
+}
+.entry-experience .entry-art-heading h2 {
+  color: #12365c;
+}
+.entry-experience .entry-art-heading h2::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 6px;
+  margin: 8px auto 0;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #ffb938, #ff7a45, #e2456b);
+}
+
+/* Journey steps as coloured pills */
+.entry-experience .entry-journey-steps span {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+}
+.entry-experience .entry-journey-steps .step-blue { background: #e3f0fd; color: #0b5aa6; }
+.entry-experience .entry-journey-steps .step-green { background: #e2f5ea; color: #1a7f4b; }
+.entry-experience .entry-journey-steps .step-orange { background: #fff0dc; color: #a45200; }
+
+/* Sign-in card with a colourful top edge */
+.entry-experience .platform-signin {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 18px 40px #12365c1f;
+}
+.entry-experience .platform-signin::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 6px;
+  background: linear-gradient(90deg, #0869c4, #1a9e6a, #ffb938, #e2456b);
+}
+.entry-experience .demo-entry-link {
+  min-height: 60px;
+  font-size: 20px;
+}

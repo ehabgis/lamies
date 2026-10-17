@@ -44,6 +44,9 @@ import AIAssistant from "./AIAssistant";
 import ResourcePin from "../components/Map/ResourcePin";
 import { iconFamily } from "../components/Map/lessonIcons";
 import RobotGuide from "../components/Map/RobotGuide";
+import BrandMark from "./BrandMark";
+import ExplorerChip from "./ExplorerChip";
+import { play, resourceSound } from "./sfx";
 const kindNames = {
   mineral: "خام معدني",
   renewable: "طاقة متجددة",
@@ -307,6 +310,7 @@ export default function LessonPage({ demo = false }) {
   const current = filtered[index];
   const answered = (id) => setSolved((s) => (s.includes(id) ? s : [...s, id]));
   function pick(r) {
+    play(resourceSound(r));
     const singleSite =
       ["water", "project"].includes(r.kind) && r.locations?.length === 1;
     // On narrow screens the guide panel covers the map. When the child still
@@ -331,6 +335,7 @@ export default function LessonPage({ demo = false }) {
     setPulse(true);
   }
   function openLearning(kind) {
+    play("open");
     setLegendOpen(false);
     setInfoOpen(false);
     setPanel(null);
@@ -358,6 +363,7 @@ export default function LessonPage({ demo = false }) {
     });
   }
   async function finish() {
+    play("star");
     try {
       if (preview || demo) {
         setNotice("هذه تجربة غير معتمدة؛ لا تُحفظ نتائج رسمية أو مكافآت.");
@@ -541,15 +547,10 @@ export default function LessonPage({ demo = false }) {
       <h1 className="studio-page-title">{lesson.title}</h1>
       <div className="studio-titlebar map-header-v2">
         <div className="map-brand">
-          <span className="map-brand-mark" aria-hidden="true">
-            <BookOpen weight="duotone" />
-          </span>
+          <BrandMark size={48} className="map-brand-logo" />
           <span className="map-brand-text">
             <strong>الخرائط التعليمية الذكية</strong>
-            <small>
-              {unitTitle || "الوحدة: جارٍ التحميل…"} ·{" "}
-              {user?.name || user?.username || "مستكشف زائر"}
-            </small>
+            <small>{unitTitle || "الوحدة: جارٍ التحميل…"}</small>
           </span>
         </div>
         <div
@@ -595,7 +596,9 @@ export default function LessonPage({ demo = false }) {
                     <small>
                       {next?.available === false
                         ? "قيد التجهيز"
-                        : title.replace(/^الدرس\s+\S+\s*[:：]\s*/, "")}
+                        : title
+                            .replace(/^الدرس\s+\S+\s*[:：]\s*/, "")
+                            .replace(/\s*\(.*\)\s*$/, "")}
                     </small>
                   </span>
                 </button>
@@ -638,14 +641,11 @@ export default function LessonPage({ demo = false }) {
           ))}
         </div>
         </div>
-        <div className="map-header-identity">
-          <span className="map-unit-name">
-            {unitTitle || "الوحدة: جارٍ التحميل…"}
-          </span>
-          <span className="map-student-name">
-            {user?.name || user?.username || "مستكشف زائر"}
-          </span>
-        </div>
+        <ExplorerChip
+          name={user?.name || user?.username || "مستكشف زائر"}
+          solved={solved.length}
+          total={questions.length}
+        />
       </div>
       <div
         className={`classroom-workspace studio-workspace ${videoOpen ? "has-video" : ""} ${view3d ? "has-3d" : ""} ${legendOpen ? "" : "legend-hidden"} ${infoOpen ? "" : "guide-hidden"}`}
@@ -871,6 +871,7 @@ export default function LessonPage({ demo = false }) {
             onReset={showAll}
             onToolOpen={() => { setLegendOpen(false); setInfoOpen(false); setPanel(null); }}
             onSelect={(site) => {
+              play(resourceSound(site.resource));
               clearTimeout(open3dTimer.current);
               setView3d(null);
               if (has3D(site.resource))

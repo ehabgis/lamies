@@ -12,9 +12,12 @@ import {
 } from "phosphor-react";
 import "./entry-experience.css";
 import "./platform-polish.css";
+import "./entry-v2.css";
 import RobotGuide from "../components/Map/RobotGuide";
 import { api } from "./api";
 import { useSession } from "./Session";
+import BrandMark from "./BrandMark";
+import { play } from "./sfx";
 export default function EntryPage() {
   const { setUser, user } = useSession(),
     navigate = useNavigate();
@@ -52,7 +55,7 @@ export default function EntryPage() {
       dir="rtl"
     >
       <header className="entry-platform-brand">
-        <BookOpen size={40} weight="duotone" />
+        <BrandMark size={52} />
         <div>الخرائط التعليمية الذكية</div>
         <button
           className="entry-motion-control"
@@ -73,22 +76,22 @@ export default function EntryPage() {
             <p>اكتشف مصر… موردًا، ومكانًا، وحكاية.</p>
           </div>
           <img
-            src="/welcome/explorer-globe.webp"
+            src="/welcome/hero.webp"
             alt="طفل مستكشف مع كرة أرضية يشير إلى مصر"
           />
           <div className="entry-robot-companion">
             <RobotGuide />
           </div>
           <div className="entry-journey-steps" aria-label="مراحل الرحلة">
-            <span>
+            <span className="step-blue">
               <Compass size={23} /> استكشف الخريطة
             </span>
             <ArrowLeft size={16} aria-hidden="true" />
-            <span>
+            <span className="step-green">
               <BookOpen size={23} /> تعلّم الحكاية
             </span>
             <ArrowLeft size={16} aria-hidden="true" />
-            <span>
+            <span className="step-orange">
               <Sparkle size={23} /> اختبر معلوماتك
             </span>
           </div>
@@ -96,7 +99,7 @@ export default function EntryPage() {
         <section className="platform-signin">
           <h1>مرحبًا يا مستكشف!</h1>
           <p>سجّل دخولك لنحفظ اكتشافاتك.</p>
-          <Link to="/explore" className="p-button demo-entry-link">
+          <Link to="/explore" className="p-button demo-entry-link" onClick={() => play("project")}>
             <Play size={23} weight="fill" /> ابدأ المغامرة
           </Link>
           <p className="p-muted">دون حساب · تجربة غير معتمدة</p>

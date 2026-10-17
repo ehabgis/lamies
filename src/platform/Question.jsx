@@ -3,6 +3,7 @@ import { ArrowUp, ArrowDown, Star, Lightbulb, Check, X, ArrowLeft } from "phosph
 
 const LETTERS = ["أ", "ب", "ج", "د", "هـ", "و"];
 import { api } from "./api";
+import { play } from "./sfx";
 const label = (o) => (typeof o === "object" ? o.label || o.name || o.id : o);
 const value = (o) => (typeof o === "object" ? o.id : o);
 export default function Question({
@@ -50,6 +51,7 @@ export default function Question({
     setError("");
     try {
       if (preview) {
+        play(JSON.stringify(answer) === JSON.stringify(q.answer) ? "correct" : "wrong");
         setFeedback({
           correct: JSON.stringify(answer) === JSON.stringify(q.answer),
           hint: q.hint,
@@ -65,6 +67,7 @@ export default function Question({
         },
       );
       setFeedback(result);
+      play(result.correct ? "correct" : "wrong");
       if (result.correct) onSolved(q.id);
     } catch (e) {
       setError(e.message);

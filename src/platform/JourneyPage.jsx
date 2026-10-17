@@ -10,11 +10,12 @@ import {
   Star,
 } from "phosphor-react";
 import Shell from "./Shell";
-import SelectField from "./SelectField";
+import { play } from "./sfx";
 import { api } from "./api";
 import { useSession } from "./Session";
 import "./journey-workspace.css";
 import "./platform-polish.css";
+import "./journey-tiles.css";
 
 const steps = ["العام والصف", "الفصل الدراسي", "الوحدة والدروس"];
 const emptyProgress = { lessons: [], xp: 0, stars: 0 };
@@ -110,6 +111,13 @@ export default function JourneyPage({ demo = false }) {
     "subjectId",
     "unitId",
   ];
+  // A choice with a single option is made for the child (e.g. one school year).
+  useEffect(() => {
+    if (loading) return;
+    if (!selection.yearTitle && years.length === 1) choose("yearTitle", years[0]);
+    else if (selection.yearTitle && !selection.stageId && stages.length === 1)
+      choose("stageId", stages[0].id);
+  }, [loading, years.length, stages.length, selection.yearTitle, selection.stageId]);
   function choose(key, value) {
     setSelection((old) => {
       const next = { ...old, [key]: value };
@@ -153,21 +161,42 @@ export default function JourneyPage({ demo = false }) {
       setSaving(false);
     }
   }
-  function selectField(key, label, options, disabled = false) {
-    const prerequisite = {
-      stageId: "اختر العام الدراسي أولًا.",
-      gradeId: "اختر المرحلة التعليمية أولًا.",
-    }[key];
-    const hint = disabled ? prerequisite : !options.length && !loading
-      ? "لا تتوفر خيارات لهذا المسار حاليًا."
-      : key === "unitId" ? "اختر الوحدة لتظهر الدروس المتاحة أسفلها." : undefined;
+  function tiles(key, label, options, { disabled = false, prerequisite, wide = false } = {}) {
+    const items = options.map((o) => (typeof o === "string" ? { id: o, title: o } : o));
     return (
-      <SelectField className="journey-field" label={label} hint={hint}
-        value={selection[key] || ""} disabled={disabled || loading || saving || !options.length}
-        onChange={(e) => choose(key, e.target.value)}>
-        <option value="">اختر {label}</option>
-        {options.map(n => <option key={n.id} value={n.id}>{n.title}</option>)}
-      </SelectField>
+      <fieldset className={`journey-tiles ${wide ? "is-wide" : ""}`} disabled={disabled || loading || saving}>
+        <legend>{label}</legend>
+        {disabled && prerequisite ? (
+          <p className="journey-tiles-hint">{prerequisite}</p>
+        ) : !items.length ? (
+          <p className="journey-tiles-hint">لا تتوفر خيارات لهذا المسار حاليًا.</p>
+        ) : (
+          <div role="radiogroup" aria-label={label}>
+            {items.map((o, i) => {
+              const parts = o.title.split(":");
+              return (
+                <button
+                  type="button"
+                  key={o.id}
+                  role="radio"
+                  aria-checked={selection[key] === o.id}
+                  className={`journey-tile tile-tone-${i % 4}`}
+                  onClick={() => {
+                    play("select");
+                    choose(key, o.id);
+                  }}
+                >
+                  <b>{parts[0].replace(/ الابتدائي$/, "")}</b>
+                  {parts[1] && <small>{parts[1].trim()}</small>}
+                  {selection[key] === o.id && (
+                    <CheckCircle className="journey-tile-check" weight="fill" aria-hidden="true" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </fieldset>
     );
   }
 
@@ -230,34 +259,27 @@ export default function JourneyPage({ demo = false }) {
               <div className="journey-fields">
                 {step === 0 && (
                   <>
-                    <SelectField className="journey-field" label="العام الدراسي" value={selection.yearTitle || ""} disabled={saving || !years.length} onChange={(e) => choose("yearTitle", e.target.value)}>
-                      <option value="">اختر العام الدراسي</option>
-                      {years.map(y => <option key={y}>{y}</option>)}
-                    </SelectField>
-                    {selectField(
-                      "stageId",
-                      "المرحلة التعليمية",
-                      stages,
-                      !selection.yearTitle,
-                    )}
-                    {selectField(
-                      "gradeId",
-                      "الصف الدراسي",
-                      grades,
-                      !selection.stageId,
-                    )}
+                    {tiles("yearTitle", "العام الدراسي", years)}
+                    {tiles("stageId", "المرحلة التعليمية", stages, {
+                      disabled: !selection.yearTitle,
+                      prerequisite: "اختر العام الدراسي أولًا.",
+                    })}
+                    {tiles("gradeId", "الصف الدراسي", grades, {
+                      disabled: !selection.stageId,
+                      prerequisite: "اختر المرحلة التعليمية أولًا.",
+                    })}
                   </>
                 )}
                 {step === 1 && (
                   <>
-                    {selectField("termId", "الفصل الدراسي", terms)}
+                    {tiles("termId", "الفصل الدراسي", terms)}
                     <p className="journey-fixed-subject">
                       <BookOpen size={20} />
                       المادة: الدراسات الاجتماعية
                     </p>
                   </>
                 )}
-                {step === 2 && selectField("unitId", "الوحدة", units)}
+                {step === 2 && tiles("unitId", "الوحدة", units, { wide: true })}
               </div>
               {step === 2 && (
                 <section
@@ -298,12 +320,14 @@ export default function JourneyPage({ demo = false }) {
                                     : "درس منشور"}
                             </small>
                             <h3>{lesson.title}</h3>
-                            <p>خريطة تفاعلية، استكشاف، وأنشطة.</p>
                           </div>
                           <button
                             className="p-button"
                             disabled={saving || lesson.available === false}
-                            onClick={() => openLesson(lesson)}
+                            onClick={() => {
+                              play("project");
+                              openLesson(lesson);
+                            }}
                           >
                             {lesson.available === false
                               ? "قيد التجهيز"
@@ -361,7 +385,10 @@ export default function JourneyPage({ demo = false }) {
               <button
                 className="p-button"
                 disabled={!ready || loading}
-                onClick={() => setStep(step + 1)}
+                onClick={() => {
+                  play("open");
+                  setStep(step + 1);
+                }}
               >
                 التالي: {steps[step + 1]}
                 <ArrowLeft size={19} />
@@ -381,7 +408,7 @@ export default function JourneyPage({ demo = false }) {
             </p>
           </div>
           <img
-            src="/welcome/explorer-globe.webp"
+            src="/welcome/hero.webp"
             alt="المستكشف يشير إلى مصر على الكرة الأرضية"
           />
           <div className="journey-selection-summary">

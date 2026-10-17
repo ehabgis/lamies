@@ -57,7 +57,7 @@ export default function ActivityPicker({ activities, solved, hasBuildMap, onPick
           <span className="activity-card-text">
             <small>رحلة الاستكشاف</small>
             <strong>{expedition.title}</strong>
-            <small>اكتشف المعادن ومصادر الطاقة خطوة بخطوة على الخريطة</small>
+            <small>{expedition.text}</small>
           </span>
         </Link>
       )}

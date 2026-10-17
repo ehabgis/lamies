@@ -34,6 +34,9 @@
   padding: 10px 14px 0;
 }
 .montage-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 2px 10px;
   border-radius: 999px;
   background: #eef4fa;
@@ -361,4 +364,19 @@
   .map-shell .montage-card.type-info .montage-figure {
     display: none;
   }
+}
+
+.montage-count b {
+  color: #0b3a6e;
+}
+.montage-count b + span {
+  padding-inline-start: 8px;
+  border-inline-start: 1px solid #c9d8e6;
+}
+.montage-controls {
+  flex-wrap: wrap;
+}
+.montage-nav.is-next {
+  white-space: nowrap;
+  margin-inline-start: auto;
 }

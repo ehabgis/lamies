@@ -12,6 +12,67 @@ const pinHtml = (state, label = "") =>
     label ? `<span class="exp-pin-label">${label}</span>` : ""
   }`;
 
+// Satellite map of Egypt shared by the exploration journeys. Falls back to the
+// local governorate outline when the imagery service does not answer.
+export function createSatelliteMap(host, onOffline) {
+  const m = L.map(host, {
+    zoomControl: true,
+    attributionControl: true,
+    minZoom: 4,
+    maxZoom: 14,
+    zoomSnap: 0.25,
+    keyboard: true,
+    maxBounds: [
+      [17, 20],
+      [36, 42],
+    ],
+  });
+  m.zoomControl.setPosition("topleft");
+  m.attributionControl.setPrefix(false);
+  m.fitBounds(EGYPT_BOUNDS, { padding: [12, 12], animate: false });
+  let loaded = 0;
+  let errors = 0;
+  let fell = false;
+  const tiles = L.tileLayer(IMAGERY, {
+    maxZoom: 18,
+    attribution: "Tiles © Esri — Esri, Vantor, Earthstar Geographics",
+    crossOrigin: true,
+  })
+    .on("tileload", () => loaded++)
+    .on("tileerror", () => {
+      errors++;
+      if (!loaded && errors >= 3) fallBack();
+    })
+    .addTo(m);
+  const timer = setTimeout(() => !loaded && fallBack(), 9000);
+  function fallBack() {
+    if (fell) return;
+    fell = true;
+    m.removeLayer(tiles);
+    onOffline?.();
+    fetch("/geodata/egypt-governorates.geojson")
+      .then((r) => r.json())
+      .then((g) =>
+        L.geoJSON(g, {
+          interactive: false,
+          style: { color: "#9b7a4e", weight: 1, fillColor: "#ead8b4", fillOpacity: 1 },
+          attribution: "Natural Earth",
+        }).addTo(m),
+      )
+      .catch(() => {});
+  }
+  const ro = new ResizeObserver(() => m.invalidateSize({ pan: false }));
+  ro.observe(host);
+  return {
+    map: m,
+    dispose: () => {
+      clearTimeout(timer);
+      ro.disconnect();
+      m.remove();
+    },
+  };
+}
+
 // Props:
 //  teach: [{lat,lng,name}] highlighted with names (step «شاهد واكتشف»)
 //  candidates: [{id,lat,lng}] identical pins, no names (step «ابحث على الخريطة»)
@@ -27,61 +88,10 @@ export default function ExpeditionMap({ teach = [], candidates = [], found = {},
   const [offline, setOffline] = useState(false);
 
   useEffect(() => {
-    const m = L.map(host.current, {
-      zoomControl: true,
-      attributionControl: true,
-      minZoom: 4,
-      maxZoom: 14,
-      zoomSnap: 0.25,
-      keyboard: true,
-      maxBounds: [
-        [17, 20],
-        [36, 42],
-      ],
-    });
-    m.zoomControl.setPosition("topleft");
-    m.attributionControl.setPrefix(false);
-    m.fitBounds(EGYPT_BOUNDS, { padding: [12, 12], animate: false });
+    const { map: m, dispose } = createSatelliteMap(host.current, () => setOffline(true));
     map.current = m;
-    let loaded = 0;
-    let errors = 0;
-    const tiles = L.tileLayer(IMAGERY, {
-      maxZoom: 18,
-      attribution: "Tiles © Esri — Esri, Vantor, Earthstar Geographics",
-      crossOrigin: true,
-    })
-      .on("tileload", () => loaded++)
-      .on("tileerror", () => {
-        errors++;
-        if (!loaded && errors >= 3) fallBack();
-      })
-      .addTo(m);
-    const timer = setTimeout(() => !loaded && fallBack(), 9000);
-    let fell = false;
-    function fallBack() {
-      if (fell) return;
-      fell = true;
-      m.removeLayer(tiles);
-      setOffline(true);
-      fetch("/geodata/egypt-governorates.geojson")
-        .then((r) => r.json())
-        .then((g) =>
-          L.geoJSON(g, {
-            interactive: false,
-            style: { color: "#9b7a4e", weight: 1, fillColor: "#ead8b4", fillOpacity: 1 },
-            attribution: "Natural Earth",
-          }).addTo(m),
-        )
-        .catch(() => {});
-    }
     layer.current = L.layerGroup().addTo(m);
-    const ro = new ResizeObserver(() => m.invalidateSize({ pan: false }));
-    ro.observe(host.current);
-    return () => {
-      clearTimeout(timer);
-      ro.disconnect();
-      m.remove();
-    };
+    return dispose;
   }, []);
 
   // Draw pins for the current step.

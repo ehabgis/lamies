@@ -556,9 +556,9 @@ export default function ExpeditionPage({ demo = true }) {
   );
 }
 
-function Frame({ title, children, stars, onSettings, onAwards, lessonPath = "/demo/lesson-1" }) {
+export function Frame({ title, children, stars, onSettings, onAwards, lessonPath = "/demo/lesson-1", extraNav, className = "" }) {
   return (
-    <div className="lamis-platform expedition" dir="rtl">
+    <div className={`lamis-platform expedition ${className}`} dir="rtl">
       <header className="exp-top">
         <Link to="/" className="exp-brand">
           <BrandMark size={38} />
@@ -587,12 +587,15 @@ function Frame({ title, children, stars, onSettings, onAwards, lessonPath = "/de
         <Link to={lessonPath}>
           <BookOpen size={22} aria-hidden="true" /> الدروس
         </Link>
-        <span aria-current="page" className="is-current">
+        {extraNav}
+        <Link to="/demo/trips" className="is-current" aria-current="page">
           <MapTrifold size={22} aria-hidden="true" /> الرحلات
-        </span>
-        <button type="button" onClick={onAwards}>
-          <Trophy size={22} aria-hidden="true" /> الجوائز
-        </button>
+        </Link>
+        {onAwards && (
+          <button type="button" onClick={onAwards}>
+            <Trophy size={22} aria-hidden="true" /> الجوائز
+          </button>
+        )}
       </nav>
     </div>
   );

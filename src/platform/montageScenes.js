@@ -24,7 +24,20 @@ const short = (t = "", max = 200) => {
   return (end > 80 ? cut.slice(0, end + 1) : cut) + (end > 80 ? "" : "…");
 };
 
-export function buildScenes(lessonId, content) {
+export const SECTIONS = {
+  objectives: { title: "أهداف الدرس", next: "concepts", nextLabel: "إلى مفاهيم الدرس" },
+  concepts: { title: "مفاهيم الدرس", next: "intro", nextLabel: "إلى معلومات الدرس" },
+  intro: { title: "معلومات الدرس", next: null },
+};
+
+// Each of the three lesson buttons opens its own card set: objectives,
+// concepts (one per card + a quick check), or the lesson information tour.
+export function buildScenes(lessonId, content, section) {
+  const all = buildAllScenes(lessonId, content);
+  return section ? all.filter((s) => s.section === section) : all;
+}
+
+function buildAllScenes(lessonId, content) {
   if (!content) return [];
   const scenes = [];
   const hook = HOOKS[lessonId] || { title: "هيا نبدأ!", text: short(content.intro) };
@@ -69,7 +82,7 @@ export function buildScenes(lessonId, content) {
   });
   scenes.push({
     type: "end",
-    title: "أحسنت! انتهى العرض",
+    title: "أحسنت! انتهت جولة المعلومات",
     text: "يمكنك الآن استكشاف الخريطة بنفسك، أو الانتقال إلى الأنشطة والأسئلة.",
     section: "intro",
   });

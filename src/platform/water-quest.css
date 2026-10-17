@@ -1,0 +1,792 @@
+/* «رحلة المياه» — same frame as رحلة كنوز مصر; one big stage per step with
+   the guide's card over it (desktop) or under it (phone). */
+.water-quest .exp-main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.wq-head {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+.wq-head > strong {
+  font-size: 17px;
+  color: var(--exp-navy, #0b2f57);
+  white-space: nowrap;
+}
+.wq-steps {
+  margin: 0;
+}
+.wq-stage {
+  position: relative;
+  flex: 1;
+  min-height: 460px;
+  height: calc(100vh - 250px);
+  border-radius: 22px;
+  overflow: hidden;
+  background: #dcecf9;
+  box-shadow: 0 10px 30px rgb(11 47 87 / 0.14);
+}
+.wq-stage-media {
+  position: absolute;
+  inset: 0;
+}
+.wq-stage-media .exp-map,
+.wq-stage-media .exp-map-host {
+  height: 100%;
+  border-radius: 0;
+}
+.wq-scene-media {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.wq-art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.wq-art-note {
+  position: absolute;
+  inset-block-end: 10px;
+  inset-inline-end: 12px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.85);
+  color: #4a6178;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Guide card */
+.wq-talk {
+  position: absolute;
+  inset-inline-start: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 800;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  width: min(470px, 46%);
+  outline: none;
+}
+.wq-talk.has-motion {
+  animation: wq-in 0.35s ease-out;
+}
+@keyframes wq-in {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
+}
+.wq-robot {
+  flex: none;
+  order: -1;
+  width: 104px;
+}
+.wq-robot svg,
+.wq-robot img {
+  width: 100%;
+  height: auto;
+}
+.wq-talk-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100% - 20px);
+  overflow: auto;
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(11 47 87 / 0.2);
+}
+.wq-talk-body h1 {
+  margin: 0;
+  font-size: 26px;
+  color: #0b2f57;
+}
+.wq-talk-body h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 24px;
+  color: #0b2f57;
+}
+.wq-talk-body h2 svg {
+  color: #f5b301;
+}
+.wq-talk-body p {
+  margin: 0;
+}
+.wq-say {
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.7;
+  color: #12345a;
+}
+.wq-feedback:empty {
+  display: none;
+}
+.wq-feedback {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #fff4dc;
+  color: #6b4700;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.wq-talk .exp-primary {
+  align-self: stretch;
+  justify-content: center;
+}
+.wq-talk .exp-hint {
+  align-self: flex-start;
+}
+
+/* Step 2: map gets the wide column; guide card and key sit beside it so
+   nothing covers the water sources. */
+.wq-head .exp-back {
+  position: static;
+}
+.step-2 {
+  display: grid;
+  grid-template-columns: minmax(320px, 380px) 1fr;
+  grid-template-rows: 1fr auto;
+  gap: 0;
+  background: #f4faff;
+}
+.step-2 .wq-stage-media {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+.step-2 .wq-talk {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+  inset: auto;
+  transform: none;
+  width: auto;
+  align-self: end;
+  padding: 16px 16px 8px;
+}
+.step-2 .wq-robot {
+  width: 74px;
+}
+.step-2 .wq-talk-body {
+  box-shadow: 0 6px 18px rgb(11 47 87 / 0.12);
+}
+.wq-legend {
+  grid-column: 1;
+  grid-row: 2;
+  margin: 0 16px 16px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgb(11 47 87 / 0.12);
+}
+.wq-legend h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  color: #0b2f57;
+}
+.wq-legend ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wq-legend li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  color: #1d3550;
+}
+.wq-swatch {
+  flex: none;
+  width: 40px;
+  height: 22px;
+  border-radius: 8px;
+}
+.wq-swatch-river {
+  height: 8px;
+  border-radius: 99px;
+  background: #58b9ff;
+  box-shadow: 0 0 0 3px #d9f1ff;
+}
+.wq-swatch-sea {
+  background: #1f5d99;
+}
+.wq-swatch-groundwater {
+  background:
+    radial-gradient(circle, #b68645 1.5px, transparent 2px) 0 0 / 7px 7px,
+    #f3d9a4;
+}
+.wq-swatch-rain {
+  border-radius: 99px;
+  background: #9fd4ff;
+}
+.wq-keyboard {
+  font-size: 14px;
+  color: #36506b;
+}
+.wq-keyboard summary {
+  cursor: pointer;
+  font-weight: 800;
+  min-height: 32px;
+}
+.wq-keyboard div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.wq-keyboard button {
+  min-height: 40px;
+  padding: 4px 12px;
+  border: 1px solid #c9d8e6;
+  border-radius: 999px;
+  background: #f5f9fd;
+  font: inherit;
+  font-weight: 700;
+}
+
+/* Map pieces */
+.wq-map .is-choosing .leaflet-interactive {
+  cursor: pointer;
+}
+.wq-sea-label span {
+  display: block;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow:
+    0 1px 3px rgb(0 0 0 / 0.6),
+    0 0 10px rgb(0 40 80 / 0.5);
+  white-space: nowrap;
+}
+.wq-point span {
+  box-sizing: border-box;
+}
+.wq-point span {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
+  font-size: 15px;
+  line-height: 1;
+}
+.wq-point-groundwater span {
+  background:
+    radial-gradient(circle, #b68645 1.4px, transparent 1.8px) 0 0 / 6px 6px,
+    #f3d9a4;
+}
+.wq-point-rain span {
+  background: #9fd4ff;
+  color: #fff;
+}
+.wq-point.is-wrong span {
+  border-color: #ffb44d;
+  animation: wq-shake 0.45s ease-in-out 2;
+}
+@keyframes wq-shake {
+  25% {
+    translate: -4px 0;
+  }
+  75% {
+    translate: 4px 0;
+  }
+}
+.wq-focus {
+  animation: wq-breathe 2.2s ease-in-out infinite;
+}
+@keyframes wq-breathe {
+  50% {
+    stroke-opacity: 0.35;
+  }
+}
+.wq-point.is-found span {
+  background: #2fd2ff;
+  box-shadow: 0 0 0 0 rgb(47 210 255 / 0.7);
+  animation: wq-ring 1.6s ease-out 3;
+}
+.wq-pin-name {
+  position: absolute;
+  top: 34px;
+  left: 50%;
+  translate: -50% 0;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgb(11 47 87 / 0.88);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+@keyframes wq-ring {
+  to {
+    box-shadow: 0 0 0 18px rgb(47 210 255 / 0);
+  }
+}
+.wq-sea-found {
+  filter: drop-shadow(0 0 8px rgb(47 210 255 / 0.8));
+}
+.wq-found-label span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 8px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #0b3a6e;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 900;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.3);
+  animation: wq-in 0.4s ease-out;
+}
+.wq-found-label i {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1f8bff;
+  font-style: normal;
+}
+
+/* Start: list of missions */
+.wq-missions {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wq-missions button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 2px solid #d4e3f2;
+  border-radius: 16px;
+  background: #f7fbff;
+  font: inherit;
+  font-size: 17px;
+  color: #12345a;
+  text-align: start;
+  cursor: pointer;
+}
+.wq-missions button:hover:not(:disabled) {
+  border-color: #1f8bff;
+}
+.wq-missions button.is-done {
+  border-color: #9bd8b1;
+  background: #effaf3;
+}
+.wq-missions button.is-locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.wq-missions b {
+  flex: 1;
+}
+.wq-mission-num {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #1f8bff;
+  color: #fff;
+  font-weight: 900;
+}
+.is-done .wq-mission-num {
+  background: #1a8a4c;
+}
+
+/* Step 3 and the completion card: picture and card side by side */
+.step-3,
+.step-complete {
+  display: grid;
+  grid-template-columns: minmax(340px, 440px) 1fr;
+}
+.step-3 .wq-stage-media,
+.step-complete .wq-stage-media {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  place-items: center;
+  background: #f4faff;
+}
+.step-3 .wq-talk,
+.step-complete .wq-talk {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+  inset: auto;
+  transform: none;
+  width: auto;
+  align-self: center;
+  padding: 16px;
+}
+.step-3 .wq-robot,
+.step-complete .wq-robot {
+  width: 80px;
+}
+.wq-use-scene {
+  width: 100%;
+  height: 100%;
+}
+.wq-use-scene svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.wq-complete {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+  align-items: stretch;
+}
+.wq-complete h2 {
+  justify-content: center;
+}
+.wq-complete-star {
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: #fff3c4;
+  color: #f5b301;
+}
+.wq-earned {
+  font-weight: 800;
+  color: #1a8a4c;
+}
+
+/* Use-scene reactions */
+.wq-pipe-flow {
+  opacity: 0;
+}
+.is-correct .wq-pipe-flow {
+  opacity: 1;
+  animation: wq-dash 0.9s linear infinite;
+}
+@keyframes wq-dash {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+.wq-leaf {
+  fill: #8bbf5a;
+  transition: fill 0.8s ease;
+}
+.wq-plants > g {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  transition: scale 0.8s ease 0.6s;
+}
+.is-correct .wq-leaf {
+  fill: #239a3b;
+  transition-delay: 0.8s;
+}
+.is-correct .wq-plants > g {
+  scale: 1.12;
+}
+.wq-use-irrigate.is-wrong .wq-leaf {
+  fill: #b9a04f;
+}
+.wq-drop {
+  opacity: 0;
+}
+.is-correct .wq-drop {
+  animation: wq-drip 1.2s ease-in infinite;
+}
+@keyframes wq-drip {
+  0% {
+    opacity: 1;
+    translate: 0 0;
+  }
+  100% {
+    opacity: 0;
+    translate: 0 26px;
+  }
+}
+.wq-flood {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity 0.6s ease;
+}
+.wq-use-drip.is-wrong .wq-flood {
+  opacity: 0.55;
+}
+.wq-glass-fill {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  scale: 1 0;
+  transition: scale 1.4s ease 0.6s;
+}
+.is-correct .wq-glass-fill {
+  scale: 1 1;
+}
+.wq-flow {
+  animation: wq-dash 1.4s linear infinite;
+}
+.wq-waves {
+  animation: wq-wave 4s ease-in-out infinite alternate;
+}
+@keyframes wq-wave {
+  to {
+    translate: -20px 0;
+  }
+}
+
+/* Book map dialog */
+.wq-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(6 22 44 / 0.55);
+}
+.wq-dialog-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(760px, 100%);
+  max-height: 92vh;
+  padding: 14px;
+  border-radius: 20px;
+  background: #fff;
+}
+.wq-dialog-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.wq-dialog-card h2 {
+  margin: 0;
+  font-size: 19px;
+}
+.wq-dialog-card header button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #eef4fa;
+}
+.wq-dialog-card img {
+  min-height: 0;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* Phones: stage on top, guide card under it so the map stays visible */
+@media (max-width: 900px) {
+  .wq-head {
+    grid-template-columns: auto 1fr;
+    gap: 8px;
+    padding: 8px 12px 0;
+  }
+  .wq-head > strong {
+    font-size: 15px;
+  }
+  .wq-steps {
+    grid-column: 1 / -1;
+  }
+  .wq-stage,
+  .step-2,
+  .step-3,
+  .step-complete {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 0;
+    margin: 0 8px;
+    border-radius: 18px;
+    overflow: visible;
+    background: transparent;
+    box-shadow: none;
+  }
+  .wq-stage-media,
+  .step-3 .wq-stage-media,
+  .step-complete .wq-stage-media {
+    position: relative;
+    height: 34vh;
+    min-height: 220px;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .step-2 .wq-stage-media {
+    height: 44vh;
+    min-height: 300px;
+  }
+  .wq-steps li {
+    min-height: 0;
+    padding: 6px 4px;
+    font-size: 12.5px;
+    line-height: 1.3;
+  }
+  .wq-steps .exp-step-num {
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+  }
+  .water-quest .exp-bottom a,
+  .water-quest .exp-bottom button {
+    font-size: 11px;
+    line-height: 1.2;
+    text-align: center;
+  }
+  .wq-talk,
+  .step-2 .wq-talk,
+  .step-3 .wq-talk,
+  .step-complete .wq-talk {
+    position: relative;
+    inset: auto;
+    transform: none;
+    width: auto;
+    margin-top: -18px;
+    padding: 0;
+  }
+  .wq-robot,
+  .step-2 .wq-robot,
+  .step-3 .wq-robot,
+  .step-complete .wq-robot {
+    width: 58px;
+  }
+  .wq-talk-body {
+    padding: 14px;
+    max-height: none;
+  }
+  .wq-say {
+    font-size: 17px;
+  }
+  .wq-legend {
+    margin: 8px 0 0;
+    padding: 8px 12px;
+  }
+  .wq-legend h2 {
+    display: none;
+  }
+  .wq-legend ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: 13px;
+  }
+  .wq-swatch {
+    width: 22px;
+    height: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wq-talk.has-motion,
+  .wq-found-label span,
+  .wq-flow,
+  .wq-waves,
+  .wq-focus,
+  .wq-point.is-found span,
+  .is-correct .wq-pipe-flow,
+  .is-correct .wq-drop {
+    animation: none;
+  }
+  .is-correct .wq-drop {
+    opacity: 1;
+  }
+  .wq-leaf,
+  .wq-plants > g,
+  .wq-glass-fill,
+  .wq-flood {
+    transition: none;
+  }
+}
+
+/* Trips page */
+.trips {
+  flex: 1;
+  padding: 8px 4px;
+}
+.trips h1 {
+  margin: 0 0 14px;
+  font-size: 26px;
+  color: #0b2f57;
+}
+.trips ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.trip-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+  padding: 12px;
+  border: 2px solid #d4e3f2;
+  border-radius: 20px;
+  background: #fff;
+  color: #12345a;
+  text-decoration: none;
+}
+a.trip-card:hover {
+  border-color: #1f8bff;
+}
+.trip-card img {
+  width: 100%;
+  height: 150px;
+  margin-bottom: 6px;
+  border-radius: 14px;
+  object-fit: cover;
+  background: #eef4fa;
+}
+.trip-card small {
+  color: #4a6178;
+  font-weight: 700;
+}
+.trip-card b {
+  font-size: 20px;
+}
+.trip-card em {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 8px;
+  font-style: normal;
+  font-weight: 900;
+  color: #0a6fd6;
+}
+.trip-card.is-soon {
+  opacity: 0.65;
+}

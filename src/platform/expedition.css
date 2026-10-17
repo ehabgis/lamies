@@ -807,7 +807,8 @@
 /* Bottom bar */
 .exp-bottom {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   gap: 6px;
   margin: 0 16px 12px;
   padding: 8px 12px;
@@ -976,4 +977,13 @@
     margin: 0;
     padding: 8px;
   }
+}
+
+/* Journey maps use fractional zoom. Leaflet blends tile edges with
+   plus-lighter, which leaves bright seams when tiles are scaled; normal
+   blending plus half a pixel of overlap gives a seamless picture. */
+.exp-map img.leaflet-tile {
+  mix-blend-mode: normal;
+  width: 256.5px !important;
+  height: 256.5px !important;
 }

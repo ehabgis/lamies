@@ -1,4 +1,5 @@
 import { expeditionPublic, checkExpedition } from "./expedition.mjs";
+import { waterQuestPublic, checkWaterQuest } from "./waterQuest.mjs";
 import { DEMO_IDS, demoLesson, demoAnswer, demoCatalog, gradedHint } from "./demo.mjs";
 import http from "node:http";
 import {
@@ -420,14 +421,17 @@ export function createApp({
       );
       if (expMatch) {
         if (method === "GET" && !expMatch[2]) {
-          const expedition = expeditionPublic(expMatch[1]);
+          const expedition = expeditionPublic(expMatch[1]) || waterQuestPublic(expMatch[1]);
           if (!expedition) fail(404, "لا توجد رحلة استكشاف لهذا الدرس");
           return send({ expedition });
         }
         if (method === "POST" && expMatch[2]) {
           rate(`exp:${req.socket.remoteAddress}`, 120);
           const b = await body(req);
-          const result = checkExpedition(expMatch[1], b);
+          const result =
+            expMatch[1] === "lesson-2"
+              ? checkWaterQuest(expMatch[1], b)
+              : checkExpedition(expMatch[1], b);
           if (!result) fail(400, "الخطوة غير موجودة");
           return send(result);
         }

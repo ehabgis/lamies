@@ -23,7 +23,9 @@ import {
   Lightbulb,
   Info,
   Cube,
+  MapPin,
 } from "phosphor-react";
+import * as narrator from "./narrator";
 import Shell, { PlatformNavigation } from "./Shell";
 import { useSession } from "./Session";
 import { api } from "./api";
@@ -47,9 +49,10 @@ import RobotGuide from "../components/Map/RobotGuide";
 import BrandMark from "./BrandMark";
 import ExplorerChip from "./ExplorerChip";
 import LessonMontage from "./LessonMontage";
-import { buildScenes, firstSceneOf } from "./montageScenes";
+import { buildScenes, SECTIONS } from "./montageScenes";
 import { loadGuest } from "./guestProfile";
 import "./montage.css";
+import "./site-card.css";
 import { play, resourceSound } from "./sfx";
 const kindNames = {
   mineral: "خام معدني",
@@ -403,148 +406,154 @@ export default function LessonPage({ demo = false }) {
         : "مرحبًا يا مستكشف مصر الصغير! اختر موردًا من مفتاح الخريطة لنكتشف أماكن وجوده.";
   const resourceDetails = resource &&
     (location || !resource.locations?.length) && (
-      <section className="classroom-resource">
-        <h2>
+      <section className="classroom-resource site-card" aria-labelledby="site-card-title">
+        <header className="site-card-head">
           <ResourcePin resource={resource} />
-          {resource.label}
-        </h2>
-        {location && (
-          <p className="selected-location">الموقع المختار: {location.name}</p>
-        )}
-        {resource.locationNote && (
-          <p className="resource-photo-note">{resource.locationNote}</p>
-        )}
-        <Photo
-          key={localPhotos[resource.id] || resource.media?.image || resource.id}
-          src={localPhotos[resource.id] || resource.media?.image}
-          label={`صورة ${resource.label}`}
-        />
-        {!localPhotos[resource.id] && resource.media?.imageCredit && (
-          <small className="resource-photo-note">{resource.media.imageCredit}</small>
-        )}
-        <label className="resource-photo-attach">
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/gif"
-            aria-describedby="resource-photo-attach-help"
-            onChange={(e) => {
-              attachPhoto(e.target.files[0]);
-              e.target.value = "";
-            }}
-          />
-          <span className="resource-photo-attach-button">
-            <ImageSquare size={20} aria-hidden="true" />
-            {localPhotos[resource.id] ? "استبدل صورة المعاينة" : "إرفاق صورة للمعاينة"}
-          </span>
-        </label>
-        {!localPhotos[resource.id] && (
-          <small id="resource-photo-attach-help" className="resource-photo-note">
-            معاينة مؤقتة على هذا الجهاز فقط؛ لا تُرفع إلى الخادم.
-          </small>
-        )}
-        {localPhotos[resource.id] && (
-          <small id="resource-photo-attach-help" className="resource-photo-note">
-            معاينة مؤقتة على هذا الجهاز. لحفظ الصورة للمستخدمين، ارفعها من محرر
-            المورد بالإدارة.
-          </small>
-        )}
-        <dl className="site-facts">
           <div>
-            <dt>النوع</dt>
-            <dd>{kindName(resource)}</dd>
+            <h2 id="site-card-title">{resource.label}</h2>
+            <span className="site-card-kind">{kindName(resource)}</span>
           </div>
-          {location && (
-            <div>
-              <dt>الإحداثيات</dt>
-              <dd>
-                {Number(location.lat).toFixed(2)}° ش ·{" "}
-                {Number(location.lng).toFixed(2)}° ق
-                <small>تعليمية تقريبية</small>
-              </dd>
-            </div>
+        </header>
+        {location && (
+          <p className="site-card-place">
+            <MapPin size={20} weight="fill" aria-hidden="true" />
+            <span>
+              <small>الموقع المختار</small>
+              <b>{location.name}</b>
+            </span>
+          </p>
+        )}
+        <figure className="site-card-photo">
+          <Photo
+            key={localPhotos[resource.id] || resource.media?.image || resource.id}
+            src={localPhotos[resource.id] || resource.media?.image}
+            label={`صورة ${resource.label}`}
+          />
+          {!localPhotos[resource.id] && resource.media?.imageCredit && (
+            <figcaption>{resource.media.imageCredit}</figcaption>
           )}
-        </dl>
-        <h3>أماكن وجوده</h3>
-        <p>{resource.description}</p>
-        <h3>أهميته</h3>
-        <p>{resource.importance}</p>
-        {location && has3D(resource) && (
-          <button
-            className="p-secondary resource-3d-button"
-            onClick={() => setView3d({ ...location, resource })}
-          >
-            <Cube size={20} weight="duotone" />
-            عرض ثلاثي الأبعاد
-          </button>
+        </figure>
+        <div className="site-card-facts">
+          <section>
+            <h3>
+              <MapPin size={18} aria-hidden="true" /> أين يوجد؟
+            </h3>
+            <p>{resource.description}</p>
+          </section>
+          {resource.importance && (
+            <section>
+              <h3>
+                <Star size={18} aria-hidden="true" /> لماذا هو مهم؟
+              </h3>
+              <p>{resource.importance}</p>
+            </section>
+          )}
+        </div>
+        {resource.locationNote && (
+          <p className="site-card-note">
+            <Info size={18} aria-hidden="true" /> {resource.locationNote}
+          </p>
         )}
-        <button
-          className="p-button resource-video-button"
-          onClick={() => setVideoOpen(true)}
-        >
-          <VideoCamera size={20} />
-          افتح الفيديو على الخريطة
-        </button>
-        {resource.legacyDetails && (
-          <details className="site-lesson-summary">
-            <summary>معلومات من النسخة القديمة</summary>
-            <p className="legacy-content-notice">
-              بيانات منقولة تحتاج مراجعة المعلم
-            </p>
-            {resource.legacyDetails.governorate && (
-              <p>المحافظة: {resource.legacyDetails.governorate}</p>
-            )}
-            {Object.values(resource.legacyDetails.description || {}).map(
-              (text, i) => (
-                <p key={i}>{text}</p>
-              ),
-            )}
-            {Object.values(resource.legacyDetails.dialog || {}).map(
-              (text, i) => (
-                <p key={i}>{text}</p>
-              ),
-            )}
-          </details>
-        )}
-        <details className="site-lesson-summary">
-          <summary>ملخص الدرس</summary>
-          <p>{content.summary || content.intro}</p>
-        </details>
-        <div className="p-actions">
+        <div className="site-card-actions">
           <button
             className="p-secondary"
             onClick={() =>
-              ai("explain", `اشرح لي ببساطة معلومة عن ${resource.label}`)
-            }
-          >
-            اشرح لي ببساطة
-          </button>
-          <button
-            className="p-secondary"
-            onClick={() =>
-              ai(
-                "question",
-                `اختر سؤالًا إضافيًا من بنك الدرس عن ${resource.label}`,
+              narrator.speak(
+                [resource.label, location?.name, resource.description, resource.importance]
+                  .filter(Boolean)
+                  .join(". "),
               )
             }
           >
-            سؤال إضافي
+            <SpeakerHigh size={20} aria-hidden="true" /> استمع
           </button>
+          <button className="p-secondary" onClick={() => setVideoOpen(true)}>
+            <VideoCamera size={20} aria-hidden="true" /> الفيديو
+          </button>
+          {location && has3D(resource) && (
+            <button className="p-secondary" onClick={() => setView3d({ ...location, resource })}>
+              <Cube size={20} weight="duotone" aria-hidden="true" /> ثلاثي الأبعاد
+            </button>
+          )}
           <button
             className="p-secondary"
-            onClick={() => {
-              setIndex(0);
-              openLearning("questions");
-            }}
+            onClick={() => ai("explain", `اشرح لي ببساطة معلومة عن ${resource.label}`)}
           >
-            اختبر معلوماتك
+            <ChatCircle size={20} aria-hidden="true" /> اشرح لي ببساطة
           </button>
         </div>
+        <button
+          className="p-button site-card-quiz"
+          onClick={() => {
+            setIndex(0);
+            openLearning("questions");
+          }}
+        >
+          اختبر معلوماتك
+        </button>
+        <details className="site-card-more">
+          <summary>تفاصيل إضافية للمعلم</summary>
+          {location && (
+            <p>
+              الإحداثيات التعليمية التقريبية: {Number(location.lat).toFixed(2)}° ش ·{" "}
+              {Number(location.lng).toFixed(2)}° ق
+            </p>
+          )}
+          <label className="resource-photo-attach">
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              aria-describedby="resource-photo-attach-help"
+              onChange={(e) => {
+                attachPhoto(e.target.files[0]);
+                e.target.value = "";
+              }}
+            />
+            <span className="resource-photo-attach-button">
+              <ImageSquare size={20} aria-hidden="true" />
+              {localPhotos[resource.id] ? "استبدل صورة المعاينة" : "إرفاق صورة للمعاينة"}
+            </span>
+          </label>
+          <small id="resource-photo-attach-help" className="resource-photo-note">
+            معاينة مؤقتة على هذا الجهاز فقط؛ لحفظ الصورة للجميع ارفعها من محرر المورد بالإدارة.
+          </small>
+          {resource.legacyDetails && (
+            <>
+              <p className="legacy-content-notice">بيانات منقولة من النسخة القديمة تحتاج مراجعة المعلم</p>
+              {resource.legacyDetails.governorate && <p>المحافظة: {resource.legacyDetails.governorate}</p>}
+              {Object.values(resource.legacyDetails.description || {}).map((text, i) => (
+                <p key={`d${i}`}>{text}</p>
+              ))}
+              {Object.values(resource.legacyDetails.dialog || {}).map((text, i) => (
+                <p key={`g${i}`}>{text}</p>
+              ))}
+            </>
+          )}
+          <p>
+            <b>ملخص الدرس: </b>
+            {content.summary || content.intro}
+          </p>
+          <button
+            className="p-secondary"
+            onClick={() => ai("question", `اختر سؤالًا إضافيًا من بنك الدرس عن ${resource.label}`)}
+          >
+            سؤال إضافي من المعلم الذكي
+          </button>
+        </details>
         <button className="p-text-link" onClick={showAll}>
           العودة إلى جميع الموارد
         </button>
       </section>
     );
-  const scenes = buildScenes(id, content);
+  const scenes = montage ? buildScenes(id, content, montage.section) : [];
+  const openSection = (key) => {
+    setPanel(null);
+    setInfoOpen(false);
+    setLegendOpen(false);
+    setModal(null);
+    play("open");
+    setMontage({ section: key, start: 0 });
+  };
   const currentLessonIndex = Math.max(
     0,
     lessonOptions.findIndex((n) => n && (n.id === id || n.demoLessonId === id)),
@@ -634,17 +643,10 @@ export default function LessonPage({ demo = false }) {
               key={key}
               id={`lesson-info-${key}`}
               aria-expanded={montage?.section === key || panel === key}
-              onClick={() => {
-                // Opens the scene-by-scene explanation over the map at this section.
-                setPanel(null);
-                setInfoOpen(false);
-                setLegendOpen(false);
-                setModal(null);
-                play("open");
-                setMontage((m) =>
-                  m?.section === key ? null : { section: key, start: firstSceneOf(scenes, key) },
-                );
-              }}
+              onClick={() =>
+                // Each button opens its own card over the map; pressing it again closes it.
+                montage?.section === key ? setMontage(null) : openSection(key)
+              }
             >
               <span className={`info-tab-icon tone-${tone}`} aria-hidden="true">
                 <Icon weight="duotone" />
@@ -910,9 +912,18 @@ export default function LessonPage({ demo = false }) {
           />
           {montage && (
             <LessonMontage
+              key={montage.section}
               lessonId={id}
               demo={demo || preview}
               scenes={scenes}
+              section={montage.section}
+              sectionTitle={SECTIONS[montage.section].title}
+              nextSection={
+                SECTIONS[montage.section].next && {
+                  label: SECTIONS[montage.section].nextLabel,
+                  go: () => openSection(SECTIONS[montage.section].next),
+                }
+              }
               startAt={montage.start}
               onSpotlight={setSpotlight}
               onClose={() => setMontage(null)}
@@ -958,7 +969,7 @@ export default function LessonPage({ demo = false }) {
           >
             <X size={20} weight="bold" aria-hidden="true" />
           </button>
-          <span className="studio-status">
+          <span className={`studio-status ${location ? "is-quiet" : ""}`}>
             {demo
               ? "تجربة · دون نقاط رسمية"
               : preview
@@ -1117,9 +1128,10 @@ export default function LessonPage({ demo = false }) {
                 {modal === "activities" && pickActivity ? (
                   <ActivityPicker
                     expedition={
-                      id === "lesson-1"
-                        ? { href: "/demo/lesson-1/expedition", title: "رحلة كنوز مصر" }
-                        : null
+                      {
+                        "lesson-1": { href: "/demo/lesson-1/expedition", title: "رحلة كنوز مصر", text: "اكتشف المعادن ومصادر الطاقة خطوة بخطوة على الخريطة" },
+                        "lesson-2": { href: "/demo/lesson-2/expedition", title: "رحلة المياه", text: "ساعد المزرعة والواحة والمدينة الساحلية في العثور على المياه" },
+                      }[id] || null
                     }
                     activities={filtered}
                     solved={solved}

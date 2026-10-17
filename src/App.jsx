@@ -15,7 +15,8 @@ import Shell from "./platform/Shell";
 const EntryPage = lazy(() => import("./platform/EntryPage"));
 const JourneyPage = lazy(() => import("./platform/JourneyPage"));
 const ClassroomPage = lazy(() => import("./platform/LessonPage"));
-const ExpeditionPage = lazy(() => import("./platform/ExpeditionPage"));
+const TripRoute = lazy(() => import("./platform/TripRoute"));
+const TripsPage = lazy(() => import("./platform/TripsPage"));
 const StudentProgress = lazy(() => import("./platform/ProgressPage"));
 const AdminPage = lazy(() => import("./platform/AdminPage"));
 function AdminRoute() {
@@ -120,7 +121,8 @@ function AppContent() {
             <Route path="/explore" element={<JourneyPage demo />} />
             <Route path="/legacy" element={<WelcomeScreen />} />
             <Route path="/demo/:id" element={<ClassroomPage demo />} />
-            <Route path="/demo/:id/expedition" element={<ExpeditionPage />} />
+            <Route path="/demo/:id/expedition" element={<TripRoute />} />
+            <Route path="/demo/trips" element={<TripsPage />} />
             <Route element={<AccountGuard />}>
               <Route path="/journey" element={<JourneyPage />} />
               <Route path="/my-progress" element={<StudentProgress />} />

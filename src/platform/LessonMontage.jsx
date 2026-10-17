@@ -18,13 +18,24 @@ import { play } from "./sfx";
 import ResourcePin from "../components/Map/ResourcePin";
 import RobotGuide from "../components/Map/RobotGuide";
 
-const KEY = (id) => `lamis.montage.${id}.v1`;
+const KEY = (id, section) => `lamis.montage.${id}.${section || "all"}.v1`;
 const spokenText = (s) =>
   [s.title, s.items ? s.items.join("، ") : s.text].filter(Boolean).join(". ");
 
 // One floating card at a time over the map, scene by scene, with the robot's
 // voice. The child controls the pace; text stays visible when sound is off.
-export default function LessonMontage({ lessonId, scenes, startAt = 0, demo, onClose, onSpotlight, onReadAll }) {
+export default function LessonMontage({
+  lessonId,
+  scenes,
+  section,
+  sectionTitle,
+  nextSection,
+  startAt = 0,
+  demo,
+  onClose,
+  onSpotlight,
+  onReadAll,
+}) {
   const [index, setIndex] = useState(startAt);
   const [narr, setNarr] = useState(narrator.getSettings());
   const [check, setCheck] = useState({});
@@ -40,7 +51,7 @@ export default function LessonMontage({ lessonId, scenes, startAt = 0, demo, onC
     setCheck({});
     cardRef.current?.focus({ preventScroll: true });
     try {
-      localStorage.setItem(KEY(lessonId), String(index));
+      localStorage.setItem(KEY(lessonId, section), String(index));
     } catch {}
     // Keyed on the scene number only: the parent re-renders when the map moves,
     // and that must not restart the voice.
@@ -67,7 +78,8 @@ export default function LessonMontage({ lessonId, scenes, startAt = 0, demo, onC
     if (index < scenes.length - 1) {
       play("tap");
       setIndex(index + 1);
-    } else onClose();
+    } else if (nextSection) nextSection.go();
+    else onClose();
   };
   const prev = () => index > 0 && setIndex(index - 1);
 
@@ -107,7 +119,12 @@ export default function LessonMontage({ lessonId, scenes, startAt = 0, demo, onC
     >
       <header className="montage-head">
         <span className="montage-count">
-          <bdi>{index + 1}</bdi> من <bdi>{scenes.length}</bdi>
+          {sectionTitle && <b>{sectionTitle}</b>}
+          {scenes.length > 1 && (
+            <span>
+              <bdi>{index + 1}</bdi> من <bdi>{scenes.length}</bdi>
+            </span>
+          )}
         </span>
         <button className="montage-x" aria-label="إغلاق الشرح" onClick={onClose}>
           <X size={20} weight="bold" />
@@ -173,6 +190,7 @@ export default function LessonMontage({ lessonId, scenes, startAt = 0, demo, onC
           </figure>
         )}
       </div>
+      {scenes.length > 1 && (
       <nav className="montage-dots" aria-label="المشاهد">
         {scenes.map((s, i) => (
           <button
@@ -185,6 +203,7 @@ export default function LessonMontage({ lessonId, scenes, startAt = 0, demo, onC
           />
         ))}
       </nav>
+      )}
       <footer className="montage-controls">
         <button type="button" className="montage-nav" disabled={!index} onClick={prev} aria-label="المشهد السابق">
           <ArrowRight size={20} weight="bold" /> السابق
@@ -216,7 +235,8 @@ export default function LessonMontage({ lessonId, scenes, startAt = 0, demo, onC
           </button>
         </div>
         <button type="button" className="montage-nav is-next" onClick={next}>
-          {index < scenes.length - 1 ? "التالي" : "إنهاء"} <ArrowLeft size={20} weight="bold" />
+          {index < scenes.length - 1 ? "التالي" : nextSection ? nextSection.label : "إنهاء"}{" "}
+          <ArrowLeft size={20} weight="bold" />
         </button>
       </footer>
     </section>
@@ -229,9 +249,9 @@ function cardSide(scene) {
   return scene.spotlight.lng > 30.8 ? "left" : "right";
 }
 
-export function savedScene(lessonId) {
+export function savedScene(lessonId, section) {
   try {
-    return Number(localStorage.getItem(KEY(lessonId)) || 0);
+    return Number(localStorage.getItem(KEY(lessonId, section)) || 0);
   } catch {
     return 0;
   }

@@ -4,7 +4,7 @@ Removes a solid black (or near-black) background by flood-filling from the
 image edges, so dark pixels inside the artwork (hair, robot visor) stay intact,
 then trims the empty margin and saves a transparent WebP.
 
-Usage: python3 -I scripts/prepare_hero.py SOURCE_IMAGE [--threshold 28]
+Usage: python3 -I scripts/prepare_hero.py SOURCE_IMAGE [--threshold 28] [--out public/welcome/x.webp]
 """
 import sys
 from collections import deque
@@ -20,6 +20,7 @@ OUT = ROOT / "public/welcome/hero.webp"
 def main():
     source = Path(sys.argv[1])
     threshold = int(sys.argv[sys.argv.index("--threshold") + 1]) if "--threshold" in sys.argv else 28
+    out = ROOT / sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else OUT
     image = Image.open(source).convert("RGBA")
     rgb = np.asarray(image)[:, :, :3].astype(int)
     dark = rgb.max(axis=2) <= threshold
@@ -50,9 +51,9 @@ def main():
     if box:
         image = image.crop(box)
     image.thumbnail((1400, 1400))
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    image.save(OUT, "WEBP", quality=88, method=6)
-    print(f"wrote {OUT.relative_to(ROOT)} {image.size}")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    image.save(out, "WEBP", quality=88, method=6)
+    print(f"wrote {out.relative_to(ROOT)} {image.size}")
 
 
 if __name__ == "__main__":

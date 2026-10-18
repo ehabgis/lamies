@@ -31,16 +31,18 @@ const META = {
 };
 const FALLBACK = { title: "نشاط", hint: "أجب ثم اضغط تحقق", Icon: PencilSimple, tone: "blue" };
 
-// The question itself tells two activities of the same type apart.
-const brief = (t = "") => {
-  const s = String(t).replace(/^أكمل:\s*/, "").trim();
-  return s.length > 48 ? s.slice(0, 46).trimEnd() + "…" : s;
-};
-
 export const activityMeta = (q) => META[q?.kind] || META[q?.type] || FALLBACK;
 
 export default function ActivityPicker({ activities, solved, hasBuildMap, onPick, onBuildMap, expedition, buildMapHref }) {
   const done = activities.filter((q) => solved.includes(q.id)).length;
+  // Same-type activities share one card (e.g. four «أكمل الفراغ» become one).
+  const groups = [];
+  for (const q of activities) {
+    const meta = activityMeta(q);
+    const g = groups.find((x) => x.meta.title === meta.title);
+    if (g) g.items.push(q);
+    else groups.push({ meta, items: [q] });
+  }
   return (
     <section className="activity-picker" aria-labelledby="activity-picker-title">
       <header>
@@ -87,23 +89,34 @@ export default function ActivityPicker({ activities, solved, hasBuildMap, onPick
             </button>
           </li>
         )}
-        {activities.map((q, i) => {
-          const meta = activityMeta(q);
-          const isDone = solved.includes(q.id);
+        {groups.map(({ meta, items }) => {
+          const done = items.filter((q) => solved.includes(q.id)).length;
+          const isDone = done === items.length;
           return (
-            <li key={q.id}>
+            <li key={meta.title}>
               <button
                 type="button"
                 className={`activity-card tone-${meta.tone} ${isDone ? "is-done" : ""}`}
-                onClick={() => onPick(i)}
-                aria-label={`${meta.title}${isDone ? " — أنجزته" : ""}`}
+                onClick={() => onPick(meta.title)}
+                aria-label={`${meta.title}: ${items.length === 1 ? "نشاط واحد" : items.length === 2 ? "نشاطان" : `${items.length} أنشطة`}${isDone ? " — أنجزتها" : ""}`}
               >
                 <span className="activity-card-icon" aria-hidden="true">
                   <meta.Icon weight="duotone" />
                 </span>
                 <span className="activity-card-text">
                   <strong>{meta.title}</strong>
-                  <small>{brief(q.prompt) || meta.hint}</small>
+                  <small>{meta.hint}</small>
+                  <small className="activity-card-count">
+                    {items.length > 1 ? (
+                      <>
+                        {items.length === 2 ? "نشاطان" : <><bdi>{items.length}</bdi> أنشطة</>} · أنجزت <bdi>{done}</bdi>
+                      </>
+                    ) : done ? (
+                      "أنجزته"
+                    ) : (
+                      "نشاط واحد"
+                    )}
+                  </small>
                 </span>
                 {isDone && (
                   <span className="activity-card-done" aria-hidden="true">

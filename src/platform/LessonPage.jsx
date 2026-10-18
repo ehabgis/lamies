@@ -192,6 +192,7 @@ export default function LessonPage({ demo = false }) {
     [location, setLocation] = useState(null),
     [mode, setMode] = useState("interactive"),
     [pickActivity, setPickActivity] = useState(true),
+    [activityGroup, setActivityGroup] = useState(null),
     [view3d, setView3d] = useState(null),
     [montage, setMontage] = useState(null),
     [spotlight, setSpotlight] = useState(null),
@@ -337,7 +338,7 @@ export default function LessonPage({ demo = false }) {
   );
   const discovery = mode === "discover";
   const showSite = (l) => !discovery || full || l.resource.id === resource?.id;
-  const filtered = questions.filter((q) =>
+  const listed = questions.filter((q) =>
     modal === "build-map"
       ? q.type === "map"
       : modal === "activities"
@@ -345,6 +346,11 @@ export default function LessonPage({ demo = false }) {
           (!["choice", "boolean"].includes(q.type) || q.kind) && !(demo && q.type === "map")
         : ["choice", "boolean"].includes(q.type) && !q.kind,
   );
+  // One card per activity type in the picker; opening it walks through that type only.
+  const filtered =
+    modal === "activities" && !pickActivity && activityGroup
+      ? listed.filter((q) => activityMeta(q).title === activityGroup)
+      : listed;
   const current = filtered[index];
   const answered = (id) => setSolved((s) => (s.includes(id) ? s : [...s, id]));
   function pick(r) {
@@ -1198,8 +1204,9 @@ export default function LessonPage({ demo = false }) {
                       setPickActivity(false);
                       openLearning("build-map");
                     }}
-                    onPick={(i) => {
-                      setIndex(i);
+                    onPick={(group) => {
+                      setActivityGroup(group);
+                      setIndex(0);
                       setPickActivity(false);
                     }}
                   />

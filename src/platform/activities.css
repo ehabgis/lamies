@@ -628,3 +628,8 @@
 .activity-expedition strong {
   font-size: 19px !important;
 }
+.activity-card-text .activity-card-count {
+  margin-top: 2px;
+  color: #0b5cad;
+  font-weight: 800;
+}

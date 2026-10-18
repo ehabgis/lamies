@@ -148,8 +148,29 @@ export default function EntryPage() {
               </Link>
             </div>
           ) : (
-            <details className="entry-account" open={accountOpen} onToggle={(e) => setAccountOpen(e.currentTarget.open)}>
-              <summary>لديّ حساب أو أريد حسابًا لحفظ نتائجي</summary>
+            <>
+            <button type="button" className="entry-account-open" onClick={() => setAccountOpen(true)}>
+              <User size={20} aria-hidden="true" /> لديّ حساب أو أريد حسابًا لحفظ نتائجي
+            </button>
+            {/* Its own window over the page, so it is visible on any screen height. */}
+            {accountOpen && (
+            <div
+              className="entry-account-backdrop"
+              onMouseDown={(e) => e.target === e.currentTarget && setAccountOpen(false)}
+            >
+            <div
+              className="entry-account"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="entry-account-title"
+              onKeyDown={(e) => e.key === "Escape" && setAccountOpen(false)}
+            >
+              <header className="entry-account-head">
+                <h2 id="entry-account-title">{mode === "login" ? "تسجيل الدخول" : "حساب مستكشف جديد"}</h2>
+                <button type="button" className="entry-account-close" aria-label="إغلاق" onClick={() => setAccountOpen(false)}>
+                  ×
+                </button>
+              </header>
               <div className="p-tabs" role="group" aria-label="نوع الدخول">
                 <button
                   aria-pressed={mode === "login"}
@@ -190,6 +211,7 @@ export default function EntryPage() {
                   </span>
                   <input
                     name="username"
+                    autoFocus
                     autoComplete="username"
                     required
                     minLength={3}
@@ -233,7 +255,10 @@ export default function EntryPage() {
               <p className="entry-privacy">
                 الحساب يحفظ التقدم والنتائج على الخادم. لا نطلب بريدًا أو هاتفًا.
               </p>
-            </details>
+            </div>
+            </div>
+            )}
+            </>
           )}
           <Link to="/legacy" className="p-text-link">
             فتح النسخة السابقة

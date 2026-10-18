@@ -12,7 +12,8 @@
     "test": "node --test tests/server/*.test.mjs",
     "check": "node --check server/index.mjs && node --check server/db.mjs",
     "start": "node --env-file-if-exists=.env server/index.mjs",
-    "dev:client": "vite"
+    "dev:client": "vite",
+    "media": "node scripts/check-media.mjs"
   },
   "dependencies": {
     "@fontsource/cairo": "^5.3.0",

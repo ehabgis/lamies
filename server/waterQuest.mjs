@@ -6,6 +6,8 @@
 // The public view never includes the answer, the per-target feedback or the
 // hints; checkWaterQuest grades on the server.
 
+import { mediaIndex, findMedia, IMAGE_EXT, VIDEO_EXT } from "./mediaFiles.mjs";
+
 const APPROX = "موضع تقريبي للمكان المذكور في الكتاب، يحتاج مراجعة المعلم.";
 
 // Things the child can press on the map. Lines and areas come from the local
@@ -168,6 +170,19 @@ const MISSIONS = [
 
 const BADGE = "بطل المياه";
 
+// The page only asks for photos and videos that are really in
+// public/lesson-media/water/ (named farm, oasis, coast), so a missing file
+// shows the drawing straight away instead of a failed download.
+function sceneMedia(scene) {
+  const index = mediaIndex("water");
+  const base = scene.art;
+  return {
+    ...scene,
+    image: findMedia("water", index, base, IMAGE_EXT),
+    video: findMedia("water", index, base, VIDEO_EXT),
+  };
+}
+
 export function waterQuestPublic(lessonId) {
   if (lessonId !== "lesson-2") return null;
   return {
@@ -187,7 +202,7 @@ export function waterQuestPublic(lessonId) {
     missions: MISSIONS.map((m) => ({
       id: m.id,
       title: m.title,
-      scene: { ...m.scene },
+      scene: sceneMedia(m.scene),
       findPrompt: m.findPrompt,
       use: { art: m.use.art, prompt: m.use.prompt, options: [...m.use.options] },
     })),

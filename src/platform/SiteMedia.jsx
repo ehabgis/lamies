@@ -4,12 +4,13 @@ import { ImageSquare, VideoCamera } from "phosphor-react";
 // Photos (with thumbnails) and a short video for the chosen place. Sound
 // never starts by itself: the video waits for the child to press play.
 export default function SiteMedia({ images, video, label }) {
-  const [tab, setTab] = useState(images.length ? "photos" : "video");
+  // A video added for this place is the first thing the child sees.
+  const [tab, setTab] = useState(video ? "video" : "photos");
   const [current, setCurrent] = useState(0);
   const [broken, setBroken] = useState({});
   const [videoFailed, setVideoFailed] = useState(false);
   const shown = images.filter((img) => !broken[img.src]);
-  const hasVideo = !!video && !videoFailed;
+  const hasVideo = !!video;
   const photo = shown[Math.min(current, shown.length - 1)];
 
   if (!shown.length && !hasVideo)
@@ -56,6 +57,14 @@ export default function SiteMedia({ images, video, label }) {
             </div>
           )}
         </figure>
+      ) : videoFailed ? (
+        <div className="site-media is-empty" role="alert">
+          <VideoCamera size={34} aria-hidden="true" />
+          <p>
+            تعذّر تشغيل هذا الفيديو في المتصفح. استخدم ملف MP4 بترميز H.264 وحجم أصغر (يمكن تحويله ببرنامج HandBrake
+            المجاني).
+          </p>
+        </div>
       ) : (
         <figure className="site-media-video">
           <video
@@ -65,10 +74,9 @@ export default function SiteMedia({ images, video, label }) {
             preload="metadata"
             poster={shown[0]?.src}
             aria-label={`فيديو عن ${label}`}
-            onError={() => {
-              setVideoFailed(true);
-              setTab("photos");
-            }}
+            onError={() => setVideoFailed(true)}
+            // Unsupported codecs (e.g. H.265 from phones) often load with no picture.
+            onLoadedMetadata={(e) => e.currentTarget.videoWidth === 0 && setVideoFailed(true)}
           />
         </figure>
       )}

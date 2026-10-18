@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { X, VideoCamera, CornersOut, ArrowClockwise } from "phosphor-react";
 export default function MapVideoPanel({ resource, location, onClose }) {
+  // The chosen place's own video comes first, then the resource's video.
+  const src = location?.media?.video || resource.media?.video;
   const [failed, setFailed] = useState(false),
     [retry, setRetry] = useState(0),
     [message, setMessage] = useState("");
@@ -49,16 +51,17 @@ export default function MapVideoPanel({ resource, location, onClose }) {
         </button>
       </header>
       <div className="map-video-stage">
-        {resource.media?.video && !failed ? (
+        {src && !failed ? (
           <video
             ref={video}
             key={retry}
-            src={resource.media.video}
+            src={src}
             poster={resource.media.image || undefined}
             controls
             playsInline
             preload="metadata"
             onError={() => setFailed(true)}
+            onLoadedMetadata={(e) => e.currentTarget.videoWidth === 0 && setFailed(true)}
           />
         ) : (
           <div className="map-video-placeholder">
@@ -66,7 +69,7 @@ export default function MapVideoPanel({ resource, location, onClose }) {
             <h3>{failed ? "تعذّر تحميل الفيديو" : "الفيديو قيد الإضافة"}</h3>
             <p>
               {failed
-                ? "أعد المحاولة أو تابع قراءة معلومات المورد."
+                ? "قد تكون صيغة الفيديو غير مدعومة في المتصفح. استخدم ملف MP4 بترميز H.264 (يمكن تحويله ببرنامج HandBrake المجاني)، ثم أعد المحاولة."
                 : "لا يوجد فيديو مرفق لهذا المورد بعد. يمكنك متابعة استكشاف الخريطة وقراءة بطاقته."}
             </p>
             {failed && (

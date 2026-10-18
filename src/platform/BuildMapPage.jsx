@@ -80,7 +80,8 @@ export default function BuildMapPage() {
   const locked = (round?.items || []).filter((i) => p.placed[i.id]?.state === "locked").length;
   const roundDone = round && locked === round.items.length;
   const stars = Object.values(p.placed).filter((x) => x.state === "locked").length;
-  const pending = Object.entries(p.placed).filter(([k, v]) => items[k] && v.state !== "locked");
+  // A symbol that has not been moved yet is not checked (it costs no try).
+  const pending = Object.entries(p.placed).filter(([k, v]) => items[k] && ["placed", "wrong"].includes(v.state));
   const step = !selected && !pending.length ? 1 : pending.length ? 3 : 2;
 
   function place(itemId, at) {
@@ -91,11 +92,18 @@ export default function BuildMapPage() {
     setSelected(null);
     setRobot(`وضعت ${item.label}. اضغط «تحقّق من إجابتي» أو حرّك الرمز إن أردت.`);
   }
+  // Pressing a symbol puts it on the map straight away, in the empty south-west
+  // desert corner (far from every answer, side by side so they do not stack);
+  // the child then drags it or taps the place.
   function choose(itemId) {
     if (p.placed[itemId]?.state === "locked") return;
     play(resourceSound(items[itemId].resource));
     setSelected(itemId);
-    setRobot(`اخترت ${items[itemId].label}. اضغط على مكانه في الخريطة، أو اسحب الرمز إليها.`);
+    if (!p.placed[itemId]) {
+      const slot = round.items.findIndex((i) => i.id === itemId);
+      go({ placed: { ...p.placed, [itemId]: { lat: 23.1, lng: 25.9 + slot * 1.4, state: "new" } } });
+    }
+    setRobot(`ظهر رمز ${items[itemId].label} على الخريطة. اسحبه إلى مكانه الصحيح، أو اضغط على المكان في الخريطة.`);
   }
   async function check() {
     if (!pending.length || busy) return;
@@ -257,6 +265,7 @@ export default function BuildMapPage() {
                     <b>{i.label}</b>
                     {state === "locked" && <CheckCircle className="bm-chip-done" size={22} weight="fill" aria-label="في مكانه الصحيح" />}
                     {state === "placed" && <small>على الخريطة</small>}
+                    {state === "new" && <small>اسحبه على الخريطة</small>}
                     {state === "wrong" && <small>حرّكه وجرّب</small>}
                   </button>
                 </li>

@@ -132,6 +132,7 @@ export default function BuildMapCanvas({ placed, items, selected, cursor, onTapM
           <span className={`bm-symbol is-${p.state}`}>
             <ResourcePin resource={item.resource} />
             {p.state === "locked" && <b className="bm-symbol-name">{p.name}</b>}
+            {p.state === "new" && <b className="bm-symbol-name is-hint">اسحبني</b>}
             {p.state === "locked" && <i className="bm-symbol-star" aria-hidden="true">★</i>}
           </span>,
           el,

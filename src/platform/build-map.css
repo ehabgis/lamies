@@ -554,3 +554,41 @@
 .bm-marker:has(.bm-symbol.is-locked) {
   pointer-events: none;
 }
+
+/* Just dropped from the box: a gentle pulse invites the child to drag it. */
+.bm-symbol.is-new > svg,
+.bm-symbol.is-new .lesson-icon-pin {
+  cursor: grab;
+  animation: bm-bob 1.4s ease-in-out infinite;
+}
+.bm-symbol.is-new::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 26px;
+  height: 10px;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: rgb(255 224 102 / 0.8);
+  box-shadow: 0 0 0 4px rgb(255 224 102 / 0.35);
+}
+.bm-symbol-name.is-hint {
+  background: #ffe066;
+  color: #3d2c00;
+}
+@keyframes bm-bob {
+  50% {
+    translate: 0 -6px;
+  }
+}
+.bm-chip.is-new {
+  border-color: #ffd23f;
+  background: #fffbea;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bm-symbol.is-new > svg,
+  .bm-symbol.is-new .lesson-icon-pin {
+    animation: none;
+  }
+}

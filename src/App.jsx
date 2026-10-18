@@ -17,6 +17,7 @@ const JourneyPage = lazy(() => import("./platform/JourneyPage"));
 const ClassroomPage = lazy(() => import("./platform/LessonPage"));
 const TripRoute = lazy(() => import("./platform/TripRoute"));
 const TripsPage = lazy(() => import("./platform/TripsPage"));
+const BuildMapPage = lazy(() => import("./platform/BuildMapPage"));
 const StudentProgress = lazy(() => import("./platform/ProgressPage"));
 const AdminPage = lazy(() => import("./platform/AdminPage"));
 function AdminRoute() {
@@ -123,6 +124,7 @@ function AppContent() {
             <Route path="/demo/:id" element={<ClassroomPage demo />} />
             <Route path="/demo/:id/expedition" element={<TripRoute />} />
             <Route path="/demo/trips" element={<TripsPage />} />
+            <Route path="/demo/:id/build-map" element={<BuildMapPage />} />
             <Route element={<AccountGuard />}>
               <Route path="/journey" element={<JourneyPage />} />
               <Route path="/my-progress" element={<StudentProgress />} />

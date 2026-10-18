@@ -1,5 +1,6 @@
 import { expeditionPublic, checkExpedition } from "./expedition.mjs";
 import { waterQuestPublic, checkWaterQuest } from "./waterQuest.mjs";
+import { buildMapPublic, checkBuildMap } from "./buildMap.mjs";
 import { DEMO_IDS, demoLesson, demoAnswer, demoCatalog, gradedHint } from "./demo.mjs";
 import http from "node:http";
 import {
@@ -387,6 +388,7 @@ export function createApp({
           "/api/auth/register",
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/answers`),
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/expedition/check`),
+          ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/build-map/check`),
         ].includes(path)
       ) {
         if (!user) fail(401, "سجّل الدخول أولًا");
@@ -433,6 +435,24 @@ export function createApp({
               ? checkWaterQuest(expMatch[1], b)
               : checkExpedition(expMatch[1], b);
           if (!result) fail(400, "الخطوة غير موجودة");
+          return send(result);
+        }
+        fail(405, "العملية غير متاحة");
+      }
+      // «ابنِ خريطتك»: symbols placed on an empty map, graded by distance here.
+      const buildMatch = path.match(
+        /^\/api\/demo\/lessons\/([^/]+)\/build-map(?:\/(check))?$/,
+      );
+      if (buildMatch) {
+        if (method === "GET" && !buildMatch[2]) {
+          const activity = buildMapPublic(buildMatch[1]);
+          if (!activity) fail(404, "لا يوجد نشاط «ابنِ خريطتك» لهذا الدرس");
+          return send({ activity });
+        }
+        if (method === "POST" && buildMatch[2]) {
+          rate(`build:${req.socket.remoteAddress}`, 120);
+          const result = checkBuildMap(buildMatch[1], await body(req));
+          if (!result) fail(400, "المحاولة غير صالحة");
           return send(result);
         }
         fail(405, "العملية غير متاحة");

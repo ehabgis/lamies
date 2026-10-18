@@ -39,7 +39,7 @@ const brief = (t = "") => {
 
 export const activityMeta = (q) => META[q?.kind] || META[q?.type] || FALLBACK;
 
-export default function ActivityPicker({ activities, solved, hasBuildMap, onPick, onBuildMap, expedition }) {
+export default function ActivityPicker({ activities, solved, hasBuildMap, onPick, onBuildMap, expedition, buildMapHref }) {
   const done = activities.filter((q) => solved.includes(q.id)).length;
   return (
     <section className="activity-picker" aria-labelledby="activity-picker-title">
@@ -58,6 +58,18 @@ export default function ActivityPicker({ activities, solved, hasBuildMap, onPick
             <small>رحلة الاستكشاف</small>
             <strong>{expedition.title}</strong>
             <small>{expedition.text}</small>
+          </span>
+        </Link>
+      )}
+      {buildMapHref && (
+        <Link to={buildMapHref} className="activity-card activity-expedition activity-build-map tone-indigo">
+          <span className="activity-card-icon" aria-hidden="true">
+            <MapTrifold weight="duotone" />
+          </span>
+          <span className="activity-card-text">
+            <small>نشاط الخريطة</small>
+            <strong>ابنِ خريطتك</strong>
+            <small>ضع رموز الموارد في أماكنها على خريطة مصر</small>
           </span>
         </Link>
       )}

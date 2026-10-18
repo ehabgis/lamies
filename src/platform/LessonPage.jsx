@@ -341,7 +341,8 @@ export default function LessonPage({ demo = false }) {
     modal === "build-map"
       ? q.type === "map"
       : modal === "activities"
-        ? !["choice", "boolean"].includes(q.type) || q.kind
+        ? // In the demo, single map questions are covered by «ابنِ خريطتك».
+          (!["choice", "boolean"].includes(q.type) || q.kind) && !(demo && q.type === "map")
         : ["choice", "boolean"].includes(q.type) && !q.kind,
   );
   const current = filtered[index];
@@ -1190,7 +1191,8 @@ export default function LessonPage({ demo = false }) {
                     }
                     activities={filtered}
                     solved={solved}
-                    hasBuildMap={questions.some((q) => q.type === "map")}
+                    buildMapHref={demo ? `/demo/${id}/build-map` : null}
+                    hasBuildMap={!demo && questions.some((q) => q.type === "map")}
                     onBuildMap={() => {
                       setIndex(0);
                       setPickActivity(false);

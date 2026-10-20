@@ -1,0 +1,291 @@
+/* Objectives · concepts · lesson information: one compact card over the map
+   with one item at a time. All items share one grid cell, so the card keeps
+   the height of the longest item and never scrolls or jumps. */
+.map-shell .mc-card {
+  position: absolute;
+  z-index: 1450;
+  top: 12px;
+  width: min(390px, calc(100% - 24px));
+  max-height: calc(100% - 90px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  overflow: hidden;
+  border: 1px solid #c8dcef;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgb(18 48 94 / 0.22);
+  outline: none;
+  animation: mc-in 220ms ease-out;
+}
+.map-shell .mc-card.side-right {
+  right: 12px;
+}
+.map-shell .mc-card.side-left {
+  left: 12px;
+}
+@keyframes mc-in {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+
+.map-shell .mc-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e3ecf5;
+}
+.map-shell .mc-head-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 50%;
+  background: #eaf3ff;
+  color: #0b5cad;
+}
+.map-shell .mc-head-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.map-shell .mc-head h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  color: #0b2f57;
+}
+.map-shell .mc-x {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #d6e3f0;
+  border-radius: 50%;
+  background: #f5f9fd;
+  color: #12345a;
+}
+.map-shell .mc-count {
+  align-self: center;
+  padding: 3px 14px;
+  border-radius: 999px;
+  background: #eef4fa;
+  color: #36506b;
+  font-size: 13.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fixed-height stage: every item in the same cell, only one visible */
+.map-shell .mc-stage {
+  display: grid;
+  min-height: 0;
+}
+.map-shell .mc-item {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  visibility: hidden;
+}
+.map-shell .mc-item[data-current] {
+  visibility: visible;
+  animation: mc-fade 200ms ease-out;
+}
+@keyframes mc-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.map-shell .mc-intro {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #4a6178;
+}
+.map-shell .mc-box {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #eef6ff;
+}
+.map-shell .mc-objective {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+.map-shell .mc-box-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: 50%;
+  background: #d9eaff;
+  color: #0a6fd6;
+}
+.map-shell .mc-box-icon svg {
+  width: 30px;
+  height: 30px;
+}
+.map-shell .mc-main {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.7;
+  color: #0b2f57;
+}
+.map-shell .mc-concepts .mc-box.mc-main,
+.map-shell .mc-intro + .mc-box .mc-main {
+  font-weight: 700;
+}
+.map-shell .mc-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+  color: #0b2f57;
+}
+.map-shell .mc-title-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 50%;
+  background: #eaf3ff;
+  color: #0b5cad;
+}
+.map-shell .mc-title-icon svg {
+  width: 26px;
+  height: 26px;
+}
+.map-shell .mc-title .resource-pin,
+.map-shell .mc-title .lesson-icon-pin,
+.map-shell .mc-title > svg {
+  width: 40px;
+  height: 50px;
+  flex: none;
+}
+.map-shell .mc-robot {
+  width: 56px;
+  flex: none;
+}
+.map-shell .mc-robot svg,
+.map-shell .mc-robot img {
+  width: 100%;
+  height: auto;
+}
+
+/* Sound: one button */
+.map-shell .mc-listen {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 6px 18px;
+  border: 1.5px solid #9cc3ea;
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  color: #0b4f9c;
+}
+.map-shell .mc-listen.is-on {
+  border-color: #0a6fd6;
+  background: #eaf3ff;
+}
+
+.map-shell .mc-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e3ecf5;
+}
+.map-shell .mc-nav button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 6px 12px;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 900;
+}
+.map-shell .mc-prev {
+  border: 1px solid #d6e3f0;
+  background: #f5f9fd;
+  color: #12345a;
+}
+.map-shell .mc-prev:disabled {
+  color: #9aabbd;
+  background: #f1f5f9;
+}
+.map-shell .mc-next {
+  border: 0;
+  background: #0a6fd6;
+  color: #fff;
+  white-space: nowrap;
+}
+.map-shell .mc-explore {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
+  background: #0b4fd0;
+  color: #fff;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+/* Phones: a bottom sheet that leaves the top of the map visible */
+@media (max-width: 850px) {
+  .map-shell .mc-card,
+  .map-shell .mc-card.side-left,
+  .map-shell .mc-card.side-right {
+    top: auto;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-height: 62%;
+    padding: 10px 12px 12px;
+    gap: 8px;
+  }
+  .map-shell .mc-main {
+    font-size: 17px;
+  }
+  .map-shell .mc-title {
+    font-size: 21px;
+  }
+  .map-shell .mc-box-icon {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-shell .mc-card,
+  .map-shell .mc-item[data-current] {
+    animation: none;
+  }
+}

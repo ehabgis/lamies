@@ -54,6 +54,8 @@ import { loadGuest } from "./guestProfile";
 import SiteMedia from "./SiteMedia";
 import "./montage.css";
 import "./site-card.css";
+import "./lesson-cards.css";
+import "./map-compact.css";
 import { play, resourceSound } from "./sfx";
 const kindNames = {
   mineral: "خام معدني",
@@ -976,10 +978,10 @@ export default function LessonPage({ demo = false }) {
             <LessonMontage
               key={montage.section}
               lessonId={id}
-              demo={demo || preview}
               scenes={scenes}
               section={montage.section}
               sectionTitle={SECTIONS[montage.section].title}
+              sectionInfo={SECTIONS[montage.section]}
               nextSection={
                 SECTIONS[montage.section].next && {
                   label: SECTIONS[montage.section].nextLabel,
@@ -989,10 +991,6 @@ export default function LessonPage({ demo = false }) {
               startAt={montage.start}
               onSpotlight={setSpotlight}
               onClose={() => setMontage(null)}
-              onReadAll={() => {
-                setMontage(null);
-                setPanel("intro");
-              }}
             />
           )}
           {view3d && (

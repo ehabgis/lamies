@@ -25,9 +25,9 @@ const short = (t = "", max = 200) => {
 };
 
 export const SECTIONS = {
-  objectives: { title: "أهداف الدرس", next: "concepts", nextLabel: "إلى مفاهيم الدرس" },
-  concepts: { title: "مفاهيم الدرس", next: "intro", nextLabel: "إلى معلومات الدرس" },
-  intro: { title: "معلومات الدرس", next: null },
+  objectives: { title: "أهداف رحلتنا", unit: "الهدف", listen: "استمع للهدف", next: null },
+  concepts: { title: "مفاهيم الدرس", unit: "المفهوم", listen: "استمع للتعريف", next: "intro", nextLabel: "إلى معلومات الدرس" },
+  intro: { title: "معلومات الدرس", unit: "المعلومة", listen: "استمع للمعلومة", next: null },
 };
 
 // Each of the three lesson buttons opens its own card set: objectives,
@@ -37,55 +37,31 @@ export function buildScenes(lessonId, content, section) {
   return section ? all.filter((s) => s.section === section) : all;
 }
 
+// One item per card: an objective, a concept, or a piece of lesson
+// information (with its place lit on the map).
 function buildAllScenes(lessonId, content) {
   if (!content) return [];
   const scenes = [];
+  (content.objectives || []).forEach((o) =>
+    scenes.push({ type: "objective", text: o.trim().replace(/[.。]?$/, "."), section: "objectives" }),
+  );
+  (content.concepts || []).forEach((c) =>
+    scenes.push({ type: "concept", title: c.term, text: c.definition, section: "concepts" }),
+  );
   const hook = HOOKS[lessonId] || { title: "هيا نبدأ!", text: short(content.intro) };
   scenes.push({ type: "hook", title: hook.title, text: hook.text, section: "intro" });
-  if (content.objectives?.length)
-    scenes.push({
-      type: "objectives",
-      title: "في نهاية الرحلة ستستطيع أن…",
-      items: content.objectives.map((o) => o.replace(/\.$/, "")),
-      text: `في نهاية الرحلة ستستطيع أن: ${content.objectives.join(" ")}`,
-      section: "objectives",
-    });
-  (content.concepts || []).forEach((c, i) =>
-    scenes.push({
-      type: "concept",
-      title: c.term,
-      label: `مفهوم ${i + 1} من ${content.concepts.length}`,
-      text: c.definition,
-      section: "concepts",
-    }),
-  );
-  const checks = (content.questions || []).filter(
-    (q) => /^book-/.test(q.id) && ["boolean", "choice"].includes(q.type),
-  );
-  if (checks[0]) scenes.push({ type: "check", title: "سؤال سريع", question: checks[0], section: "concepts" });
-  const places = (content.resources || []).filter((r) => r.locations?.length);
-  places.forEach((r, i) => {
-    const l = r.locations[0];
+  for (const r of content.resources || []) {
+    const l = r.locations?.[0];
+    if (!l) continue;
     scenes.push({
       type: "info",
       title: r.label,
       text: short([r.description, r.importance].filter(Boolean).join(" ")),
-      image: r.media?.image || null,
-      imageCredit: r.media?.imageCredit || null,
       resource: r,
       spotlight: { lat: l.lat, lng: l.lng, label: l.name },
       section: "intro",
     });
-    // A quick check after every few places keeps the child active.
-    if ((i + 1) % 4 === 0 && checks[1 + Math.floor(i / 4)])
-      scenes.push({ type: "check", title: "سؤال سريع", question: checks[1 + Math.floor(i / 4)], section: "intro" });
-  });
-  scenes.push({
-    type: "end",
-    title: "أحسنت! انتهت جولة المعلومات",
-    text: "يمكنك الآن استكشاف الخريطة بنفسك، أو الانتقال إلى الأنشطة والأسئلة.",
-    section: "intro",
-  });
+  }
   return scenes;
 }
 

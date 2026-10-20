@@ -417,7 +417,7 @@ export default function MapExplorer() {
     <main data-tts-root className="simple-map-page atlas-page" dir="rtl" ref={pageRef}>
       <header className="atlas-header">
         <div className="atlas-profile"><button onClick={() => navigate('/')} title="العودة لشاشة الترحيب"><UserCircle size={36} weight="duotone"/><strong>{playerName || 'يا بطل'}</strong><CaretLeft size={16}/></button><span><Star size={24} weight="fill"/> ابتدائي</span></div>
-        <div className="atlas-heading"><h1><BookOpen weight="duotone"/>الخريطة التعليمية الذكية</h1><p>الصف الخامس الابتدائي <CaretLeft/> الفصل الدراسي الأول <CaretLeft/> الدرس الأول: الخامات المعدنية ومصادر الطاقة في مصر</p></div>
+        <div className="atlas-heading"><h1><BookOpen weight="duotone"/>الخرائط التعليمية الذكية</h1><p>الصف الخامس الابتدائي <CaretLeft/> الفصل الدراسي الأول <CaretLeft/> الدرس الأول: الخامات المعدنية ومصادر الطاقة في مصر</p></div>
         <div className="atlas-subject"><span>🌍</span><strong>الدراسات الاجتماعية</strong><BookOpen size={38} weight="duotone"/></div>
       </header>
       <div className="atlas-workspace">

@@ -39,7 +39,7 @@ export default function WelcomeScreen() {
   return (
     <main className="entry-page" dir="rtl">
       <div className="entry-orb entry-orb-one" aria-hidden="true"/><div className="entry-orb entry-orb-two" aria-hidden="true"/>
-      <header className="entry-brand"><span className="entry-brand-mark" aria-hidden="true"><BookOpen size={55} weight="duotone"/><MapPin size={28} weight="fill"/></span><div><h1>الخريطة التعليمية الذكية</h1><p>كل اكتشاف صغير… بداية لحكاية كبيرة</p></div></header>
+      <header className="entry-brand"><span className="entry-brand-mark" aria-hidden="true"><BookOpen size={55} weight="duotone"/><MapPin size={28} weight="fill"/></span><div><h1>الخرائط التعليمية الذكية</h1><p>كل اكتشاف صغير… بداية لحكاية كبيرة</p></div></header>
       <div className="entry-layout">
         <section className="entry-visual" aria-label="مستكشف صغير مع الكرة الأرضية">
           <span className="entry-star entry-star-one" aria-hidden="true">✦</span><span className="entry-star entry-star-two" aria-hidden="true">✧</span>

@@ -1,0 +1,565 @@
+/* Activities drawer (2026-10-20): wider and taller over the map so the picker
+   and the sort / match / order activities fit without scrolling. Blue marks
+   the current selection only; results show after «تحقق». */
+@media (min-width: 851px) {
+  .map-shell .studio-workspace > .learning-drawer.is-activities {
+    top: 10px;
+    bottom: 60px;
+    width: min(700px, calc(100% - 90px));
+  }
+}
+/* Title and close button float in the top corner instead of a full bar. */
+.map-shell .learning-drawer.is-activities > header {
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  left: 10px;
+  padding: 0;
+  gap: 8px;
+  border: 0;
+  background: none;
+  flex-direction: row-reverse;
+}
+.map-shell .learning-drawer.is-activities > header h2 {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0b5cad;
+}
+.map-shell .learning-drawer.is-activities > header button {
+  width: 40px;
+  min-height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+.map-shell .learning-drawer.is-activities .learning-drawer-body {
+  padding: 12px 16px 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.learning-drawer.is-activities .activity-picker.is-v2 > header {
+  padding-inline-end: 190px;
+}
+.learning-drawer.is-activities .activity-steps {
+  padding-inline-end: 190px;
+  min-height: 40px;
+  margin: 0;
+  padding-bottom: 6px;
+}
+.learning-drawer.is-activities .activity-back {
+  min-height: 40px;
+  padding: 4px 14px;
+}
+@media (max-width: 850px) {
+  .map-shell .learning-drawer.is-activities > header h2 {
+    display: none;
+  }
+  .learning-drawer.is-activities .activity-picker.is-v2 > header,
+  .learning-drawer.is-activities .activity-steps {
+    padding-inline-end: 52px;
+  }
+  .map-shell .learning-drawer.is-activities .learning-drawer-body {
+    padding: 10px 10px 12px;
+  }
+}
+
+/* ---- picker: one-line practice cards */
+.activity-picker.is-v2 .activity-cards .activity-card {
+  padding: 8px 10px;
+}
+.activity-picker.is-v2 .activity-cards .activity-card-icon {
+  width: 38px;
+  height: 38px;
+}
+.activity-picker.is-v2 .activity-cards .activity-card-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.activity-picker.is-v2 .activity-cards .activity-card-text {
+  flex: 1;
+}
+.activity-picker.is-v2 .activity-card-text .activity-card-count {
+  align-self: flex-start;
+  margin: 2px 0 0;
+  padding: 1px 8px;
+  border-radius: 99px;
+  background: #eef4fa;
+  color: #36506b;
+  font-size: 12px;
+}
+@media (min-width: 851px) {
+  .activity-picker.is-v2 .activity-cards .activity-card {
+    position: relative;
+  }
+  .activity-picker.is-v2 .activity-card-text .activity-card-count {
+    position: absolute;
+    inset-inline-end: 10px;
+    top: 8px;
+    margin: 0;
+  }
+}
+.activity-picker.is-v2 .activity-card.is-done .activity-card-count {
+  display: none;
+}
+
+/* ---- shared frame */
+.learning-drawer.is-rich .activity-steps-main strong {
+  display: none;
+}
+.p-question.ra {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+.ra-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 2px 12px;
+}
+.p-question.ra .ra-head h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+  color: #0b2f57;
+}
+.ra-head p {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #4a6178;
+}
+.learning-drawer .ra-head .ra-count,
+.ra-count {
+  padding: 4px 14px;
+  border-radius: 999px;
+  border: 1px solid #d6e3f0;
+  background: #f5f9fd;
+  color: #12345a;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.ra-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 1.5px solid #d3e2f1;
+  border-radius: 14px;
+  background: #fff;
+  color: #0b2f57;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  text-align: start;
+  box-shadow: 0 2px 6px rgb(18 48 94 / 0.06);
+}
+button.ra-card:not(:disabled) {
+  cursor: pointer;
+}
+button.ra-card:not(:disabled):hover {
+  border-color: #9cc3ea;
+}
+.ra-card.is-selected {
+  border-color: #0a6fd6;
+  background: #eaf3ff;
+  box-shadow: 0 0 0 3px rgb(10 111 214 / 0.18);
+}
+.p-question.ra .ra-card:disabled,
+.p-question.ra .ra-zone-head:disabled {
+  color: #0b2f57;
+  opacity: 1;
+  cursor: default;
+}
+.ra-card-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 42px;
+}
+.ra-card-icon svg,
+.ra-card-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.ra-message {
+  min-height: 0;
+}
+.ra-message:empty {
+  display: none;
+}
+.ra-message p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.ra-message .feedback-next {
+  margin-inline-start: auto;
+}
+.ra-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #e3ecf5;
+}
+.ra-actions .ra-check {
+  min-height: 46px;
+  padding: 6px 22px;
+  font-size: 16px;
+}
+.ra-actions .ra-check:disabled {
+  background: #a9bfd6;
+  border-color: #a9bfd6;
+  color: #fff;
+}
+.ra-note {
+  flex: 1;
+  color: #4a6178;
+  font-size: 13px;
+  font-weight: 700;
+}
+.ra-actions .p-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 14px;
+}
+
+/* ---- classify */
+.ra-classify-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-width: 560px;
+  width: 100%;
+  margin-inline: auto;
+}
+.ra-classify-cards .ra-card {
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-height: 72px;
+  padding: 4px 6px;
+  text-align: center;
+  touch-action: none;
+  user-select: none;
+}
+.ra-classify-cards .ra-card-icon {
+  width: 34px;
+  height: 42px;
+}
+.ra-card.is-lifted {
+  opacity: 0.35;
+}
+.ra-zones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+}
+.ra-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 92px;
+  padding: 6px 8px;
+  border: 2px dashed #8fb8e0;
+  border-radius: 16px;
+  background: #f1f7fe;
+}
+.ra-zone.is-ready {
+  border-color: #0a6fd6;
+  background: #e6f1ff;
+  cursor: pointer;
+}
+.p-question.ra .ra-zone-head {
+  min-height: 0;
+  padding: 2px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: #0b2f57;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 900;
+}
+.p-question.ra .ra-zone.is-ready .ra-zone-head {
+  background: #0a6fd6;
+  color: #fff;
+}
+.ra-zone-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.ra-zone .ra-card.is-small {
+  min-height: 36px;
+  padding: 2px 10px 2px 8px;
+  gap: 4px;
+  font-size: 14px;
+  touch-action: none;
+  user-select: none;
+}
+.ra-zone .ra-card.is-small .ra-card-icon {
+  width: 22px;
+  height: 28px;
+}
+.ra-zone-empty {
+  margin: auto 0;
+  color: #6b8299;
+  font-size: 15px;
+  font-weight: 700;
+}
+.ra-ghost {
+  position: fixed;
+  z-index: 5000;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 6px 8px;
+  border: 2px solid #0a6fd6;
+  border-radius: 14px;
+  background: #fff;
+  color: #0b2f57;
+  font-weight: 800;
+  pointer-events: none;
+  transform: translate(-50%, -60%) rotate(-3deg);
+  box-shadow: 0 12px 26px rgb(18 48 94 / 0.28);
+}
+.ra-ghost svg {
+  width: 28px;
+  height: 36px;
+}
+
+/* ---- match */
+.ra-match {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: clamp(48px, 12%, 110px);
+  max-width: 600px;
+  width: 100%;
+  margin-inline: auto;
+}
+.ra-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ra-col h4 {
+  margin: 0 0 -2px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 900;
+  color: #36506b;
+}
+/* Both columns use one row height so the lines stay straight and short. */
+.ra-row {
+  height: 46px;
+  min-height: 0;
+  padding-block: 4px;
+  position: relative;
+  z-index: 1;
+}
+.ra-row .ra-card-icon {
+  width: 28px;
+  height: 36px;
+}
+.ra-row.is-linked:not(.is-selected) {
+  border-color: #6f8fb3;
+}
+.ra-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.ra-lines line {
+  stroke: #36506b;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.ra-lines circle {
+  fill: #36506b;
+}
+.ra-lines .is-active line {
+  stroke: #0a6fd6;
+}
+.ra-lines .is-active circle {
+  fill: #0a6fd6;
+}
+.ra-match.is-correct .ra-lines line {
+  stroke: #1f9d55;
+}
+.ra-match.is-correct .ra-lines circle {
+  fill: #1f9d55;
+}
+.ra-match.is-correct .ra-row {
+  border-color: #8fd3aa;
+}
+
+/* ---- order */
+.ra-direction {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #4a6178;
+}
+.ra-order {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ra-step {
+  min-height: 64px;
+  padding: 8px 10px;
+}
+.ra-step-number {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #0b4f9c;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 900;
+}
+.ra-step-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #eaf3ff;
+  color: #0a6fd6;
+  font-size: 28px;
+}
+.ra-step-icon svg {
+  width: 28px;
+  height: 28px;
+}
+.ra-step-text {
+  flex: 1;
+  font-size: 18px;
+}
+.ra-step-arrows {
+  display: flex;
+  gap: 6px;
+}
+.ra-step-arrows button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1.5px solid #9cc3ea;
+  border-radius: 12px;
+  background: #fff;
+  color: #0b4f9c;
+}
+.ra-step-arrows button svg {
+  width: 20px;
+  height: 20px;
+}
+.ra-step-arrows button:disabled {
+  border-color: #e3ecf5;
+  color: #b9c7d6;
+  background: #f7fafd;
+}
+.ra-order.is-correct .ra-step,
+.ra-order .ra-step.is-correct {
+  border-color: #8fd3aa;
+}
+
+/* ---- phones */
+@media (max-width: 850px) {
+  .p-question.ra .ra-head h3 {
+    font-size: 19px;
+  }
+  .ra-head p {
+    font-size: 14px;
+  }
+  .ra-classify-cards .ra-card {
+    min-height: 70px;
+    font-size: 14px;
+  }
+  .ra-classify-cards .ra-card-icon {
+    width: 30px;
+    height: 38px;
+  }
+  .ra-zone {
+    min-height: 92px;
+  }
+  .ra-zone-head {
+    font-size: 15px;
+  }
+  .ra-match {
+    column-gap: 36px;
+  }
+  .ra-card {
+    font-size: 14.5px;
+  }
+  .ra-actions {
+    flex-wrap: wrap;
+  }
+  .ra-actions .ra-check {
+    flex: 1 1 100%;
+  }
+  .ra-note {
+    order: 3;
+    flex-basis: 100%;
+  }
+  .ra-step-text {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ra-ghost {
+    transform: translate(-50%, -60%);
+  }
+}
+
+/* Phones: the activities sheet rises over the lesson header (the close button
+   brings it back), so a whole activity fits above the bottom bar. */
+@media (max-width: 850px) {
+  .map-shell .studio-workspace > .learning-drawer.is-activities {
+    position: fixed;
+    top: 8px;
+    bottom: 128px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+  }
+}

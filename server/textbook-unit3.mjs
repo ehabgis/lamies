@@ -41,6 +41,8 @@ const BOOK_IMAGES = {
 
 const loc = (id, name, lat, lng, approximate = true) => ({ id, name, lat, lng, ...(approximate ? { approximate } : {}) });
 
+const USES = ["السكك الحديدية والآلات الثقيلة", "أسلاك الكهرباء", "الأسمدة والمبيدات", "الحلي"];
+
 // ---------------------------------------------------------------- lesson 1
 const LESSON_1 = {
   title: "الثروة المعدنية ومصادر الطاقة",
@@ -167,7 +169,11 @@ const LESSON_1 = {
       id: "book-l1-drag-energy",
       type: "drag",
       prompt: "صنّف مصادر الطاقة إلى متجددة وغير متجددة.",
-      options: ["البترول", "الفحم", "الغاز الطبيعي", "الطاقة الشمسية", "طاقة الرياح", "الطاقة الكهرومائية"],
+      title: "صنّف مصادر الطاقة",
+      subtitle: "اسحب كل بطاقة إلى مجموعتها المناسبة.",
+      // Same order and symbols as the energy part of the map key.
+      options: ["الفحم", "الطاقة الشمسية", "الغاز الطبيعي", "طاقة الرياح", "البترول", "الطاقة الكهرومائية"],
+      optionResources: { "البترول": "oil", "الفحم": "coal", "الغاز الطبيعي": "gas", "الطاقة الشمسية": "solar", "طاقة الرياح": "wind", "الطاقة الكهرومائية": "hydro" },
       groups: ["مصادر متجددة", "مصادر غير متجددة"],
       answer: {
         "البترول": "مصادر غير متجددة",
@@ -184,11 +190,14 @@ const LESSON_1 = {
       id: "book-l1-match-uses",
       type: "match",
       prompt: "صِل كل معدن باستخدامه.",
+      title: "صل المعدن باستخدامه",
+      subtitle: "اضغط على المعدن، ثم اختر استخدامه.",
+      columns: ["المعدن", "الاستخدام"],
       pairs: [
-        { id: "iron", label: "الحديد", choices: ["السكك الحديدية والآلات الثقيلة", "أسلاك الكهرباء", "الأسمدة والمبيدات", "الحلي"] },
-        { id: "copper", label: "النحاس", choices: ["السكك الحديدية والآلات الثقيلة", "أسلاك الكهرباء", "الأسمدة والمبيدات", "الحلي"] },
-        { id: "phosphate", label: "الفوسفات", choices: ["السكك الحديدية والآلات الثقيلة", "أسلاك الكهرباء", "الأسمدة والمبيدات", "الحلي"] },
-        { id: "gold", label: "الذهب", choices: ["السكك الحديدية والآلات الثقيلة", "أسلاك الكهرباء", "الأسمدة والمبيدات", "الحلي"] },
+        { id: "iron", label: "الحديد", choices: USES },
+        { id: "copper", label: "النحاس", choices: USES },
+        { id: "phosphate", label: "الفوسفات", choices: USES },
+        { id: "gold", label: "الذهب", choices: USES },
       ],
       options: [],
       answer: { iron: "السكك الحديدية والآلات الثقيلة", copper: "أسلاك الكهرباء", phosphate: "الأسمدة والمبيدات", gold: "الحلي" },
@@ -520,6 +529,9 @@ LESSON_1.duplicates = {
   "doc-boolean-5": "book-l1-tf-2",
   "doc-boolean-6": "book-l1-blank-4",
   "solar-classification": "book-l1-drag-energy",
+  // One sort (the six energy sources of the map key) and one four-metal match.
+  "draft-drag": "book-l1-drag-energy",
+  "draft-match": "book-l1-match-uses",
   "iron-where": "book-l1-choice-1",
   "lesson-1-iron-bahariya-2": "book-l1-choice-1",
   "lesson-1-practice-2": "doc-choice-1",

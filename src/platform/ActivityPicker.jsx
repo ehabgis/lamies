@@ -43,38 +43,45 @@ export default function ActivityPicker({ activities, solved, hasBuildMap, onPick
     if (g) g.items.push(q);
     else groups.push({ meta, items: [q] });
   }
+  const featured = [
+    expedition && { href: expedition.href, title: expedition.title, text: "شاهد، ابحث، واكتشف", Icon: Compass },
+    buildMapHref && { href: buildMapHref, title: "ابنِ خريطتك", text: "ضع الموارد في أماكنها", Icon: MapTrifold },
+  ].filter(Boolean);
   return (
-    <section className="activity-picker" aria-labelledby="activity-picker-title">
+    <section className="activity-picker is-v2" aria-labelledby="activity-picker-title">
+      {/* Progress lives here only, once for the whole lesson. */}
       <header>
         <h3 id="activity-picker-title">اختر نشاطًا</h3>
         <p>
-          أنجزت <bdi>{done}</bdi> من <bdi>{activities.length}</bdi> أنشطة
+          أنجزت <bdi>{done}</bdi> من <bdi>{activities.length}</bdi> نشاطًا
         </p>
+        <span
+          className="activity-progress"
+          role="progressbar"
+          aria-label="تقدّمك في الأنشطة"
+          aria-valuemin={0}
+          aria-valuemax={activities.length}
+          aria-valuenow={done}
+        >
+          <span style={{ width: `${activities.length ? (done / activities.length) * 100 : 0}%` }} />
+        </span>
       </header>
-      {expedition && (
-        <Link to={expedition.href} className="activity-card activity-expedition tone-blue">
-          <span className="activity-card-icon" aria-hidden="true">
-            <Compass weight="duotone" />
-          </span>
-          <span className="activity-card-text">
-            <small>رحلة الاستكشاف</small>
-            <strong>{expedition.title}</strong>
-            <small>{expedition.text}</small>
-          </span>
-        </Link>
+      {featured.length > 0 && (
+        <div className={`activity-featured count-${featured.length}`}>
+          {featured.map(({ href, title, text, Icon }) => (
+            <Link key={href} to={href} className="activity-card activity-feature tone-blue">
+              <span className="activity-card-icon" aria-hidden="true">
+                <Icon weight="duotone" />
+              </span>
+              <span className="activity-card-text">
+                <strong>{title}</strong>
+                <small>{text}</small>
+              </span>
+            </Link>
+          ))}
+        </div>
       )}
-      {buildMapHref && (
-        <Link to={buildMapHref} className="activity-card activity-expedition activity-build-map tone-indigo">
-          <span className="activity-card-icon" aria-hidden="true">
-            <MapTrifold weight="duotone" />
-          </span>
-          <span className="activity-card-text">
-            <small>نشاط الخريطة</small>
-            <strong>ابنِ خريطتك</strong>
-            <small>ضع رموز الموارد في أماكنها على خريطة مصر</small>
-          </span>
-        </Link>
-      )}
+      <h4 className="activity-section-label">تدرّب وطبّق</h4>
       <ul className="activity-cards">
         {hasBuildMap && (
           <li>
@@ -96,7 +103,7 @@ export default function ActivityPicker({ activities, solved, hasBuildMap, onPick
             <li key={meta.title}>
               <button
                 type="button"
-                className={`activity-card tone-${meta.tone} ${isDone ? "is-done" : ""}`}
+                className={`activity-card tone-blue ${isDone ? "is-done" : ""}`}
                 onClick={() => onPick(meta.title)}
                 aria-label={`${meta.title}: ${items.length === 1 ? "نشاط واحد" : items.length === 2 ? "نشاطان" : `${items.length} أنشطة`}${isDone ? " — أنجزتها" : ""}`}
               >
@@ -106,16 +113,8 @@ export default function ActivityPicker({ activities, solved, hasBuildMap, onPick
                 <span className="activity-card-text">
                   <strong>{meta.title}</strong>
                   <small>{meta.hint}</small>
-                  <small className="activity-card-count">
-                    {items.length > 1 ? (
-                      <>
-                        {items.length === 2 ? "نشاطان" : <><bdi>{items.length}</bdi> أنشطة</>} · أنجزت <bdi>{done}</bdi>
-                      </>
-                    ) : done ? (
-                      "أنجزته"
-                    ) : (
-                      "نشاط واحد"
-                    )}
+                  <small className="activity-card-count" aria-hidden="true">
+                    <bdi>{done}</bdi> من <bdi>{items.length}</bdi>
                   </small>
                 </span>
                 {isDone && (

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { X } from "phosphor-react";
-export default function LearningDrawer({ title, onClose, children }) {
+export default function LearningDrawer({ title, onClose, className = "", children }) {
   const close = useRef(null),
     body = useRef(null);
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function LearningDrawer({ title, onClose, children }) {
       role="dialog"
       aria-modal="false"
       aria-label={title}
-      className="learning-drawer"
+      className={`learning-drawer ${className}`}
     >
       <header>
         <div>

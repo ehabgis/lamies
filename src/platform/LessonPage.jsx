@@ -37,6 +37,7 @@ import "./map-polish.css";
 import "./map-ux.css";
 import "./map-header.css";
 import "./activities.css";
+import "./rich-activities.css";
 import ActivityPicker, { ActivitySteps, activityMeta } from "./ActivityPicker";
 import MapVideoPanel from "./MapVideoPanel";
 const Site3DView = lazy(() => import("./Site3DView"));
@@ -1154,6 +1155,11 @@ export default function LessonPage({ demo = false }) {
                     ? "اصنع خريطتك"
                     : "أسئلة الدرس"
             }
+            className={
+              modal === "activities"
+                ? `is-activities ${!pickActivity && ["drag", "match", "order"].includes(current?.type) ? "is-rich" : ""}`
+                : ""
+            }
             onClose={() => setModal(null)}
           >
             {modal === "ai" ? (
@@ -1271,7 +1277,9 @@ export default function LessonPage({ demo = false }) {
                       onHelp={help}
                       preview={preview}
                       demo={demo}
+                      resources={resources}
                     />
+                    {filtered.length > 1 && (
                     <div className="p-actions">
                       <button
                         disabled={!index}
@@ -1288,6 +1296,7 @@ export default function LessonPage({ demo = false }) {
                         {modal === "questions" ? "السؤال التالي" : "النشاط التالي"}
                       </button>
                     </div>
+                    )}
                   </>
                 ) : (
                   <p>لم تُضف أسئلة لهذا القسم بعد.</p>

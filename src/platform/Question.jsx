@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ArrowUp, ArrowDown, Star, Lightbulb, Check, X, ArrowLeft } from "phosphor-react";
+import { ArrowUp, ArrowDown, Star, Lightbulb, Check, X, ArrowLeft, ArrowCounterClockwise } from "phosphor-react";
+import { ClassifyActivity, MatchActivity, OrderActivity } from "./ActivityKinds";
 
 const LETTERS = ["أ", "ب", "ج", "د", "هـ", "و"];
 import { api } from "./api";
@@ -16,16 +17,17 @@ export default function Question({
   demo = false,
   presentation,
   onNext,
+  resources,
 }) {
   const [showHint, setShowHint] = useState(false);
   const [attempts, setAttempts] = useState(0);
-  const [answer, setAnswer] = useState(
-      q.type === "order"
-        ? [...(q.options || [])].reverse()
-        : ["match", "drag", "image-match"].includes(q.type)
-          ? {}
-          : "",
-    ),
+  const initial = () =>
+    q.type === "order"
+      ? [...(q.options || [])].reverse()
+      : ["match", "drag", "image-match"].includes(q.type)
+        ? {}
+        : "";
+  const [answer, setAnswer] = useState(initial),
     [feedback, setFeedback] = useState(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
@@ -93,6 +95,36 @@ export default function Question({
           { id: false, label: "خطأ" },
         ]
       : q.options || [];
+  if (RICH[q.type])
+    return (
+      <RichActivity
+        q={q}
+        kind={RICH[q.type]}
+        answer={answer}
+        setAnswer={(a) => {
+          setAnswer(a);
+          setFeedback(null);
+        }}
+        reset={() => {
+          setAnswer(initial());
+          setFeedback(null);
+          setShowHint(false);
+        }}
+        move={move}
+        missing={missing}
+        total={pairItems.length}
+        done={done}
+        solved={solved}
+        busy={busy}
+        error={error}
+        feedback={feedback}
+        showHint={showHint}
+        toggleHint={() => setShowHint(!showHint)}
+        onNext={onNext}
+        submit={submit}
+        resources={resources}
+      />
+    );
   return (
     <form className="p-question" onSubmit={submit}>
       <h3>{q.prompt}</h3>
@@ -425,6 +457,101 @@ export default function Question({
           ساعدني
         </button>
       </div>
+    </form>
+  );
+}
+
+// Sort, match and order: one card that fits without scrolling. Title and
+// counter on top, the activity, then one line of feedback and the buttons.
+const RICH = {
+  drag: {
+    title: "صنّف",
+    subtitle: "اسحب كل بطاقة إلى مجموعتها المناسبة.",
+    count: (n, t) => `صنّفت ${n} من ${t}`,
+    check: "تحقق من تصنيفي",
+    note: "يمكنك نقل البطاقة لتغيير اختيارك.",
+    wrong: "بعض البطاقات في المجموعة غير المناسبة.",
+  },
+  match: {
+    title: "صِل",
+    subtitle: "اضغط على عنصر، ثم اختر ما يناسبه.",
+    count: (n, t) => `وصلت ${n} من ${t}`,
+    check: "تحقق من إجابتي",
+    note: "اضغط على أي بطاقة موصولة لتغيير اختيارك.",
+    wrong: "بعض التوصيلات تحتاج مراجعة.",
+  },
+  order: {
+    title: "رتّب",
+    subtitle: "حرّك البطاقات بالأسهم لترتّب الخطوات.",
+    check: "تحقق من ترتيبي",
+    note: "يمكنك تغيير الترتيب قبل التحقق.",
+    wrong: "الترتيب يحتاج تعديلًا بسيطًا.",
+  },
+};
+
+function RichActivity({ q, kind, answer, setAnswer, reset, move, missing, total, done, solved, busy, error, feedback, showHint, toggleHint, onNext, submit, resources }) {
+  const complete = q.type === "order" || !missing;
+  const locked = done || busy;
+  const Body = { drag: ClassifyActivity, match: MatchActivity, order: OrderActivity }[q.type];
+  return (
+    <form className={`p-question ra ra-${q.type}`} onSubmit={submit}>
+      <header className="ra-head">
+        <h3>{q.title || q.prompt}</h3>
+        {kind.count && (
+          <span className="ra-count" aria-live="polite">
+            {kind.count(total - missing, total)}
+          </span>
+        )}
+        <p>{q.subtitle || (q.title ? q.prompt : kind.subtitle)}</p>
+      </header>
+      <Body
+        q={q}
+        answer={answer}
+        onChange={setAnswer}
+        onMove={move}
+        locked={locked}
+        result={feedback ? (feedback.correct ? "correct" : "wrong") : done ? "correct" : null}
+        resources={resources}
+      />
+      <div className="ra-message" role="status">
+        {error ? (
+          <p className="p-error">{error}</p>
+        ) : feedback?.correct || (solved && !feedback) ? (
+          <p className="p-success">
+            <Star weight="fill" aria-hidden="true" />
+            {feedback ? `أحسنت! ${feedback.explanation || ""}` : "سبق أن أتقنت هذا النشاط. أحسنت!"}
+            {onNext && (
+              <button type="button" className="p-button feedback-next" onClick={onNext}>
+                التالي
+                <ArrowLeft aria-hidden="true" />
+              </button>
+            )}
+          </p>
+        ) : feedback ? (
+          <p className="p-feedback">
+            <Lightbulb size={20} aria-hidden="true" />
+            {kind.wrong} {feedback.attempt > 1 ? `تلميح ${Math.min(feedback.attempt, 3)} من 3: ` : ""}
+            {feedback.hint}
+          </p>
+        ) : showHint ? (
+          <p className="p-feedback">
+            <Lightbulb size={20} aria-hidden="true" />
+            تلميح: {q.hint || "راجع بطاقة المورد ثم حاول مرة أخرى."}
+          </p>
+        ) : null}
+      </div>
+      <footer className="ra-actions">
+        <button className="p-button ra-check" disabled={locked || !complete}>
+          {busy ? "جارٍ التحقق…" : done ? "أتقنته ✓" : kind.check}
+        </button>
+        <small className="ra-note">{kind.note}</small>
+        <button type="button" className="p-secondary" onClick={reset} disabled={busy || done}>
+          <ArrowCounterClockwise size={18} aria-hidden="true" /> ابدأ من جديد
+        </button>
+        <button type="button" className="p-secondary" onClick={toggleHint} aria-pressed={showHint} disabled={done}>
+          <Lightbulb size={18} aria-hidden="true" /> تلميح
+        </button>
+      </footer>
     </form>
   );
 }

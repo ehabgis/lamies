@@ -633,3 +633,102 @@
   color: #0b5cad;
   font-weight: 800;
 }
+
+/* ---- Activity picker v2 (2026-10-20): progress once at the top, the two
+   journeys side by side, the practice types in two columns — all in blues,
+   and the whole panel visible on a laptop without scrolling. */
+.activity-picker.is-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.activity-picker.is-v2 header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0;
+}
+.activity-picker.is-v2 header h3 {
+  margin: 0;
+  font-size: 20px;
+}
+.activity-picker.is-v2 header p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #36506b;
+}
+.activity-progress {
+  grid-column: 1 / -1;
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #e3ecf5;
+}
+.activity-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #0a6fd6;
+  transition: width 300ms ease;
+}
+.activity-featured {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.activity-featured.count-1 {
+  grid-template-columns: 1fr;
+}
+.activity-picker.is-v2 .activity-card {
+  min-height: 0;
+  padding: 10px 12px;
+  gap: 10px;
+  border-radius: 16px;
+}
+.activity-picker.is-v2 .activity-feature {
+  border: 1.5px solid #9cc3ea;
+  background: #eef6ff;
+  text-decoration: none;
+}
+.activity-picker.is-v2 .activity-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
+.activity-picker.is-v2 .activity-card-icon svg {
+  width: 26px;
+  height: 26px;
+}
+.activity-picker.is-v2 .activity-card-text strong {
+  font-size: 15.5px;
+}
+.activity-picker.is-v2 .activity-card-text small {
+  font-size: 12.5px;
+}
+.activity-section-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 900;
+  color: #0b5cad;
+}
+.activity-section-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #d6e3f0;
+}
+.activity-picker.is-v2 .activity-cards {
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 0;
+}
+.activity-picker.is-v2 .activity-card-text .activity-card-count {
+  margin-top: 1px;
+  font-size: 12.5px;
+}

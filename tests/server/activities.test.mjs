@@ -25,3 +25,19 @@ test("hints get more specific with attempts and never name the answer", () => {
   }
   assert.equal(demoAnswer(q, "الحديد", "lesson-1", 1).hint, null);
 });
+
+test("lesson 1 sorts the six energy sources and matches four metals", () => {
+  const qs = demoLesson("lesson-1").content.questions;
+  const drags = qs.filter((q) => q.type === "drag");
+  assert.deepEqual(drags.map((q) => q.id), ["book-l1-drag-energy"]);
+  assert.equal(drags[0].options.length, 6);
+  assert(drags[0].options.every((o) => drags[0].optionResources[o]));
+  const matches = qs.filter((q) => q.type === "match");
+  assert.deepEqual(matches.map((q) => q.id), ["book-l1-match-uses"]);
+  assert.equal(matches[0].pairs.length, 4);
+  assert.equal(demoAnswer("book-l1-match-uses", {}, "lesson-1").correct, false);
+  const right = { iron: "السكك الحديدية والآلات الثقيلة", copper: "أسلاك الكهرباء", phosphate: "الأسمدة والمبيدات", gold: "الحلي" };
+  assert.equal(demoAnswer("book-l1-match-uses", right, "lesson-1").correct, true);
+  // The older versions still grade for saved progress.
+  assert.equal(demoAnswer("draft-drag", { "الحديد": "خامات معدنية", "الفوسفات": "خامات معدنية", "الطاقة الشمسية": "مصادر طاقة", "البترول": "مصادر طاقة" }, "lesson-1").correct, true);
+});

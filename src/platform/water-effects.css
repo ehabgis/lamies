@@ -1,0 +1,354 @@
+/* Lesson 2 symbols and effects (2026-10-20). Motion runs only while the map
+   carries .wfx-play (a few seconds after a choice) and never under
+   prefers-reduced-motion; afterwards a calm highlight stays. */
+
+/* ---- round water symbols (map key, map, card) */
+.water-symbol {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  filter: drop-shadow(0 2px 3px rgb(8 30 60 / 0.35));
+}
+.esri-resource-marker.has-water-symbol {
+  background: none;
+  border: 0;
+}
+.esri-resource-marker.has-water-symbol .water-symbol {
+  display: block;
+  transition: transform 200ms ease;
+}
+.esri-resource-marker.has-water-symbol.is-highlighted .water-symbol,
+.esri-resource-marker.has-water-symbol.is-selected .water-symbol {
+  transform: scale(1.18);
+  filter: drop-shadow(0 0 8px rgb(255 255 255 / 0.9)) drop-shadow(0 3px 5px rgb(8 30 60 / 0.4));
+}
+.classroom-legend .water-symbol {
+  width: 36px;
+  height: 36px;
+}
+.site-card-head .water-symbol {
+  width: 46px;
+  height: 46px;
+}
+
+/* ---- Nile: drawn, glowing, with arrows showing the way it flows */
+.wfx-river-glow {
+  filter: drop-shadow(0 0 6px rgb(120 200 255 / 0.9));
+}
+.wfx-flow {
+  animation-delay: 2.4s, 2.4s;
+}
+.leaflet-container:not(.wfx-play) .wfx-flow {
+  animation: none;
+  opacity: 0;
+}
+.wfx-arrow span {
+  position: relative;
+  display: block;
+  width: 24px;
+  height: 24px;
+  transform: rotate(var(--r));
+}
+.wfx-arrow svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 3px rgb(8 30 60 / 0.4));
+}
+.wfx-play .wfx-arrow span {
+  opacity: 0;
+  animation: wfx-arrow 1.4s ease-in-out calc(1.2s + var(--d)) 3 forwards;
+}
+@keyframes wfx-arrow {
+  0% {
+    opacity: 0;
+    translate: -4px 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* ---- seas: tint + moving waves */
+path.wfx-sea-waves {
+  fill: url(#wfx-waves);
+  opacity: 0.55;
+}
+.wfx-play path.wfx-sea-waves,
+.wfx-play path.wfx-sea-tint {
+  animation: wfx-fade-in 900ms ease-out both;
+}
+.wfx-play path.wfx-sea-tint {
+  filter: drop-shadow(0 0 8px rgb(140 230 255 / 0.8));
+}
+@keyframes wfx-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---- winter rain: a soft belt, clouds, falling drops */
+.wfx-rain-belt {
+  filter: blur(2px);
+}
+.wfx-cloud b {
+  position: absolute;
+  left: 4px;
+  top: 6px;
+  width: 52px;
+  height: 22px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow:
+    10px -9px 0 2px #ffffff,
+    26px -6px 0 0 #f1f5fb,
+    0 3px 6px rgb(30 50 90 / 0.35);
+}
+.wfx-cloud i {
+  position: absolute;
+  left: var(--x);
+  top: 32px;
+  width: 3px;
+  height: 9px;
+  border-radius: 2px;
+  background: #8fd0ff;
+  opacity: 0.85;
+}
+.wfx-play .wfx-cloud {
+  animation: wfx-drift 3s ease-in-out infinite alternate;
+}
+.wfx-play .wfx-cloud i {
+  opacity: 0;
+  animation: wfx-drop 0.9s linear var(--d) infinite;
+}
+.leaflet-container:not(.wfx-play) .wfx-cloud i {
+  top: 34px;
+  opacity: 0.55;
+}
+@keyframes wfx-drop {
+  0% {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: -3px 22px;
+  }
+}
+@keyframes wfx-drift {
+  to {
+    translate: 6px 0;
+  }
+}
+
+/* ---- ripples on lakes and stations; wells rise out of the ground */
+.wfx-ripple i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border: 2.5px solid color-mix(in srgb, var(--c, #0a7bff) 55%, white);
+  border-radius: 50%;
+  opacity: 0;
+}
+.leaflet-container:not(.wfx-play) .wfx-ripple i:first-child {
+  opacity: 0.8;
+  transform: scale(1.5);
+}
+.wfx-play .wfx-ripple i {
+  animation: wfx-ripple 2.2s ease-out infinite;
+}
+.wfx-play .wfx-ripple i:nth-child(2) {
+  animation-delay: 0.7s;
+}
+.wfx-play .wfx-ripple i:nth-child(3) {
+  animation-delay: 1.4s;
+}
+@keyframes wfx-ripple {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.5);
+  }
+}
+.wfx-ripple.is-well i {
+  border-radius: 50%;
+  border-style: dashed;
+}
+.wfx-wells .esri-resource-marker[data-resource-id="groundwater"] .water-symbol {
+  animation: wfx-rise 900ms cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+.wfx-wells .esri-resource-marker[data-resource-id="groundwater"]:nth-child(2n) .water-symbol {
+  animation-delay: 0.25s;
+}
+.wfx-wells .esri-resource-marker[data-resource-id="groundwater"]:nth-child(3n) .water-symbol {
+  animation-delay: 0.5s;
+}
+@keyframes wfx-rise {
+  0% {
+    transform: translateY(14px) scale(0.4);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+}
+
+/* ---- «إعادة المشاهدة» */
+.wfx-replay {
+  position: absolute;
+  z-index: 900;
+  bottom: 74px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 6px 16px;
+  border: 1.5px solid #9cc3ea;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0b4f9c;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: 0 6px 16px rgb(18 48 94 / 0.22);
+}
+
+/* ---- the guide's first words on the map */
+.map-teacher-hint {
+  position: absolute;
+  z-index: 880;
+  bottom: 74px;
+  right: 14px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: min(380px, calc(100% - 28px));
+  pointer-events: none;
+}
+.map-teacher-hint > svg,
+.map-teacher-hint > span:first-child {
+  width: 64px;
+  flex: none;
+}
+.map-teacher-hint p {
+  position: relative;
+  margin: 0 0 16px;
+  padding: 10px 14px 10px 34px;
+  border: 1.5px solid #9cc3ea;
+  border-radius: 16px 16px 4px 16px;
+  background: #ffffff;
+  color: #0b2f57;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.6;
+  box-shadow: 0 8px 20px rgb(18 48 94 / 0.2);
+  pointer-events: auto;
+}
+.map-teacher-hint button {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #eef4fa;
+  color: #36506b;
+}
+.map-teacher-hint {
+  animation: wfx-fade-in 400ms ease-out both;
+}
+
+/* ---- «عذبة أم مالحة؟» on the card */
+.site-card-water {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #eef6ff;
+  border: 1px solid #cfe2f6;
+}
+.site-card-water.is-salt {
+  background: #e9f8f6;
+  border-color: #bfe7e1;
+}
+.site-card-water h3 {
+  margin: 0 0 2px;
+  font-size: 15px;
+}
+.site-card-water p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.site-card-water .water-badge {
+  display: inline-block;
+  margin-inline-start: 6px;
+  padding: 1px 10px;
+  border-radius: 99px;
+  background: #1a62d6;
+  color: #fff;
+  font-size: 13px;
+}
+.site-card-water.is-salt .water-badge {
+  background: #0f8f84;
+}
+.site-card-water.is-change .water-badge,
+.site-card-water.is-reuse .water-badge {
+  background: #5b6fd6;
+}
+
+@media (max-width: 850px) {
+  .map-teacher-hint {
+    bottom: 12px;
+    right: 8px;
+  }
+  .map-teacher-hint > svg,
+  .map-teacher-hint > span:first-child {
+    width: 48px;
+  }
+  .map-teacher-hint p {
+    font-size: 14px;
+  }
+  /* Above the caption and the bottom bar, clear of the north-coast effects. */
+  .wfx-replay {
+    bottom: 200px;
+    min-height: 38px;
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wfx-play .wfx-arrow span,
+  .wfx-play .wfx-cloud,
+  .wfx-play .wfx-cloud i,
+  .wfx-play .wfx-ripple i,
+  .wfx-wells .esri-resource-marker .water-symbol,
+  .map-teacher-hint,
+  .wfx-play path.wfx-sea-waves,
+  .wfx-play path.wfx-sea-tint {
+    animation: none;
+  }
+}

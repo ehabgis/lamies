@@ -24,6 +24,9 @@ import {
   Info,
   Cube,
   MapPin,
+  Drop,
+  Waves,
+  Recycle,
 } from "phosphor-react";
 import * as narrator from "./narrator";
 import Shell, { PlatformNavigation } from "./Shell";
@@ -44,7 +47,8 @@ const Site3DView = lazy(() => import("./Site3DView"));
 const has3D = (r) => r?.kind === "project";
 import Question from "./Question";
 import AIAssistant from "./AIAssistant";
-import ResourcePin from "../components/Map/ResourcePin";
+import { LessonSymbol } from "../components/Map/WaterSymbol";
+import { hasWaterEffect, EFFECT_MS } from "./waterEffects";
 import { iconFamily } from "../components/Map/lessonIcons";
 import RobotGuide from "../components/Map/RobotGuide";
 import BrandMark from "./BrandMark";
@@ -119,6 +123,9 @@ export default function LessonPage({ demo = false }) {
   const [lessonOptions, setLessonOptions] = useState([]);
   const [legendOpen, setLegendOpen] = useState(() => window.innerWidth > 850);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [hello, setHello] = useState(true);
+  const cardTimer = useRef(null);
+  useEffect(() => () => clearTimeout(cardTimer.current), []);
   const [showLocationNames, setShowLocationNames] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
   const [resetMap, setResetMap] = useState(0);
@@ -365,8 +372,14 @@ export default function LessonPage({ demo = false }) {
     // them from the map caption instead; the card opens once a site is chosen.
     const mustTapSite = !singleSite && Boolean(r.locations?.length);
     const narrow = window.matchMedia("(max-width: 850px)").matches;
+    // Lesson 2 on a phone: let the child watch the map effect, then show the card.
+    const watch =
+      narrow && demo && id === "lesson-2" && hasWaterEffect(r.id) &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    clearTimeout(cardTimer.current);
     setLegendOpen(false);
-    setInfoOpen(!(narrow && mustTapSite));
+    setInfoOpen(!(narrow && mustTapSite) && !watch);
+    if (watch && !mustTapSite) cardTimer.current = setTimeout(() => setInfoOpen(true), EFFECT_MS - 1500);
     setVideoOpen(false);
     setResource(r);
     if (singleSite) {
@@ -441,12 +454,12 @@ export default function LessonPage({ demo = false }) {
       ? `أحسنت! ${resource.locations?.length ? "اضغط على أحد مواقع " + resource.label + " لتعرف المزيد." : "لم تُضف مواقع موثقة لهذا المورد بعد. يمكنك قراءة معلوماته."}`
       : discovery
         ? "اختر موردًا من مفتاح الخريطة؛ ستظهر مواقعه فقط."
-        : "مرحبًا يا مستكشف مصر الصغير! اختر موردًا من مفتاح الخريطة لنكتشف أماكن وجوده.";
+        : GREETING;
   const resourceDetails = resource &&
     (location || !resource.locations?.length) && (
       <section className="classroom-resource site-card" aria-labelledby="site-card-title">
         <header className="site-card-head">
-          <ResourcePin resource={resource} />
+          <LessonSymbol resource={resource} />
           <div>
             <h2 id="site-card-title">{resource.label}</h2>
             <span className="site-card-kind">{kindName(resource)}</span>
@@ -461,6 +474,7 @@ export default function LessonPage({ demo = false }) {
             </span>
           </p>
         )}
+        {resource.water && <WaterType water={resource.water} place={location?.name || resource.label} />}
         <SiteMedia
           key={`${resource.id}-${location?.id || ""}-${localPhotos[resource.id] || ""}`}
           label={location?.name || resource.label}
@@ -917,7 +931,7 @@ export default function LessonPage({ demo = false }) {
               aria-pressed={resource?.id === r.id}
               onClick={() => pick(r)}
             >
-              <ResourcePin resource={r} />
+              <LessonSymbol resource={r} />
               <span>
                 {r.label}
                 <small>{kindName(r)}</small>
@@ -975,6 +989,17 @@ export default function LessonPage({ demo = false }) {
               setVideoOpen(true);
             }}
           />
+          {hello && !resource && !montage && !modal && !infoOpen && !videoOpen && (
+            <div className="map-teacher-hint" role="status">
+              <RobotGuide />
+              <p>
+                {GREETING}
+                <button type="button" aria-label="إخفاء رسالة المعلم" onClick={() => setHello(false)}>
+                  <X size={16} weight="bold" aria-hidden="true" />
+                </button>
+              </p>
+            </div>
+          )}
           {montage && (
             <LessonMontage
               key={montage.section}
@@ -1315,5 +1340,29 @@ export default function LessonPage({ demo = false }) {
         </div>
       )}
     </Shell>
+  );
+}
+
+const GREETING = "مرحبًا يا مستكشف! اختر عنصرًا من مفتاح الخريطة لتكتشف أماكن وجوده في مصر.";
+
+// «عذبة أم مالحة؟» on a water card; lakes and oases name the chosen place.
+const WATER_KIND = {
+  fresh: { label: "عذبة", Icon: Drop },
+  salt: { label: "مالحة", Icon: Waves },
+  change: { label: "مالحة ← صالحة للاستخدام", Icon: Drop },
+  reuse: { label: "إعادة استخدام", Icon: Recycle },
+};
+function WaterType({ water, place }) {
+  const kind = WATER_KIND[water.type] || WATER_KIND.fresh;
+  return (
+    <section className={`site-card-water is-${water.type}`}>
+      <kind.Icon size={26} weight="duotone" aria-hidden="true" />
+      <div>
+        <h3>
+          عذبة أم مالحة؟ <span className="water-badge">{kind.label}</span>
+        </h3>
+        <p>{water.note.replace("{place}", place)}</p>
+      </div>
+    </section>
   );
 }

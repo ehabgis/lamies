@@ -606,6 +606,21 @@ LESSON_1.questions.push(
   },
 );
 
+// «عذبة أم مالحة؟» on each water card, following the book's two lists
+// (ص 76–77). {place} becomes the chosen site, so each lake gets its own line.
+LESSON_2.water = {
+  "nile-river": { type: "fresh", note: "نهر النيل مياهه عذبة، وهو المصدر الأساسي للمياه العذبة في مصر." },
+  "nile-delta": { type: "fresh", note: "فرعا دمياط ورشيد مياههما عذبة؛ لأنهما يتفرعان من نهر النيل." },
+  groundwater: { type: "fresh", note: "المياه الجوفية في {place} عذبة. توجد أيضًا مياه جوفية مالحة، لكن الواحات تعتمد على العذبة." },
+  "lake-nasser": { type: "fresh", note: "بحيرة ناصر مياهها عذبة؛ تُخزَّن فيها مياه النيل لأوقات الجفاف." },
+  "northern-lakes": { type: "salt", note: "{place} مياهها مالحة؛ فالكتاب يضع البحيرات الشمالية على البحر المتوسط ضمن المياه المالحة." },
+  "mediterranean-sea": { type: "salt", note: "البحر المتوسط مياهه مالحة، فلا نشربها مباشرة." },
+  "red-sea": { type: "salt", note: "البحر الأحمر مياهه مالحة، فلا نشربها مباشرة." },
+  "rain-harvesting-matrouh": { type: "fresh", note: "مياه الأمطار عذبة، وتسقط شتاءً على الساحل الشمالي." },
+  desalination: { type: "change", note: "تأخذ المحطة مياه البحر المالحة، وتزيل منها الأملاح لتصبح مياهًا صالحة للاستخدام." },
+  "bahr-el-baqar": { type: "reuse", note: "تعالج المحطة مياه الصرف الزراعي لإعادة استخدامها." },
+};
+
 export const TEXTBOOK_UNIT3 = { "lesson-1": LESSON_1, "lesson-2": LESSON_2, "lesson-3": LESSON_3 };
 
 // Applies the book layer on top of the assembled demo content.
@@ -628,6 +643,7 @@ export function applyTextbook(id, content) {
   for (const extra of book.newResources)
     if (!resources.some((r) => r.id === extra.id))
       resources.push({ media: { image: null, video: null }, ...structuredClone(extra) });
+  for (const r of resources) if (book.water?.[r.id]) r.water = { ...book.water[r.id] };
   const images = BOOK_IMAGES[id];
   for (const r of resources) {
     const file = images?.resources[r.id];

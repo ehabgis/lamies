@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./map-motion.css";
+import "./water-effects.css";
 import {
   SquaresFour,
   X,
@@ -13,8 +14,10 @@ import {
   MapTrifold,
   Stack,
   CornersOut,
+  ArrowCounterClockwise,
 } from "phosphor-react";
-import ResourcePin from "../components/Map/ResourcePin";
+import { LessonSymbol, hasWaterSymbol, WATER_SYMBOLS } from "../components/Map/WaterSymbol";
+import { playWaterEffect, hasWaterEffect, EFFECT_VIEW } from "./waterEffects";
 import SelectField from "./SelectField";
 import { prepareNileDraw } from "./nileDraw";
 import { BASEMAPS, EGYPT_BOUNDS, EGYPT_FIT, readBasemap } from "./mapBasemaps";
@@ -73,7 +76,9 @@ export default function EsriLessonMap({
     [features, setFeatures] = useState(null),
     [river, setRiver] = useState(null),
     [seas, setSeas] = useState(null),
-    [waterHighlights, setWaterHighlights] = useState(true),
+    // Lesson 2 now draws each water source when it is chosen (see waterEffects).
+    [waterHighlights, setWaterHighlights] = useState(false),
+    [replay, setReplay] = useState(0),
     [rail, setRail] = useState(null),
     [showRail, setShowRail] = useState(true),
     [dataError, setDataError] = useState(""),
@@ -105,6 +110,8 @@ export default function EsriLessonMap({
       keyboard: true,
     });
     mapRef.current = map;
+    // Lets browser tests read the view; development builds only.
+    if (import.meta.env.DEV) window.__lessonMap = map;
     map.fitBounds(EGYPT_BOUNDS, { ...EGYPT_FIT, animate: false });
     map.attributionControl.setPrefix(
       '<a href="https://leafletjs.com" target="_blank" rel="noopener noreferrer">Leaflet</a>',
@@ -430,17 +437,19 @@ export default function EsriLessonMap({
           interactive: false,
           className: "selected-site-ring",
         }).addTo(group);
+      const round = hasWaterSymbol(site.resource);
       const marker = L.marker([site.lat, site.lng], {
         keyboard: true,
         riseOnHover: true,
         zIndexOffset: highlighted ? 500 : 0,
-        opacity: dim ? 0.2 : 1,
+        opacity: dim ? 0.25 : 1,
         icon: L.divIcon({
-          className: `esri-resource-marker ${highlighted ? "is-highlighted" : ""} ${selectedLocationId === site.id ? "is-selected" : ""} ${waterLesson && site.resource.kind === "water" ? "water-source-glow" : ""}`,
-          html: renderToStaticMarkup(<ResourcePin resource={site.resource} />),
-          iconSize: [38, 48],
-          iconAnchor: [19, 45],
-          tooltipAnchor: [0, -35],
+          className: `esri-resource-marker ${round ? "has-water-symbol" : ""} ${highlighted ? "is-highlighted" : ""} ${selectedLocationId === site.id ? "is-selected" : ""}`,
+          html: renderToStaticMarkup(<LessonSymbol resource={site.resource} />),
+          // Round symbols sit centred on the place; pins stand on their tip.
+          iconSize: round ? [40, 40] : [38, 48],
+          iconAnchor: round ? [20, 20] : [19, 45],
+          tooltipAnchor: round ? [0, -18] : [0, -35],
         }),
       });
       marker.on("click", () => {
@@ -466,6 +475,7 @@ export default function EsriLessonMap({
         String(selectedLocationId === site.id),
       );
       element.dataset.siteId = site.id;
+      element.dataset.resourceId = site.resource.id;
       element.style.setProperty("--glow-color", site.resource.color || "#0983ff");
       element.style.setProperty("--glow-delay", `${(glowIndex++ % 6) * 0.45}s`);
       if (focusSite.current === site.id) {
@@ -551,6 +561,39 @@ export default function EsriLessonMap({
     });
     return () => map.removeLayer(group);
   }, [ready, spotlight?.lat, spotlight?.lng, spotlight?.label, spotlight?.side]);
+  // Lesson 2: the chosen water source plays its effect, then stays highlighted.
+  const effectSites = useRef(sites);
+  effectSites.current = sites;
+  const chosenSite = useRef(selectedLocationId);
+  chosenSite.current = selectedLocationId;
+  useEffect(() => {
+    if (!ready || !waterLesson || !hasWaterEffect(activeResourceId)) return;
+    const map = mapRef.current;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // A tapped site was already framed by focusLocation; a key choice frames all.
+    if (EFFECT_VIEW[activeResourceId] && !chosenSite.current) fitEffect(activeResourceId, !reduced);
+    return playWaterEffect(map, {
+      id: activeResourceId,
+      river,
+      seas,
+      sites: effectSites.current,
+      color: WATER_SYMBOLS[activeResourceId]?.color,
+      reduced,
+    });
+  }, [ready, waterLesson, activeResourceId, replay, river, seas]);
+  function fitEffect(id, animate) {
+    const map = mapRef.current;
+    const narrow = window.innerWidth <= 850;
+    map.stop();
+    map.fitBounds(EFFECT_VIEW[id], {
+      // Leave room for the resource card on wide screens; on phones the card
+      // waits for the effect, so only the toolbar and bottom bar are avoided.
+      paddingTopLeft: narrow ? [16, 110] : [16, 16],
+      paddingBottomRight: narrow ? [16, 120] : [460, 90],
+      animate,
+      duration: 0.6,
+    });
+  }
   useEffect(() => {
     if (!ready || !focusRequest) return;
     const site = sites.find((s) => s.id === focusRequest.siteId);
@@ -558,6 +601,9 @@ export default function EsriLessonMap({
   }, [ready, focusRequest]);
   function focusLocation(site) {
     const map = mapRef.current;
+    // Whole-river, whole-sea and rain-belt sources show all of themselves.
+    if (waterLesson && EFFECT_VIEW[site.resource.id] && site.resource.locations?.length === 1)
+      return fitEffect(site.resource.id, !window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     const marine = ["mediterranean-sea", "red-sea"].includes(site.resource.id);
     // National projects zoom closer, ahead of their 3D view.
     const zoom = marine
@@ -690,6 +736,11 @@ export default function EsriLessonMap({
           <CornersOut size={21} />
         </button>
       </div>
+      {waterLesson && hasWaterEffect(activeResourceId) && (
+        <button type="button" className="wfx-replay" onClick={() => setReplay((n) => n + 1)}>
+          <ArrowCounterClockwise size={18} weight="bold" aria-hidden="true" /> إعادة المشاهدة
+        </button>
+      )}
       {waterLesson && (
         <div className="water-source-key">
           <label>

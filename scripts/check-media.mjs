@@ -1,5 +1,5 @@
 // npm run media — checks teacher-added photos and videos in public/lesson-media/
-// (sites/ and water/) and says in plain Arabic why a file will not show:
+// (sites/, water/ and projects/) and says in plain Arabic why a file will not show:
 // unknown name, unsupported format (MOV), unsupported codec (H.265), or size.
 import { openSync, readSync, closeSync, statSync, readdirSync, existsSync } from "node:fs";
 import { MEDIA_ROOT, normalizeMediaName, IMAGE_EXT, VIDEO_EXT } from "../server/mediaFiles.mjs";
@@ -13,6 +13,11 @@ const waterNames = new Map([
   ["farm", "مهمة ري المزرعة"],
   ["oasis", "مهمة مياه الواحة"],
   ["coast", "مهمة المدينة الساحلية"],
+]);
+const projectNames = new Map([
+  ["wheat", "محطة الدلتا الجديدة (حصاد القمح)"],
+  ["fish", "محطة بركة غليون (أحواض الأسماك)"],
+  ["solar", "محطة بنبان (الألواح الشمسية)"],
 ]);
 
 // Scan the whole file in chunks for the codec tags MP4/WebM files carry.
@@ -50,7 +55,7 @@ function nearest(name, names) {
 }
 
 let problems = 0;
-for (const [folder, known] of [["sites", siteIds], ["water", waterNames]]) {
+for (const [folder, known] of [["sites", siteIds], ["water", waterNames], ["projects", projectNames]]) {
   const dir = MEDIA_ROOT + folder;
   console.log(`\n=== public/lesson-media/${folder}/`);
   if (!existsSync(dir)) {

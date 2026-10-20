@@ -7,7 +7,7 @@ import "./water-quest.css";
 const TRIPS = [
   { lesson: "الدرس الأول", title: "رحلة كنوز مصر", text: "المعادن ومصادر الطاقة", href: "/demo/lesson-1/expedition", image: "/lesson-media/book/lesson1_resources_map.jpg" },
   { lesson: "الدرس الثاني", title: "رحلة المياه", text: "ري المزرعة، مياه الواحة، المدينة الساحلية", href: "/demo/lesson-2/expedition", image: "/lesson-media/book/lesson2_water_map.jpg" },
-  { lesson: "الدرس الثالث", title: "رحلة المشروعات القومية", text: "قريبًا", image: "/lesson-media/book/lesson3_projects_map.jpg" },
+  { lesson: "الدرس الثالث", title: "نكتشف مشروعات مصر", text: "الدلتا الجديدة، بركة غليون، بنبان", href: "/demo/lesson-3/expedition", image: "/lesson-media/book/lesson3_projects_map.jpg" },
 ];
 
 export default function TripsPage() {

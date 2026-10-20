@@ -1222,6 +1222,7 @@ export default function LessonPage({ demo = false }) {
                       {
                         "lesson-1": { href: "/demo/lesson-1/expedition", title: "رحلة كنوز مصر", text: "اكتشف المعادن ومصادر الطاقة خطوة بخطوة على الخريطة" },
                         "lesson-2": { href: "/demo/lesson-2/expedition", title: "رحلة المياه", text: "ساعد المزرعة والواحة والمدينة الساحلية في العثور على المياه" },
+                        "lesson-3": { href: "/demo/lesson-3/expedition", title: "نكتشف مشروعات مصر", text: "زر الدلتا الجديدة وبركة غليون وبنبان" },
                       }[id] || null
                     }
                     activities={filtered}

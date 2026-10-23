@@ -14,7 +14,7 @@ test("deployment serves built pages and assets while keeping API and private fil
   writeFileSync(join(clientDir, "assets/app.js"), "console.log('Lamis')");
   writeFileSync(join(dir, "private.sqlite"), "private-data");
   symlinkSync(join(dir, "private.sqlite"), join(clientDir, "leaked.txt"));
-  const app = createApp({ dbPath: join(dir, "test.sqlite"), uploadDir: join(dir, "uploads"), clientDir });
+  const app = createApp({ dbPath: join(dir, "test.sqlite"), uploadDir: join(dir, "uploads"), clientDir, allowedOrigin: " https://lamies.onrender.com/ " });
   const server = http.createServer(app.handler);
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -28,6 +28,8 @@ test("deployment serves built pages and assets while keeping API and private fil
     const asset = await fetch(base + "/assets/app.js");
     assert.equal(asset.status, 200);
     assert.match(asset.headers.get("content-type"), /javascript/);
+    const moduleAsset = await fetch(base + "/assets/app.js", { headers: { Origin: "https://lamies.onrender.com" } });
+    assert.equal(moduleAsset.status, 200);
     const head = await fetch(base + "/assets/app.js", { method: "HEAD" });
     assert.equal(head.status, 200);
     assert.equal(await head.text(), "");
@@ -42,6 +44,8 @@ test("deployment serves built pages and assets while keeping API and private fil
     assert.equal(demo.status, 200);
     const foreign = await fetch(base + "/api/demo/catalog", { headers: { Origin: "https://other.example" } });
     assert.equal(foreign.status, 403);
+    const sameSite = await fetch(base + "/api/auth/me", { headers: { Origin: "https://lamies.onrender.com" } });
+    assert.equal(sameSite.status, 200);
   } finally {
     await new Promise((r) => server.close(r));
     app.close();

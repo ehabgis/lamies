@@ -57,7 +57,7 @@ const safeUser = (u) =>
 export function createApp({
   dbPath = process.env.LAMIS_DB || resolve("server/data/lamis.sqlite"),
   uploadDir = process.env.UPLOAD_DIR || resolve("server/data/uploads"),
-  allowedOrigin = process.env.APP_ORIGIN,
+  allowedOrigin = process.env.APP_ORIGIN || process.env.RENDER_EXTERNAL_URL,
   aiKey = process.env.OPENAI_API_KEY,
   aiModel = process.env.OPENAI_MODEL || "gpt-4.1-mini",
   fetchImpl = fetch,
@@ -365,15 +365,17 @@ export function createApp({
       const url = new URL(req.url, "http://localhost");
       const path = url.pathname;
       const method = req.method;
+      // Public built assets need no session or API Origin check. Module scripts
+      // send Origin even on same-site GETs; API protections stay below.
+      if (serveClient(req, res, path, clientDir)) return;
       const writable = !["GET", "HEAD", "OPTIONS"].includes(method);
       const origin = req.headers.origin;
-      const expected =
-        allowedOrigin ||
-        `${req.socket.encrypted ? "https" : "http"}://${req.headers.host}`;
+      const expected = allowedOrigin
+        ? new URL(allowedOrigin.trim()).origin
+        : `${req.socket.encrypted ? "https" : "http"}://${req.headers.host}`;
       if (origin && origin !== expected) fail(403, "مصدر الطلب غير مسموح");
       if (path === "/api/health" && method === "GET")
         return send({ ok: true });
-      if (serveClient(req, res, path, clientDir)) return;
       const cookie = /lamis_session=([^;]+)/.exec(
         req.headers.cookie || "",
       )?.[1];

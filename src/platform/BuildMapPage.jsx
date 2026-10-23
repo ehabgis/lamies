@@ -82,7 +82,8 @@ export default function BuildMapPage() {
   const stars = Object.values(p.placed).filter((x) => x.state === "locked").length;
   // A symbol that has not been moved yet is not checked (it costs no try).
   const pending = Object.entries(p.placed).filter(([k, v]) => items[k] && ["placed", "wrong"].includes(v.state));
-  const step = !selected && !pending.length ? 1 : pending.length ? 3 : 2;
+  // A finished round (waiting for «الجولة التالية» or its question) shows all steps done.
+  const step = roundDone ? 4 : !selected && !pending.length ? 1 : pending.length ? 3 : 2;
 
   function place(itemId, at) {
     const item = items[itemId];
@@ -307,6 +308,7 @@ export default function BuildMapPage() {
               ))}
             </ol>
           </header>
+          <div className="bm-map-wrap">
           <BuildMapCanvas
             mapRef={mapRef}
             placed={Object.fromEntries(Object.entries(p.placed).filter(([k]) => items[k]))}
@@ -317,6 +319,19 @@ export default function BuildMapPage() {
             onDropItem={(itemId, at) => place(itemId, at)}
             onMove={(itemId, at) => go({ placed: { ...p.placed, [itemId]: { ...at, state: "placed" } } })}
           />
+          {why?.final && (
+            // The round's question sits on the map, so the child sees why the
+            // next symbols have not appeared yet; it can be skipped.
+            <div className="bm-why-card" role="dialog" aria-label="سؤال قبل الجولة التالية">
+              <WhyBody why={why} onReveal={revealWhy} onDone={nextRound} />
+              {!why.shown && (
+                <button type="button" className="exp-secondary" onClick={nextRound}>
+                  تخطَّ إلى الجولة التالية <ArrowLeft size={20} aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          )}
+          </div>
           <footer className="bm-bar">
             <div className="bm-progress" aria-live="polite">
               <span>
@@ -354,25 +369,8 @@ export default function BuildMapPage() {
             <RobotGuide />
           </span>
           <strong className="bm-guide-name">المعلم الذكي</strong>
-          {why ? (
-            <div className="bm-why">
-              <p className="bm-bubble">{why.prompt}</p>
-              {!why.shown ? (
-                <WhyForm onSubmit={revealWhy} />
-              ) : (
-                <>
-                  {why.text && <p className="bm-why-mine">تفسيرك: {why.text}</p>}
-                  {why.answer && (
-                    <p className="bm-why-book">
-                      <BookOpen size={18} aria-hidden="true" /> من الكتاب: {why.answer}
-                    </p>
-                  )}
-                  <button type="button" className="exp-primary" onClick={() => (why.final ? nextRound() : setWhy(null))}>
-                    متابعة <ArrowLeft size={20} aria-hidden="true" />
-                  </button>
-                </>
-              )}
-            </div>
+          {why && !why.final ? (
+            <WhyBody why={why} onReveal={revealWhy} onDone={() => setWhy(null)} />
           ) : (
             <>
               <p className="bm-bubble" aria-live="polite">
@@ -432,5 +430,28 @@ function WhyForm({ onSubmit }) {
         قارن بإجابة الكتاب
       </button>
     </form>
+  );
+}
+
+function WhyBody({ why, onReveal, onDone }) {
+  return (
+    <div className="bm-why">
+      <p className="bm-bubble">{why.prompt}</p>
+      {!why.shown ? (
+        <WhyForm onSubmit={onReveal} />
+      ) : (
+        <>
+          {why.text && <p className="bm-why-mine">تفسيرك: {why.text}</p>}
+          {why.answer && (
+            <p className="bm-why-book">
+              <BookOpen size={18} aria-hidden="true" /> من الكتاب: {why.answer}
+            </p>
+          )}
+          <button type="button" className="exp-primary" onClick={onDone}>
+            متابعة <ArrowLeft size={20} aria-hidden="true" />
+          </button>
+        </>
+      )}
+    </div>
   );
 }

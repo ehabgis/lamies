@@ -10,7 +10,6 @@ import {
   Lightbulb,
   Gear,
   X,
-  BookOpen,
   MapTrifold,
   ArrowCounterClockwise,
 } from "phosphor-react";
@@ -58,7 +57,6 @@ export default function WaterQuestPage({ id = "lesson-2" }) {
   const [robot, setRobot] = useState("");
   const [drawn, setDrawn] = useState(false);
   const [wrongTick, setWrongTick] = useState(0);
-  const [bookMap, setBookMap] = useState(false);
   const [settings, setSettings] = useState(false);
   const talkRef = useRef(null);
 
@@ -97,9 +95,6 @@ export default function WaterQuestPage({ id = "lesson-2" }) {
       <Link to={`/demo/${id}`}>
         <MapTrifold size={22} aria-hidden="true" /> الخريطة التفاعلية
       </Link>
-      <button type="button" onClick={() => setBookMap(true)}>
-        <BookOpen size={22} aria-hidden="true" /> خريطة الكتاب
-      </button>
     </>
   );
   const frame = (children) => (
@@ -113,20 +108,6 @@ export default function WaterQuestPage({ id = "lesson-2" }) {
       className="water-quest"
     >
       {children}
-      {bookMap && (
-        <div className="wq-dialog" role="dialog" aria-modal="true" aria-label="خريطة الكتاب">
-          <div className="wq-dialog-card">
-            <header>
-              <h2>خريطة الكتاب: موارد المياه</h2>
-              <button aria-label="إغلاق" onClick={() => setBookMap(false)}>
-                <X size={22} />
-              </button>
-            </header>
-            <img src="/lesson-media/book/lesson2_water_map.jpg" alt="خريطة موارد المياه في مصر من كتاب الطالب" />
-            <small>صورة من كتاب الطالب — للمراجعة</small>
-          </div>
-        </div>
-      )}
       {settings && (
         <div className="exp-settings" role="dialog" aria-label="الإعدادات">
           <header>

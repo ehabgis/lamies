@@ -809,3 +809,22 @@
     gap: 6px;
   }
 }
+
+/* Drawing in place of a project photo */
+.pq-picture {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 14px;
+}
+.pq-picture > .wq-scene-media {
+  position: absolute;
+  inset: 0;
+}
+.pq-next .pq-picture {
+  flex: 1;
+  min-height: 0;
+  aspect-ratio: auto;
+}

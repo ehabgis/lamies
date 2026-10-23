@@ -378,14 +378,19 @@ export default function LessonPage({ demo = false }) {
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     clearTimeout(cardTimer.current);
     setLegendOpen(false);
-    setInfoOpen(!(narrow && mustTapSite) && !watch);
-    if (watch && !mustTapSite) cardTimer.current = setTimeout(() => setInfoOpen(true), EFFECT_MS - 1500);
+    // The card opens straight from the key, as in lesson 2; its site list
+    // lets the child move to each place.
+    setInfoOpen(!watch);
+    if (watch) cardTimer.current = setTimeout(() => setInfoOpen(true), EFFECT_MS - 1500);
     setVideoOpen(false);
     setResource(r);
     if (singleSite) {
       setLocation({ ...r.locations[0], resource: r });
       setFocusRequest({ siteId: r.locations[0].id, nonce: Date.now() });
-    } else setLocation(null);
+    } else {
+      setLocation(null);
+      if (mustTapSite) setFocusRequest({ resourceId: r.id, nonce: Date.now() });
+    }
     setNotice("");
   }
   function another() {
@@ -455,8 +460,7 @@ export default function LessonPage({ demo = false }) {
       : discovery
         ? "اختر موردًا من مفتاح الخريطة؛ ستظهر مواقعه فقط."
         : GREETING;
-  const resourceDetails = resource &&
-    (location || !resource.locations?.length) && (
+  const resourceDetails = resource && (
       <section className="classroom-resource site-card" aria-labelledby="site-card-title">
         <header className="site-card-head">
           <LessonSymbol resource={resource} />
@@ -511,12 +515,12 @@ export default function LessonPage({ demo = false }) {
             </span>
           </p>
         ))}
-        {location && resource.locations?.length > 1 && (
-          <section className="site-card-others" aria-label={`مواقع أخرى لـ${resource.label}`}>
-            <h3>مواقع أخرى لـ{resource.label}</h3>
+        {resource.locations?.length > (location ? 1 : 0) && (
+          <section className="site-card-others" aria-label={`${location ? "مواقع أخرى" : "مواقع"} ${resource.label}`}>
+            <h3>{location ? `مواقع أخرى لـ${resource.label}` : `أين نجد ${resource.label}؟ اختر موقعًا`}</h3>
             <div>
               {resource.locations
-                .filter((l) => l.id !== location.id)
+                .filter((l) => l.id !== location?.id)
                 .map((l) => (
                   <button
                     type="button"
@@ -890,18 +894,6 @@ export default function LessonPage({ demo = false }) {
           <button aria-pressed={showLocationNames} aria-label={showLocationNames ? "إخفاء أسماء المعالم" : "إظهار أسماء المعالم"} title="إظهار أو إخفاء أسماء المعالم على الخريطة" onClick={() => setShowLocationNames(v => !v)}>
             <span className="map-label-icon" aria-hidden="true">أ</span><span className="ux-long">أسماء المعالم</span><span className="ux-short" aria-hidden="true">المعالم</span>
           </button>
-          <button
-            id="show-guide"
-            aria-controls="lesson-guide"
-            aria-expanded={infoOpen}
-            onClick={() => {
-              setInfoOpen((v) => !v);
-              setLegendOpen(false);
-            }}
-          >
-            <ChatCircle size={21} />
-            <span className="ux-long">المعلم والمورد</span><span className="ux-short" aria-hidden="true">المعلم</span>
-          </button>
           </div>
         </div>
         <aside
@@ -1062,7 +1054,7 @@ export default function LessonPage({ demo = false }) {
                 ? "معاينة تحريرية"
                 : `${solved.length} / ${questions.length} سؤال متقن`}
           </span>
-          {!location ? (
+          {!resource ? (
             <section className="guide-speech">
               <RobotGuide />
               <h2>هيا نستكشف!</h2>

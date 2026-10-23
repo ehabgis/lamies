@@ -285,6 +285,7 @@ export default function EsriLessonMap({
   }, [ready, waterLesson, waterHighlights, river, seas]);
   useEffect(() => {
     const textbook = BASEMAPS.find((b) => b.image);
+    if (!textbook) return;
     fetch(textbook.meta)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((meta) => {
@@ -596,9 +597,25 @@ export default function EsriLessonMap({
   }
   useEffect(() => {
     if (!ready || !focusRequest) return;
+    if (focusRequest.resourceId) return fitSites(focusRequest.resourceId);
     const site = sites.find((s) => s.id === focusRequest.siteId);
     if (site) focusLocation(site);
   }, [ready, focusRequest]);
+  // A resource chosen from the key: frame all its sites beside the card.
+  function fitSites(resourceId) {
+    const map = mapRef.current;
+    const points = sites.filter((s) => s.resource.id === resourceId).map((s) => [s.lat, s.lng]);
+    if (!points.length || (waterLesson && EFFECT_VIEW[resourceId])) return;
+    const narrow = window.innerWidth <= 850;
+    map.stop();
+    map.fitBounds(points, {
+      paddingTopLeft: narrow ? [30, 110] : [70, 70],
+      paddingBottomRight: narrow ? [30, map.getSize().y * 0.5] : [470, 100],
+      maxZoom: 7,
+      animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      duration: 0.6,
+    });
+  }
   function focusLocation(site) {
     const map = mapRef.current;
     // Whole-river, whole-sea and rain-belt sources show all of themselves.
@@ -740,35 +757,6 @@ export default function EsriLessonMap({
         <button type="button" className="wfx-replay" onClick={() => setReplay((n) => n + 1)}>
           <ArrowCounterClockwise size={18} weight="bold" aria-hidden="true" /> إعادة المشاهدة
         </button>
-      )}
-      {waterLesson && (
-        <div className="water-source-key">
-          <label>
-            <input
-              type="checkbox"
-              checked={waterHighlights}
-              onChange={(e) => setWaterHighlights(e.target.checked)}
-            />
-            إبراز مصادر المياه
-          </label>
-          {waterHighlights && (
-            <div>
-              <span>
-                <i className="nile-water-swatch" />
-                نهر النيل · مياه عذبة
-              </span>
-              <span>
-                <i className="med-water-swatch" />
-                البحر المتوسط · مياه مالحة
-              </span>
-              <span>
-                <i className="red-water-swatch" />
-                البحر الأحمر · مياه مالحة
-              </span>
-              <small>مياه البحر تحتاج إلى التحلية للشرب.</small>
-            </div>
-          )}
-        </div>
       )}
       {railLesson && rail && (
         <div className="water-source-key rail-route-key">

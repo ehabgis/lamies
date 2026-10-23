@@ -213,9 +213,13 @@
   display: grid;
   gap: 8px;
 }
+/* No photo yet: one quiet line instead of a big empty box */
 .map-shell .site-media.is-empty {
-  place-items: center;
-  padding: 22px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
   border: 2px dashed #c9d8e6;
   border-radius: 16px;
   background: #f5f9fd;
@@ -223,8 +227,12 @@
   text-align: center;
 }
 .map-shell .site-media.is-empty p {
-  margin: 4px 0 0;
-  font-size: 14px;
+  margin: 0;
+  font-size: 13px;
+}
+.map-shell .site-media.is-empty svg {
+  width: 22px;
+  height: 22px;
 }
 .map-shell .site-media-tabs {
   display: grid;

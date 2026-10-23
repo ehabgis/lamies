@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Lock } from "phosphor-react";
+import { ArrowLeft, Lock, Diamond, Drop, Buildings } from "phosphor-react";
 import { Frame } from "./ExpeditionPage";
 import "./expedition.css";
 import "./water-quest.css";
 
 const TRIPS = [
-  { lesson: "الدرس الأول", title: "رحلة كنوز مصر", text: "المعادن ومصادر الطاقة", href: "/demo/lesson-1/expedition", image: "/lesson-media/book/lesson1_resources_map.jpg" },
-  { lesson: "الدرس الثاني", title: "رحلة المياه", text: "ري المزرعة، مياه الواحة، المدينة الساحلية", href: "/demo/lesson-2/expedition", image: "/lesson-media/book/lesson2_water_map.jpg" },
-  { lesson: "الدرس الثالث", title: "نكتشف مشروعات مصر", text: "الدلتا الجديدة، بركة غليون، بنبان", href: "/demo/lesson-3/expedition", image: "/lesson-media/book/lesson3_projects_map.jpg" },
+  { Icon: Diamond, lesson: "الدرس الأول", title: "رحلة كنوز مصر", text: "المعادن ومصادر الطاقة", href: "/demo/lesson-1/expedition" },
+  { Icon: Drop, lesson: "الدرس الثاني", title: "رحلة المياه", text: "ري المزرعة، مياه الواحة، المدينة الساحلية", href: "/demo/lesson-2/expedition" },
+  { Icon: Buildings, lesson: "الدرس الثالث", title: "نكتشف مشروعات مصر", text: "الدلتا الجديدة، بركة غليون، بنبان", href: "/demo/lesson-3/expedition" },
 ];
 
 export default function TripsPage() {
@@ -20,7 +20,9 @@ export default function TripsPage() {
             <li key={t.title}>
               {t.href ? (
                 <Link to={t.href} className="trip-card">
-                  <img src={t.image} alt="" loading="lazy" />
+                  <span className="trip-icon" aria-hidden="true">
+                    <t.Icon weight="duotone" />
+                  </span>
                   <small>{t.lesson}</small>
                   <b>{t.title}</b>
                   <span>{t.text}</span>
@@ -30,7 +32,9 @@ export default function TripsPage() {
                 </Link>
               ) : (
                 <div className="trip-card is-soon" aria-disabled="true">
-                  <img src={t.image} alt="" loading="lazy" />
+                  <span className="trip-icon" aria-hidden="true">
+                    <t.Icon weight="duotone" />
+                  </span>
                   <small>{t.lesson}</small>
                   <b>{t.title}</b>
                   <span>

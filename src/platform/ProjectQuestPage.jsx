@@ -263,7 +263,7 @@ export default function ProjectQuestPage({ id = "lesson-3" }) {
         <ul className="pq-cards">
           {missions.map((m) => (
             <li key={m.id}>
-              <img src={m.image} alt="" loading="lazy" />
+              <Picture src={m.image} scene={m.scene} />
               <b>{m.title}</b>
               <span>{m.benefit}</span>
               <i aria-hidden="true">{symbolOf(data.targets.find((t) => t.id === m.id)?.type)}</i>
@@ -317,7 +317,7 @@ export default function ProjectQuestPage({ id = "lesson-3" }) {
           {following && (
             <section className="pq-next">
               <h2>المحطة التالية: {following.title}</h2>
-              <img src={following.image} alt="" loading="lazy" />
+              <Picture src={following.image} scene={following.scene} />
               <button className="exp-primary" onClick={() => startMission(following)}>
                 اكتشف المشروع التالي <ArrowLeft size={22} aria-hidden="true" />
               </button>
@@ -426,10 +426,9 @@ export default function ProjectQuestPage({ id = "lesson-3" }) {
       <div className="pq-use">
         <figure className="pq-project">
           <figcaption>{p.found?.label || mission.title}</figcaption>
-          <img src={p.info?.image || mission.image} alt={p.info?.alt || ""} />
+          <Picture src={p.info?.image || mission.image} scene={mission.scene} alt={p.info?.alt} />
           <p>{p.info?.text}</p>
           {p.info?.text && <NarrationControls compact text={p.info.text} />}
-          <small>{p.info?.credit}</small>
         </figure>
         <div className="pq-use-map">
           <ProjectQuestMap targets={data.targets} found={p.found} compact />
@@ -488,5 +487,16 @@ export default function ProjectQuestPage({ id = "lesson-3" }) {
         </section>
       </div>
     </>,
+  );
+}
+
+// A teacher photo of the project, or the station's drawing when there is none.
+function Picture({ src, scene, alt = "" }) {
+  return src ? (
+    <img src={src} alt={alt} loading="lazy" />
+  ) : (
+    <span className="pq-picture">
+      <ProjectScene scene={{ ...scene, image: null, video: null }} />
+    </span>
   );
 }

@@ -206,7 +206,15 @@ export default function ExpeditionPage({ demo = true }) {
                   go({ missionId: m.id });
                 }}
               >
-                <img src={m.image} alt="" loading="lazy" />
+                {m.image ? (
+                  <img src={m.image} alt="" loading="lazy" />
+                ) : (
+                  <span className="exp-mission-symbols" aria-hidden="true">
+                    {m.resources.map((id) => (
+                      <ResourcePin key={id} resource={{ id }} />
+                    ))}
+                  </span>
+                )}
                 {locked && (
                   <span className="exp-lock">
                     <Lock size={20} weight="fill" aria-hidden="true" /> مقفلة

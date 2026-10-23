@@ -592,3 +592,38 @@
     animation: none;
   }
 }
+
+/* Round question over the map (2026-10-23) */
+.bm-map-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.bm-map-wrap > .bm-map {
+  flex: 1;
+}
+.bm-why-card {
+  position: absolute;
+  z-index: 900;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(440px, calc(100% - 24px));
+  max-height: calc(100% - 24px);
+  overflow: auto;
+  padding: 16px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgb(18 48 94 / 0.3);
+}
+.bm-why-card .bm-bubble {
+  font-size: 18px;
+  font-weight: 900;
+}
+.bm-why-card textarea {
+  height: 64px;
+}

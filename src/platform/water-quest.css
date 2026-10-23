@@ -762,6 +762,19 @@
 a.trip-card:hover {
   border-color: #1f8bff;
 }
+.trip-icon {
+  display: grid;
+  place-items: center;
+  height: 150px;
+  margin-bottom: 6px;
+  border-radius: 14px;
+  background: linear-gradient(#e6f1fb, #cfe4f7);
+  color: #0a6fd6;
+}
+.trip-icon svg {
+  width: 72px;
+  height: 72px;
+}
 .trip-card img {
   width: 100%;
   height: 150px;

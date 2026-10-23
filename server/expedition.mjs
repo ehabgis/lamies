@@ -6,7 +6,6 @@
 // The public view (expeditionPublic) never includes answers or which map site
 // belongs to which resource; checkExpedition grades on the server.
 
-const IMG = "/lesson-media/book/";
 const CREDIT = "صورة من كتاب الطالب";
 const APPROX = "موضع تقريبي للمكان المذكور في الكتاب، يحتاج مراجعة المعلم.";
 
@@ -30,7 +29,7 @@ const RESOURCES = {
   iron: {
     label: "الحديد",
     kind: "mineral",
-    image: IMG + "lesson1_iron.jpg",
+    image: null,
     say: "الحديد",
     watch: "الحديد خام معدني يُستخدم في صناعة الآلات ووسائل النقل والسكك الحديدية. توجد خامات الحديد في الواحات البحرية بالصحراء الغربية.",
     sites: ["s1"],
@@ -50,7 +49,7 @@ const RESOURCES = {
   manganese: {
     label: "المنجنيز",
     kind: "mineral",
-    image: IMG + "lesson1_manganese.jpg",
+    image: null,
     say: "المَنْجَنيز",
     watch: "المنجنيز خام معدني يدخل في صناعة الصلب والدهانات. يُستخرج المنجنيز من أم بجمة في شبه جزيرة سيناء.",
     sites: ["s2"],
@@ -67,7 +66,7 @@ const RESOURCES = {
   phosphate: {
     label: "الفوسفات",
     kind: "mineral",
-    image: IMG + "lesson1_phosphate.jpg",
+    image: null,
     say: "الفوسفات",
     watch: "الفوسفات خام معدني يُستخدم في صناعة الأسمدة الكيماوية والمبيدات الحشرية. يُستخرج من منطقة أبو طرطور بالصحراء الغربية.",
     sites: ["s3"],
@@ -84,7 +83,7 @@ const RESOURCES = {
   gold: {
     label: "الذهب",
     kind: "mineral",
-    image: IMG + "lesson1_gold.jpg",
+    image: null,
     say: "الذَّهَب",
     watch: "الذهب من المعادن النادرة، يُستخدم في صناعة الحُلي ويدخل في علاج بعض الأمراض. يُستخرج الذهب من منجم السكري بالصحراء الشرقية.",
     sites: ["s4"],
@@ -137,7 +136,7 @@ const RESOURCES = {
   gas: {
     label: "الغاز الطبيعي",
     kind: "nonrenewable",
-    image: IMG + "lesson1_gas.jpg",
+    image: null,
     say: "الغازُ الطبيعي",
     watch: "الغاز الطبيعي مصدر طاقة غير متجدد، يُستخدم في البيوت وتوليد الكهرباء ووقودًا لبعض وسائل النقل. من أشهر حقوله حقل ظُهر في البحر المتوسط شمال بورسعيد.",
     note: "هذا موقع استخراج في البحر.",
@@ -155,7 +154,7 @@ const RESOURCES = {
   wind: {
     label: "طاقة الرياح",
     kind: "renewable",
-    image: IMG + "lesson1_gabal_elzeit.jpg",
+    image: null,
     say: "طاقةُ الرِّياح",
     watch: "طاقة الرياح مصدر متجدد ونظيف لا ينفد. تُستخدم الرياح في توليد الكهرباء، ومن أضخم محطاتها جبل الزيت والزعفرانة بمحافظة البحر الأحمر.",
     note: "هذه محطات لإنتاج الكهرباء، وليست مواقع استخراج.",
@@ -173,7 +172,7 @@ const RESOURCES = {
   solar: {
     label: "الطاقة الشمسية",
     kind: "renewable",
-    image: IMG + "lesson1_benban.jpg",
+    image: null,
     say: "الطاقةُ الشَّمسيّة",
     watch: "الطاقة الشمسية مصدر متجدد ونظيف. مصر من أكثر الدول ملاءمة لها لأن الشمس تسطع على أرضها طوال العام. من مشروعاتها محطة بنبان بأسوان ومحطة الكريمات بالجيزة.",
     note: "هذه محطات لإنتاج الكهرباء، وليست مواقع استخراج.",
@@ -195,7 +194,7 @@ const MISSIONS = [
     id: "minerals",
     title: "كنوز المعادن",
     subtitle: "اكتشف الموارد الأربعة",
-    image: IMG + "lesson1_iron.jpg",
+    image: null,
     resources: ["iron", "manganese", "phosphate", "gold"],
     intro: "هيا نكتشف الخامات المعدنية ومصادر الطاقة في مصر!",
   },
@@ -203,7 +202,7 @@ const MISSIONS = [
     id: "energy",
     title: "مصادر الطاقة",
     subtitle: "اكتشف خمسة مصادر للطاقة",
-    image: IMG + "lesson1_gabal_elzeit.jpg",
+    image: null,
     resources: ["oil", "coal", "gas", "wind", "solar"],
     intro: "فتحت مهمة مصادر الطاقة! منها ما يُستخرج من الأرض، ومنها ما يُنتج الكهرباء من الشمس والرياح.",
   },

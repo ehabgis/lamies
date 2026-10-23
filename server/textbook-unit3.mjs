@@ -11,33 +11,9 @@ const BOOK = "كتاب الطالب — الدراسات الاجتماعية �
 const APPROX = "موضع تقريبي للمكان المذكور في الكتاب، يحتاج مراجعة المعلم.";
 const NOT_IN_BOOK = "إضافة من النسخة السابقة؛ غير مذكورة في كتاب الطالب.";
 
-// Photos and maps cropped from the same student book (public/lesson-media/book).
+// Photos and maps cropped from the student book used to live here; they are
+// no longer shown (2026-10-23).
 const IMG = "/lesson-media/book/";
-const CREDIT = "صورة من كتاب الطالب — الدراسات الاجتماعية، الصف الخامس";
-const BOOK_IMAGES = {
-  "lesson-1": {
-    map: ["lesson1_resources_map.jpg", "خريطة (1): توزيع بعض المعادن ومصادر الطاقة في مصر"],
-    resources: {
-      iron: "lesson1_iron.jpg", copper: "lesson1_copper.jpg", gold: "lesson1_gold.jpg",
-      phosphate: "lesson1_phosphate.jpg", manganese: "lesson1_manganese.jpg",
-      gas: "lesson1_gas.jpg", hydro: "lesson1_high_dam.jpg", solar: "lesson1_benban.jpg",
-      wind: "lesson1_gabal_elzeit.jpg",
-    },
-  },
-  "lesson-2": {
-    map: ["lesson2_water_map.jpg", "خريطة (2): مصادر المياه في مصر"],
-    resources: { "nile-river": "lesson2_nile_aswan.jpg" },
-  },
-  "lesson-3": {
-    map: ["lesson3_projects_map.jpg", "خريطة (1): نماذج من المشروعات القومية بمصر"],
-    resources: {
-      "new-delta": "lesson3_new_delta.jpg", "birket-ghalioun": "lesson3_birket_ghalioun.jpg",
-      "new-administrative-capital": "lesson3_new_capital.jpg", "rod-el-farag": "lesson3_rod_el_farag.jpg",
-      "new-suez-canal": "lesson3_suez_canal_map.jpg", "benban-solar": "lesson3_benban.jpg",
-      "wind-farms": "lesson3_gabal_elzeit.jpg",
-    },
-  },
-};
 
 const loc = (id, name, lat, lng, approximate = true) => ({ id, name, lat, lng, ...(approximate ? { approximate } : {}) });
 
@@ -644,12 +620,10 @@ export function applyTextbook(id, content) {
     if (!resources.some((r) => r.id === extra.id))
       resources.push({ media: { image: null, video: null }, ...structuredClone(extra) });
   for (const r of resources) if (book.water?.[r.id]) r.water = { ...book.water[r.id] };
-  const images = BOOK_IMAGES[id];
-  for (const r of resources) {
-    const file = images?.resources[r.id];
-    if (file)
-      r.media = { ...(r.media || {}), image: IMG + file, imageCredit: CREDIT };
-  }
+  // Photos cropped from the student book are no longer shown (2026-10-23);
+  // teacher photos come from public/lesson-media/sites/ instead.
+  for (const r of resources)
+    if (r.media?.image?.startsWith(IMG)) r.media = { ...r.media, image: null, imageCredit: null };
   const bookIds = new Set(book.questions.map((q) => q.id));
   return {
     ...content,
@@ -681,9 +655,7 @@ export function applyTextbook(id, content) {
       realLife: book.realLife,
       funFacts: [...book.funFacts],
       secrets: [],
-      bookMap: images?.map
-        ? { src: IMG + images.map[0], caption: images.map[1], credit: CREDIT }
-        : null,
+      bookMap: null,
     },
   };
 }

@@ -8,8 +8,6 @@
 
 import { mediaIndex, findMedia, IMAGE_EXT, VIDEO_EXT } from "./mediaFiles.mjs";
 
-const BOOK = "/lesson-media/book/";
-const CREDIT = "صورة من كتاب الطالب — الدراسات الاجتماعية، الصف الخامس";
 
 // What the child can press on the map: the three project symbols.
 const TARGETS = {
@@ -33,7 +31,6 @@ const MISSIONS = [
     hints: ["الغرب على يسار الخريطة، ابحث غرب الدلتا.", "الدلتا هي المثلث الأخضر في شمال مصر؛ المشروع على يساره."],
     focus: { lat: 30.6, lng: 30.6, radiusKm: 150 },
     info: {
-      image: `${BOOK}lesson3_new_delta.jpg`,
       alt: "أراضٍ زراعية جديدة في مشروع الدلتا الجديدة",
       text: "هذا مشروع الدلتا الجديدة. تُستصلح فيه أراضٍ جديدة وتُزرع بمحاصيل مثل القمح.",
     },
@@ -61,7 +58,6 @@ const MISSIONS = [
     hints: ["كفر الشيخ في شمال الدلتا، على ساحل البحر المتوسط.", "ابحث عند الحافة الشمالية للمثلث الأخضر بجوار البحر."],
     focus: { lat: 31.35, lng: 30.9, radiusKm: 110 },
     info: {
-      image: `${BOOK}lesson3_birket_ghalioun.jpg`,
       alt: "أحواض الاستزراع السمكي في بركة غليون",
       text: "يساعد مشروع بركة غليون على زيادة إنتاج الأسماك وتوفير فرص عمل.",
     },
@@ -89,7 +85,6 @@ const MISSIONS = [
     hints: ["الجنوب في أسفل الخريطة.", "أسوان على نهر النيل في أقصى جنوب مصر."],
     focus: { lat: 24.6, lng: 32.8, radiusKm: 160 },
     info: {
-      image: `${BOOK}lesson3_benban.jpg`,
       alt: "ألواح محطة بنبان للطاقة الشمسية",
       text: "يولّد مشروع بنبان الكهرباء من الشمس، وتتميز المنطقة بسطوع الشمس معظم العام.",
     },
@@ -128,7 +123,6 @@ export function projectQuestPublic(lessonId) {
     welcome: "مرحبًا يا مستكشف! هيا نتعرّف على مشروعات تساعد على توفير الغذاء والكهرباء وتحسين حياة الناس.",
     finale: "أحسنت يا مستكشف! تعرّفت على مواقع ثلاثة مشروعات، واكتشفت كيف تساعد على تحسين حياتنا.",
     badge: BADGE,
-    imageCredit: CREDIT,
     // Every symbol is on the map from the start, so the positions say nothing
     // about which one is right.
     targets: Object.entries(TARGETS).map(([id, t]) => ({ id, type: t.type, lat: t.lat, lng: t.lng })),
@@ -136,7 +130,8 @@ export function projectQuestPublic(lessonId) {
       id: m.id,
       title: m.title,
       benefit: m.benefit,
-      image: m.info.image,
+      // A teacher photo named after the project (e.g. new-delta.jpg), if any.
+      image: findMedia("projects", mediaIndex("projects"), m.id, IMAGE_EXT),
       scene: sceneMedia(m.scene),
       findPrompt: m.findPrompt,
       use: { prompt: m.use.prompt, options: [...m.use.options] },
@@ -165,7 +160,7 @@ export function checkProjectQuest(lessonId, body = {}) {
       return {
         correct: true,
         found: { target: t, label: TARGETS[t].name, lat: TARGETS[t].lat, lng: TARGETS[t].lng },
-        info: { ...m.info, credit: CREDIT },
+        info: { ...m.info, image: findMedia("projects", mediaIndex("projects"), m.id, IMAGE_EXT) },
       };
     return { correct: false, hint: m.wrong };
   }

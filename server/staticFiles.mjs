@@ -41,13 +41,31 @@ export function serveClient(req, res, pathname, clientDir) {
     if (!actual.startsWith(root + sep)) return false;
     const type = types[extname(actual).toLowerCase()];
     if (!type || !info.isFile()) return false;
-    res.writeHead(200, {
+    const headers = {
       "Content-Type": type,
-      "Content-Length": info.size,
       "Cache-Control": "no-cache",
       "X-Content-Type-Options": "nosniff",
       "Referrer-Policy": "same-origin",
-    });
+      "Accept-Ranges": "bytes",
+    };
+    // Video and audio are asked for in pieces (Range); Safari and iPad will
+    // not play a video at all without 206 replies.
+    const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || "");
+    if (range && (range[1] || range[2])) {
+      const size = info.size;
+      let start = range[1] ? Number(range[1]) : Math.max(0, size - Number(range[2]));
+      let end = range[1] && range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
+      if (start >= size || start > end) {
+        res.writeHead(416, { ...headers, "Content-Range": `bytes */${size}` });
+        res.end();
+        return true;
+      }
+      res.writeHead(206, { ...headers, "Content-Length": end - start + 1, "Content-Range": `bytes ${start}-${end}/${size}` });
+      if (req.method === "HEAD") res.end();
+      else createReadStream(actual, { start, end }).on("error", () => res.destroy()).pipe(res);
+      return true;
+    }
+    res.writeHead(200, { ...headers, "Content-Length": info.size });
     if (req.method === "HEAD") res.end();
     else createReadStream(actual).on("error", () => res.destroy()).pipe(res);
     return true;

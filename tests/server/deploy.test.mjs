@@ -52,3 +52,31 @@ test("deployment serves built pages and assets while keeping API and private fil
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("videos are served in pieces so Safari and iPad can play them", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "lamis-range-"));
+  const clientDir = join(dir, "dist");
+  mkdirSync(join(clientDir, "lesson-media"), { recursive: true });
+  writeFileSync(join(clientDir, "index.html"), "<!doctype html>");
+  writeFileSync(join(clientDir, "lesson-media/clip.mp4"), Buffer.from("0123456789"));
+  const app = createApp({ dbPath: join(dir, "t.sqlite"), uploadDir: join(dir, "up"), clientDir });
+  const server = http.createServer(app.handler);
+  await new Promise((r) => server.listen(0, "127.0.0.1", r));
+  const url = `http://127.0.0.1:${server.address().port}/lesson-media/clip.mp4`;
+  try {
+    const part = await fetch(url, { headers: { Range: "bytes=2-5" } });
+    assert.equal(part.status, 206);
+    assert.equal(part.headers.get("content-range"), "bytes 2-5/10");
+    assert.equal(await part.text(), "2345");
+    const tail = await fetch(url, { headers: { Range: "bytes=-3" } });
+    assert.equal(await tail.text(), "789");
+    assert.equal((await fetch(url, { headers: { Range: "bytes=20-" } })).status, 416);
+    const whole = await fetch(url);
+    assert.equal(whole.status, 200);
+    assert.equal(whole.headers.get("accept-ranges"), "bytes");
+  } finally {
+    await new Promise((r) => server.close(r));
+    app.close?.();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

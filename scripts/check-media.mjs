@@ -18,6 +18,9 @@ const projectNames = new Map([
   ["wheat", "محطة الدلتا الجديدة (حصاد القمح)"],
   ["fish", "محطة بركة غليون (أحواض الأسماك)"],
   ["solar", "محطة بنبان (الألواح الشمسية)"],
+  ["new-delta", "صورة مشروع الدلتا الجديدة"],
+  ["birket-ghalioun", "صورة مشروع بركة غليون"],
+  ["benban-solar", "صورة مشروع بنبان"],
 ]);
 
 // Scan the whole file in chunks for the codec tags MP4/WebM files carry.

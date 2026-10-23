@@ -113,6 +113,12 @@ function sceneMedia(scene) {
   };
 }
 
+// A photo of the project itself: projects/<id>.jpg, or the same place's photo
+// on the lesson map (sites/<id>.jpg).
+function projectPhoto(id) {
+  return findMedia("projects", mediaIndex("projects"), id, IMAGE_EXT) || findMedia("sites", mediaIndex("sites"), id, IMAGE_EXT);
+}
+
 export function projectQuestPublic(lessonId) {
   if (lessonId !== "lesson-3") return null;
   return {
@@ -131,7 +137,7 @@ export function projectQuestPublic(lessonId) {
       title: m.title,
       benefit: m.benefit,
       // A teacher photo named after the project (e.g. new-delta.jpg), if any.
-      image: findMedia("projects", mediaIndex("projects"), m.id, IMAGE_EXT),
+      image: projectPhoto(m.id),
       scene: sceneMedia(m.scene),
       findPrompt: m.findPrompt,
       use: { prompt: m.use.prompt, options: [...m.use.options] },
@@ -160,7 +166,7 @@ export function checkProjectQuest(lessonId, body = {}) {
       return {
         correct: true,
         found: { target: t, label: TARGETS[t].name, lat: TARGETS[t].lat, lng: TARGETS[t].lng },
-        info: { ...m.info, image: findMedia("projects", mediaIndex("projects"), m.id, IMAGE_EXT) },
+        info: { ...m.info, image: projectPhoto(m.id) },
       };
     return { correct: false, hint: m.wrong };
   }

@@ -1,3 +1,4 @@
+import { mediaIndex, findMedia, IMAGE_EXT } from "./mediaFiles.mjs";
 // «رحلة كنوز مصر» — the exploration activity of lesson 1 (unit 3, Grade 5).
 // Facts follow the student book (pp. 68–75); coordinates are the project's
 // existing lesson-1 sites (server/seed-content.json) unless marked
@@ -6,7 +7,6 @@
 // The public view (expeditionPublic) never includes answers or which map site
 // belongs to which resource; checkExpedition grades on the server.
 
-const CREDIT = "صورة من كتاب الطالب";
 const APPROX = "موضع تقريبي للمكان المذكور في الكتاب، يحتاج مراجعة المعلم.";
 
 // Every site that can appear on the map. Opaque ids so the map question
@@ -229,16 +229,34 @@ const FINAL = {
   ],
 };
 
+// Photos come from the lesson map's site folder (public/lesson-media/sites/),
+// so one teacher photo serves the map card and this journey.
+const SITE_PHOTO = {
+  s1: "iron-bahariya",
+  s2: "manganese-umm-bogma",
+  s3: "phosphate-abu-tartur",
+  s4: "gold-sukari",
+  s5: "oil-gulf-suez",
+  s6: "coal-maghara",
+  s7: "gas-zohr",
+  s8: "wind-zafarana",
+  s9: "wind-gabal-elzeit-1",
+  s10: "solar-benban",
+  s11: "solar-kuraymat",
+};
+
 export function expeditionPublic(lessonId) {
   if (lessonId !== "lesson-1") return null;
+  const photos = mediaIndex("sites");
+  const photoOf = (r) => r.sites.map((s) => findMedia("sites", photos, SITE_PHOTO[s], IMAGE_EXT)).find(Boolean) || null;
   const strip = (id) => {
-    const r = RESOURCES[id];
+    const r = { ...RESOURCES[id], image: photoOf(RESOURCES[id]) };
     return {
       id,
       label: r.label,
       kind: r.kind,
       image: r.image,
-      imageCredit: r.image ? CREDIT : null,
+      imageCredit: null,
       say: r.say,
       watch: r.watch,
       note: r.note || null,

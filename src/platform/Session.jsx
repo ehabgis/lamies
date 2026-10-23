@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { api } from "./api";
+import { chooseAccount } from "./guestProfile";
 const Context = createContext(null);
 export function SessionProvider({ children }) {
   const [user, setUser] = useState(null),
@@ -22,6 +23,10 @@ export function SessionProvider({ children }) {
   useEffect(() => {
     refresh();
   }, []);
+  // A signed-in student gets their own journey progress on this device.
+  useEffect(() => {
+    if (user?.role === "student") chooseAccount(user);
+  }, [user?.id]);
   async function logout() {
     await api("/auth/logout", { method: "POST" });
     setUser(null);

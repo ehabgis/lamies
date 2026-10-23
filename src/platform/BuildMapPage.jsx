@@ -23,6 +23,7 @@ import { play, resourceSound } from "./sfx";
 import { Frame } from "./ExpeditionPage";
 import "./expedition.css";
 import "./build-map.css";
+import { studentKey } from "./guestProfile";
 
 const STEPS = [
   { label: "اختر الرمز", Icon: HandPointing },
@@ -30,7 +31,7 @@ const STEPS = [
   { label: "تحقّق من إجابتك", Icon: CheckCircle },
 ];
 const fresh = { round: 0, placed: {}, attempts: {}, hints: {}, reflections: {}, finished: false };
-const storageKey = (id) => `lamis.buildmap.${id}.v1`;
+const storageKey = (id) => studentKey(`lamis.buildmap.${id}.v1`);
 const load = (id) => {
   try {
     return { ...fresh, ...JSON.parse(localStorage.getItem(storageKey(id)) || "{}") };

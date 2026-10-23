@@ -3,9 +3,12 @@
 // is graded or awarded: the journeys are checked on the server, and this page
 // only counts what they recorded on the device (demo / guest mode).
 
+import { studentKey } from "./guestProfile.js";
+
+// Every key is the current student's own copy (see guestProfile.js).
 const read = (key) => {
   try {
-    return JSON.parse(localStorage.getItem(key) || "null");
+    return JSON.parse(localStorage.getItem(studentKey(key)) || "null");
   } catch {
     return null;
   }
@@ -77,6 +80,6 @@ export function loadCertificate() {
 }
 export function saveCertificate(next) {
   try {
-    localStorage.setItem(CERT_KEY, JSON.stringify({ ...loadCertificate(), ...next }));
+    localStorage.setItem(studentKey(CERT_KEY), JSON.stringify({ ...loadCertificate(), ...next }));
   } catch {}
 }

@@ -23,6 +23,7 @@ import { play } from "./sfx";
 import { Frame } from "./ExpeditionPage";
 import "./expedition.css";
 import "./water-quest.css";
+import { studentKey } from "./guestProfile";
 
 const STEPS = ["شاهد واكتشف", "ابحث على الخريطة", "استخدم ما تعلمته"];
 const LEGEND = [
@@ -39,7 +40,7 @@ const KEY_TARGETS = [
   ["rain", "علامة الأمطار"],
 ];
 const fresh = { view: "start", missionId: null, step: 1, done: {} };
-const storageKey = (id) => `lamis.water.${id}.v1`;
+const storageKey = (id) => studentKey(`lamis.water.${id}.v1`);
 const loadProgress = (id) => {
   try {
     return { ...fresh, ...JSON.parse(localStorage.getItem(storageKey(id)) || "{}") };

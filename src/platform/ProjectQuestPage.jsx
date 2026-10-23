@@ -26,6 +26,7 @@ import { Frame } from "./ExpeditionPage";
 import "./expedition.css";
 import "./water-quest.css";
 import "./project-quest.css";
+import { studentKey } from "./guestProfile";
 
 const STEPS = [
   { label: "شاهد واكتشف", Icon: Eye },
@@ -33,7 +34,7 @@ const STEPS = [
   { label: "استخدم ما تعلمته", Icon: Notepad },
 ];
 const fresh = { view: "start", missionId: null, step: 1, done: {} };
-const storageKey = (id) => `lamis.projects.${id}.v1`;
+const storageKey = (id) => studentKey(`lamis.projects.${id}.v1`);
 const loadProgress = (id) => {
   try {
     return { ...fresh, ...JSON.parse(localStorage.getItem(storageKey(id)) || "{}") };

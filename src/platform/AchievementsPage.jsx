@@ -20,7 +20,7 @@ import {
 import RobotGuide from "../components/Map/RobotGuide";
 import BrandMark from "./BrandMark";
 import { Frame } from "./ExpeditionPage";
-import { loadGuest } from "./guestProfile";
+import { loadGuest, currentStudent } from "./guestProfile";
 import { readAchievements, loadCertificate, saveCertificate } from "./achievements";
 import { play } from "./sfx";
 import "./expedition.css";
@@ -46,7 +46,7 @@ export default function AchievementsPage() {
   const [cert, setCert] = useState(loadCertificate);
   const [badge, setBadge] = useState(null);
   const [asking, setAsking] = useState(false);
-  const guestName = loadGuest().name || "";
+  const guestName = currentStudent()?.name || loadGuest().name || "";
   const firstName = (cert.name || guestName).trim().split(/\s+/)[0];
   const showing = pathname.endsWith("/certificate") && a.eligible && cert.name;
 
@@ -201,7 +201,10 @@ export default function AchievementsPage() {
               </Link>
             )
           )}
-          <small className="ach-note">التقدم محفوظ على هذا الجهاز.</small>
+          <small className="ach-note">
+            {guestName ? `هذا تقدم ${guestName} على هذا الجهاز. ` : "التقدم محفوظ على هذا الجهاز. "}
+            <Link to="/">طالب آخر؟ اكتب اسمك</Link>
+          </small>
         </div>
       </section>
 

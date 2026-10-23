@@ -24,10 +24,11 @@ import NarrationControls from "./NarrationControls";
 import * as narrator from "./narrator";
 import { play, resourceSound } from "./sfx";
 import "./expedition.css";
+import { studentKey } from "./guestProfile";
 
 const STEPS = ["شاهد واكتشف", "ابحث على الخريطة", "استخدم ما تعلمته"];
 const initial = { view: "start", missionId: "minerals", resourceId: null, step: 1, done: {}, finalDone: false };
-const storageKey = (id) => `lamis.expedition.${id}.v1`;
+const storageKey = (id) => studentKey(`lamis.expedition.${id}.v1`);
 const loadProgress = (id) => {
   try {
     return { ...initial, ...JSON.parse(localStorage.getItem(storageKey(id)) || "{}") };

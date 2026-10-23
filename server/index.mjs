@@ -14,6 +14,7 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { database, unpack, roles, kinds } from "./db.mjs";
+import { serveClient } from "./staticFiles.mjs";
 export function hashPassword(password) {
   const salt = randomBytes(16).toString("hex");
   return salt + ":" + scryptSync(password, salt, 64).toString("hex");
@@ -60,6 +61,7 @@ export function createApp({
   aiKey = process.env.OPENAI_API_KEY,
   aiModel = process.env.OPENAI_MODEL || "gpt-4.1-mini",
   fetchImpl = fetch,
+  clientDir = resolve("dist"),
 } = {}) {
   const db = database(dbPath);
   mkdirSync(uploadDir, { recursive: true });
@@ -369,6 +371,9 @@ export function createApp({
         allowedOrigin ||
         `${req.socket.encrypted ? "https" : "http"}://${req.headers.host}`;
       if (origin && origin !== expected) fail(403, "مصدر الطلب غير مسموح");
+      if (path === "/api/health" && method === "GET")
+        return send({ ok: true });
+      if (serveClient(req, res, path, clientDir)) return;
       const cookie = /lamis_session=([^;]+)/.exec(
         req.headers.cookie || "",
       )?.[1];

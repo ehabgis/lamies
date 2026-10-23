@@ -17,7 +17,7 @@ const TALK_TO_MAP_URL = 'https://talk-with-map.vercel.app/';
 
 const QUICK_LINKS = [
   { label: 'الدروس', path: '/lessons', icon: Books },
-  { label: 'جوائزي', path: '/awards', icon: Trophy }
+  { label: 'إنجازاتي', path: '/achievements', icon: Trophy }
 ];
 
 const MAP_PINS = [

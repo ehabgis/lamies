@@ -85,7 +85,6 @@ export default function ProjectQuestPage({ id = "lesson-3" }) {
       stars={data ? stars : undefined}
       lessonPath="/explore"
       onSettings={data ? () => setSettings(true) : undefined}
-      onAwards={() => go({ view: stars === missions.length && missions.length ? "badge" : "start" })}
       extraNav={
         <Link to={`/demo/${id}`}>
           <MapTrifold size={22} aria-hidden="true" /> الخريطة التفاعلية

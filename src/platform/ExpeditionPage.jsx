@@ -507,7 +507,6 @@ export default function ExpeditionPage({ demo = true }) {
       title={data.lessonTitle}
       stars={stars}
       onSettings={() => setSettingsOpen(true)}
-      onAwards={() => go({ view: p.finalDone ? "done" : "start" })}
       lessonPath={`/demo/${id}`}
     >
       <ol className="exp-path" aria-label="مسار التعلم">
@@ -564,7 +563,7 @@ export default function ExpeditionPage({ demo = true }) {
   );
 }
 
-export function Frame({ title, children, stars, onSettings, onAwards, lessonPath = "/demo/lesson-1", extraNav, className = "" }) {
+export function Frame({ title, children, stars, onSettings, lessonPath = "/demo/lesson-1", extraNav, className = "", current = "trips" }) {
   return (
     <div className={`lamis-platform expedition ${className}`} dir="rtl">
       <header className="exp-top">
@@ -596,14 +595,20 @@ export function Frame({ title, children, stars, onSettings, onAwards, lessonPath
           <BookOpen size={22} aria-hidden="true" /> الدروس
         </Link>
         {extraNav}
-        <Link to="/demo/trips" className="is-current" aria-current="page">
+        <Link
+          to="/demo/trips"
+          className={current === "trips" ? "is-current" : ""}
+          aria-current={current === "trips" ? "page" : undefined}
+        >
           <MapTrifold size={22} aria-hidden="true" /> الرحلات
         </Link>
-        {onAwards && (
-          <button type="button" onClick={onAwards}>
-            <Trophy size={22} aria-hidden="true" /> الجوائز
-          </button>
-        )}
+        <Link
+          to="/achievements"
+          className={current === "achievements" ? "is-current" : ""}
+          aria-current={current === "achievements" ? "page" : undefined}
+        >
+          <Trophy size={22} aria-hidden="true" /> إنجازاتي
+        </Link>
       </nav>
     </div>
   );

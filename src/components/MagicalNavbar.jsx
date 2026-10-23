@@ -12,7 +12,7 @@ const NAV_ITEMS = [
   { path: '/lessons', icon: BookOpen, label: 'الدروس', color: 'sky' },
   { path: TALK_TO_MAP_URL, icon: GlobeHemisphereEast, label: 'تحدث مع الخريطة', color: 'cyan', external: true },
   { path: '/map', icon: MapTrifold, label: 'الخريطة', color: 'pink' },
-  { path: '/awards', icon: Trophy, label: 'الجوائز', color: 'rose' }
+  { path: '/achievements', icon: Trophy, label: 'إنجازاتي', color: 'rose' }
 ];
 
 const ACTIVE_ICON_STYLES = {

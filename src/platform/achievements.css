@@ -1,0 +1,651 @@
+/* «إنجازاتي» and the certificate (2026-10-23). */
+.achievements .exp-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---- head */
+.ach-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.ach-head h1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 30px;
+  color: #0b2f57;
+}
+.ach-head h1 svg {
+  color: #f5b301;
+}
+.ach-hello {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-weight: 900;
+  color: #0a6fd6;
+}
+.ach-robot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 460px;
+}
+.ach-robot p {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 16px 16px 4px 16px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgb(11 47 87 / 0.12);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.6;
+  color: #0b2f57;
+}
+.ach-robot span {
+  flex: none;
+  width: 70px;
+}
+.ach-robot svg,
+.ach-dialog-robot svg {
+  width: 100%;
+  height: auto;
+}
+
+.ach-empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 18px;
+  background: #fff7dc;
+  border: 1px solid #f3dc8f;
+}
+.ach-empty p {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 900;
+  color: #6b4a00;
+}
+.ach-empty .exp-primary,
+.ach-cert .exp-primary {
+  width: auto;
+  text-decoration: none;
+}
+
+/* ---- cards */
+.ach-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.6fr) 1.6fr 1fr;
+  gap: 12px;
+}
+.ach-card {
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgb(11 47 87 / 0.1);
+}
+.ach-card h2 {
+  margin: 0 0 8px;
+  font-size: 19px;
+  color: #0b2f57;
+}
+.ach-stars {
+  text-align: center;
+}
+.ach-stars p {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 6px 0;
+}
+.ach-stars p svg {
+  color: #f5b301;
+}
+.ach-stars b {
+  font-size: 44px;
+  color: #0b2f57;
+  font-variant-numeric: tabular-nums;
+}
+.ach-stars span {
+  font-weight: 800;
+  color: #36506b;
+}
+.ach-stars small {
+  color: #4a6178;
+  font-weight: 700;
+}
+
+.ach-badges ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ach-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 112px;
+  padding: 6px 2px;
+  border: 2px solid transparent;
+  border-radius: 16px;
+  background: none;
+  color: #6b8299;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  line-height: 1.35;
+  cursor: pointer;
+}
+.ach-badge.is-earned {
+  color: #0b2f57;
+}
+.ach-badge.is-open {
+  border-color: #9cc3ea;
+  background: #f1f7fe;
+}
+.ach-badge-hex {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 70px;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background: #dbe5ee;
+  color: #9aabbd;
+}
+.ach-badge-hex svg {
+  width: 34px;
+  height: 34px;
+}
+.ach-badge.is-earned .ach-badge-hex {
+  background: linear-gradient(#ffd75e, #f2a900);
+  color: #0b4f9c;
+}
+.ach-badge-lock {
+  position: absolute;
+  bottom: 12px;
+  width: 18px !important;
+  height: 18px !important;
+  color: #6b8299;
+}
+.ach-badge-info {
+  min-height: 1.6em;
+  margin: 8px 0 0;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: #f3f7fb;
+  color: #12345a;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.ach-journeys ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ach-journeys a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #f3f7fb;
+  color: #12345a;
+  text-decoration: none;
+}
+.ach-journeys a > svg {
+  color: #1f9d55;
+  flex: none;
+}
+.ach-journeys b {
+  flex: 1;
+  font-size: 15px;
+}
+.ach-dot {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid #c9d5e1;
+}
+.ach-dot.is-active {
+  border-color: #0a6fd6;
+  background: radial-gradient(#0a6fd6 40%, transparent 42%);
+}
+.ach-status {
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-size: 12.5px;
+  font-weight: 800;
+  background: #e3ecf5;
+  color: #36506b;
+  white-space: nowrap;
+}
+.ach-status.is-active {
+  background: #e6f1ff;
+  color: #0b5cad;
+}
+.ach-status.is-done {
+  background: #e7f6ec;
+  color: #12673b;
+}
+
+/* ---- certificate card */
+.ach-cert {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.ach-cert-art {
+  position: relative;
+  flex: none;
+  width: 150px;
+  height: 112px;
+}
+.ach-cert-paper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  padding: 10px;
+  border: 4px double #b9c7d6;
+  border-radius: 8px;
+  background: #f3f6f9;
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+.ach-cert-paper i {
+  display: block;
+  width: 70%;
+  height: 6px;
+  border-radius: 3px;
+  background: #c9d5e1;
+}
+.ach-cert-lock,
+.ach-cert-medal {
+  position: absolute;
+  inset-inline-end: -8px;
+  bottom: -8px;
+  width: 44px;
+  height: 44px;
+}
+.ach-cert-lock {
+  color: #6b8299;
+}
+.ach-cert-medal {
+  color: #f2a900;
+  filter: drop-shadow(0 3px 4px rgb(160 100 0 / 0.4));
+}
+.ach-cert.is-ready {
+  background: linear-gradient(120deg, #fffaf0, #fff2d1);
+  border: 1px solid #f3dc8f;
+}
+.ach-cert.is-ready .ach-cert-paper {
+  filter: none;
+  opacity: 1;
+  border-color: #2f6fb8;
+  background: #ffffff;
+}
+.ach-cert-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ach-cert-body h2 {
+  margin: 0;
+  font-size: 22px;
+}
+.ach-cert-body p {
+  margin: 0;
+  font-weight: 700;
+  color: #36506b;
+}
+.ach-cert-ready {
+  font-size: 18px;
+  color: #a86400 !important;
+  font-weight: 900 !important;
+}
+.ach-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+  color: #12345a;
+}
+.ach-bar {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  max-width: 260px;
+}
+.ach-bar i {
+  flex: 1;
+  height: 10px;
+  border-radius: 5px;
+  background: #e3ecf5;
+}
+.ach-bar i.is-done {
+  background: #0a6fd6;
+}
+.ach-cert-body .exp-primary {
+  align-self: flex-start;
+}
+.ach-note {
+  color: #6b8299;
+  font-size: 12px;
+}
+
+/* ---- name dialog */
+.ach-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(11 47 87 / 0.45);
+}
+.ach-dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(460px, 100%);
+  padding: 22px 22px 18px 120px;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgb(11 47 87 / 0.35);
+}
+.ach-dialog h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #0b2f57;
+}
+.ach-dialog p {
+  margin: 0;
+  color: #36506b;
+  font-weight: 700;
+}
+.ach-dialog label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 800;
+  color: #12345a;
+}
+.ach-dialog input {
+  min-height: 46px;
+  padding: 6px 12px;
+  border: 1.5px solid #b9cde2;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 18px;
+}
+.ach-dialog input[aria-invalid="true"] {
+  border-color: #c2410c;
+}
+.ach-dialog-robot {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  translate: 0 -50%;
+  width: 96px;
+}
+.ach-dialog-actions {
+  display: flex;
+  gap: 8px;
+}
+.ach-dialog-actions > * {
+  flex: 1;
+}
+.ach-x {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #eef4fa;
+  color: #36506b;
+}
+.ach-error {
+  color: #b42318 !important;
+  font-weight: 800 !important;
+}
+
+/* ---- the certificate */
+.cert-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.cert-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  color: #0b4f9c;
+  font: inherit;
+  font-weight: 800;
+}
+.cert-sheet {
+  width: min(900px, 100%);
+  aspect-ratio: 297 / 210;
+  padding: 18px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgb(11 47 87 / 0.18);
+  container-type: inline-size;
+}
+.cert-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4cqw;
+  height: 100%;
+  padding: 3cqw 8cqw;
+  border: 0.7cqw double #1f4f9a;
+  outline: 0.25cqw solid #c9a227;
+  outline-offset: -1.6cqw;
+  text-align: center;
+  color: #0b2f57;
+}
+.cert-corner {
+  position: absolute;
+  width: 5cqw;
+  height: 5cqw;
+  border: 0.45cqw solid #c9a227;
+}
+.cert-corner.tl {
+  top: 2.4cqw;
+  left: 2.4cqw;
+  border-right: 0;
+  border-bottom: 0;
+}
+.cert-corner.tr {
+  top: 2.4cqw;
+  right: 2.4cqw;
+  border-left: 0;
+  border-bottom: 0;
+}
+.cert-corner.bl {
+  bottom: 2.4cqw;
+  left: 2.4cqw;
+  border-right: 0;
+  border-top: 0;
+}
+.cert-corner.br {
+  bottom: 2.4cqw;
+  right: 2.4cqw;
+  border-left: 0;
+  border-top: 0;
+}
+.cert-logo svg {
+  width: 6.5cqw;
+  height: 6.5cqw;
+}
+.cert-medal {
+  position: absolute;
+  inset-inline-end: 6cqw;
+  top: 38%;
+  width: 12cqw;
+  height: 12cqw;
+  color: #e3a10e;
+  filter: drop-shadow(0 0.4cqw 0.6cqw rgb(150 90 0 / 0.35));
+}
+.cert-sheet h1 {
+  margin: 0;
+  font-size: 6.4cqw;
+  font-weight: 900;
+  color: #b07400;
+}
+.cert-to {
+  margin: 0;
+  font-size: 2.6cqw;
+  font-weight: 700;
+}
+.cert-name {
+  margin: 0;
+  font-size: 5.6cqw;
+  font-weight: 900;
+  color: #0b2f57;
+}
+.cert-for,
+.cert-grade {
+  margin: 0;
+  font-size: 2.3cqw;
+  font-weight: 700;
+}
+.cert-grade {
+  color: #36506b;
+}
+.cert-frame footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4cqw;
+  margin-top: 1.2cqw;
+  font-size: 2.1cqw;
+}
+.cert-frame footer b {
+  font-size: 2.6cqw;
+}
+.cert-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.cert-actions .exp-primary,
+.cert-actions .exp-secondary {
+  width: auto;
+  min-width: 170px;
+}
+
+@media (max-width: 900px) {
+  .ach-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .ach-badges {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+}
+@media (max-width: 640px) {
+  .ach-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ach-grid {
+    grid-template-columns: 1fr;
+  }
+  .ach-badges {
+    grid-column: auto;
+  }
+  .ach-empty,
+  .ach-cert {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  .ach-cert-art {
+    align-self: center;
+  }
+  .ach-cert-body .exp-primary {
+    align-self: stretch;
+  }
+  .ach-progress {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .ach-bar {
+    width: 100%;
+    max-width: none;
+  }
+  .ach-dialog {
+    padding: 22px 18px 18px;
+  }
+  .ach-dialog-robot {
+    display: none;
+  }
+  .cert-sheet {
+    padding: 8px;
+  }
+}
+
+/* Print: the certificate alone on A4 landscape */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .cert-sheet,
+  .cert-sheet * {
+    visibility: visible;
+  }
+  .cert-sheet {
+    position: fixed;
+    inset: 0;
+    width: 297mm;
+    height: 210mm;
+    box-shadow: none;
+    padding: 8mm;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+.ach-x svg {
+  width: 20px;
+  height: 20px;
+}

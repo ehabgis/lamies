@@ -103,7 +103,6 @@ export default function WaterQuestPage({ id = "lesson-2" }) {
       stars={data ? stars : undefined}
       lessonPath="/explore"
       onSettings={data ? () => setSettings(true) : undefined}
-      onAwards={() => go({ view: allDone ? "badge" : "start" })}
       extraNav={nav}
       className="water-quest"
     >

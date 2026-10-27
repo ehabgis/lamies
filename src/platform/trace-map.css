@@ -1,0 +1,605 @@
+/* «تتبّع وارسم خريطتك» (2026-10-27): a calm worksheet in light blues. */
+.trace-map .exp-main {
+  display: flex;
+  flex-direction: column;
+}
+/* A fixed height (not flex) so the map and panel never push the page down;
+   the panel scrolls inside itself on short screens. */
+.tm-layout {
+  display: grid;
+  grid-template-columns: minmax(290px, 340px) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 16px;
+  height: calc(100vh - 175px);
+  min-height: 440px;
+}
+.tm-board,
+.tm-svg {
+  user-select: none;
+  -webkit-user-select: none;
+}
+.tm-crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  color: #36506b;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.tm-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  overflow: auto;
+}
+.tm-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 25px;
+  color: #0b2f57;
+}
+.tm-title svg {
+  color: #f2a900;
+}
+.tm-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid #d6e5f3;
+  border-radius: 18px;
+  background: #ffffff;
+}
+.tm-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 18px;
+  color: #0b2f57;
+}
+.tm-card h2 > svg {
+  color: #0a6fd6;
+}
+.tm-card p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #12345a;
+}
+.tm-count {
+  margin-inline-start: auto;
+  padding: 2px 12px;
+  border-radius: 99px;
+  background: #e6f1ff;
+  color: #0b4f9c;
+  font-size: 14px;
+}
+.tm-tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.tm-tool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 62px;
+  padding: 6px;
+  border: 1.5px solid #cfe0f2;
+  border-radius: 14px;
+  background: #f4f9ff;
+  color: #0b4f9c;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+}
+.tm-tool.is-active {
+  border-color: #0a62d6;
+  background: #0a62d6;
+  color: #ffffff;
+}
+.tm-tool:disabled {
+  color: #9aabbd;
+}
+.tm-card .tm-toggle {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e3ecf5;
+  font-weight: 800;
+  color: #12345a;
+  cursor: pointer;
+}
+.tm-toggle input {
+  position: absolute;
+  opacity: 0;
+  inset-inline-end: 0;
+  width: 52px;
+  height: 28px;
+  margin: 0;
+}
+.tm-switch {
+  margin-inline-start: auto;
+  width: 52px;
+  height: 28px;
+  border-radius: 99px;
+  background: #c9d5e1;
+  position: relative;
+  transition: background 0.2s;
+}
+.tm-switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  transition: right 0.2s;
+}
+.tm-toggle input:checked + .tm-switch {
+  background: #0a62d6;
+}
+.tm-toggle input:checked + .tm-switch::after {
+  right: 27px;
+}
+.tm-toggle input:focus-visible + .tm-switch {
+  outline: 3px solid #ffe066;
+  outline-offset: 2px;
+}
+.tm-robot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tm-robot p {
+  flex: 1;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 16px 16px 4px 16px;
+  background: #eaf3ff;
+  color: #0b2f57;
+  font-weight: 800;
+  line-height: 1.6;
+}
+.tm-robot span {
+  flex: none;
+  width: 58px;
+}
+.tm-robot svg,
+.tm-start-robot svg {
+  width: 100%;
+  height: auto;
+}
+.tm-panel .exp-primary,
+.tm-panel .exp-secondary {
+  width: 100%;
+  text-decoration: none;
+}
+.tm-finish {
+  min-height: 52px;
+  font-size: 18px;
+}
+.tm-note {
+  display: flex;
+  gap: 6px;
+  color: #4a6178;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.tm-row {
+  display: flex;
+  gap: 8px;
+}
+.tm-row > * {
+  flex: 1;
+}
+.tm-result.is-good {
+  border-color: #9fdcb8;
+  background: #f1fbf5;
+}
+.tm-result.is-good h2 svg {
+  color: #f5b301;
+}
+.tm-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px !important;
+}
+.tm-names {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tm-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 48px;
+  border: 2px solid #9cc3ea;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #0b2f57;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 900;
+}
+.tm-name.is-picked {
+  border-color: #0a62d6;
+  background: #e6f1ff;
+}
+.tm-name.is-placed {
+  border-color: #9fdcb8;
+  color: #12673b;
+  background: #f1fbf5;
+}
+
+/* ---- board */
+.tm-board {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+.tm-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tm-steps li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 50px;
+  border-radius: 14px;
+  background: #e2eefb;
+  color: #0b2f57;
+  font-size: 19px;
+  font-weight: 900;
+  clip-path: polygon(0 0, 94% 0, 100% 50%, 94% 100%, 0 100%, 6% 50%);
+}
+.tm-steps li:first-child {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 6% 50%);
+}
+.tm-steps li.is-current {
+  background: #0a62d6;
+  color: #ffffff;
+}
+.tm-steps li.is-done {
+  color: #12673b;
+}
+.tm-step-num {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #0a62d6;
+}
+.tm-paper {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid #cfe0f2;
+  border-radius: 20px;
+  background: #f6f9fc;
+}
+.tm-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  outline: none;
+}
+.tm-svg:focus-visible {
+  box-shadow: inset 0 0 0 3px #ffe066;
+}
+.tm-svg.tool-pen {
+  cursor: crosshair;
+}
+.tm-svg.tool-eraser {
+  cursor: cell;
+}
+.tm-svg.tool-move {
+  cursor: grab;
+}
+.tm-svg.tool-place {
+  cursor: copy;
+}
+.tm-land-other {
+  fill: #eef2f6;
+}
+.tm-sea {
+  fill: #c8e4f8;
+}
+.tm-egypt-edge path {
+  fill: none;
+  stroke: #7d93ab;
+  stroke-width: 5;
+  stroke-linejoin: round;
+}
+.tm-egypt path {
+  fill: #ffffff;
+  stroke: #ffffff;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+.tm-sea-names text,
+.tm-sea-placed {
+  fill: #5b7f9f;
+  font-size: 30px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+.tm-sea-placed {
+  fill: #0b4f9c;
+}
+.tm-guide path {
+  fill: none;
+  stroke: #8db3dd;
+  stroke-width: 6;
+  stroke-dasharray: 14 10;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.85;
+}
+.tm-ends circle.is-start {
+  fill: #ffffff;
+  stroke: #0a62d6;
+  stroke-width: 5;
+}
+.tm-ends circle.is-end {
+  fill: #ffffff;
+  stroke: #12a36b;
+  stroke-width: 5;
+}
+.tm-ends text {
+  fill: #0a62d6;
+  font-size: 26px;
+  font-weight: 900;
+}
+.tm-strokes path {
+  fill: none;
+  stroke: #0a62d6;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tm-compare path {
+  fill: none;
+  stroke: #12a36b;
+  stroke-width: 4;
+  stroke-dasharray: 10 8;
+  stroke-linecap: round;
+}
+.tm-cursor {
+  fill: rgb(10 98 214 / 0.25);
+  stroke: #0a62d6;
+  stroke-width: 3;
+}
+.tm-layer-chip {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.95);
+  color: #12345a;
+  font-size: 14px;
+  font-weight: 800;
+  pointer-events: none;
+}
+.tm-map-legend {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.95);
+  font-size: 14px;
+  font-weight: 800;
+  color: #12345a;
+  pointer-events: none;
+}
+.tm-map-legend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tm-swatch-guide,
+.tm-swatch-mine,
+.tm-swatch-model {
+  display: inline-block;
+  width: 34px;
+  height: 0;
+  border-top: 4px dashed #8db3dd;
+}
+.tm-swatch-mine {
+  border-top: 5px solid #0a62d6;
+  border-radius: 3px;
+}
+.tm-swatch-model {
+  border-top: 4px dashed #12a36b;
+}
+.tm-zoom {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tm-zoom button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #cfe0f2;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0b4f9c;
+}
+
+/* ---- start */
+.tm-start {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+.tm-start .tm-crumb {
+  align-self: flex-start;
+}
+.tm-start-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: min(560px, 100%);
+  padding: 28px 24px;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgb(11 47 87 / 0.12);
+  text-align: center;
+}
+.tm-start-icon {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: #e6f1ff;
+  color: #0a62d6;
+}
+.tm-start-icon svg {
+  width: 44px;
+  height: 44px;
+}
+.tm-start-card h1 {
+  margin: 0;
+  font-size: 30px;
+  color: #0b2f57;
+}
+.tm-start-card > p {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #36506b;
+}
+.tm-start-robot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: start;
+}
+.tm-start-robot span {
+  flex: none;
+  width: 80px;
+}
+.tm-start-robot p {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #eaf3ff;
+  font-weight: 800;
+  line-height: 1.7;
+  color: #0b2f57;
+}
+.tm-start-card .exp-primary {
+  width: auto;
+  min-width: 220px;
+}
+
+@media (max-width: 900px) {
+  .tm-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    height: auto;
+  }
+  .tm-board {
+    order: -1;
+  }
+  .tm-paper {
+    height: 62vh;
+    flex: none;
+  }
+  .tm-steps li {
+    font-size: 15px;
+    gap: 6px;
+    min-height: 44px;
+  }
+  .tm-step-num {
+    width: 26px;
+    height: 26px;
+  }
+  .tm-panel {
+    overflow: visible;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tm-switch,
+  .tm-switch::after {
+    transition: none;
+  }
+}
+/* The paper takes the room that is left; the map fits inside it. */
+.tm-paper {
+  flex: 1 1 0;
+}
+.tm-svg {
+  position: absolute;
+  inset: 0;
+}
+.tm-title {
+  font-size: 22px;
+}
+@media (max-width: 900px) {
+  .tm-paper {
+    flex: none;
+  }
+}
+
+.trace-map .tm-title {
+  font-size: 22px;
+  line-height: 1.3;
+}
+.tm-sea-names text,
+.tm-sea-placed {
+  font-size: 26px;
+}
+/* Phones: the map comes first, so «انتهيت من الرسم» stays in reach. */
+@media (max-width: 900px) {
+  .tm-finish {
+    position: sticky;
+    bottom: 78px;
+    z-index: 5;
+    box-shadow: 0 8px 20px rgb(10 98 214 / 0.35);
+  }
+}

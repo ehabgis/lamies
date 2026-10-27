@@ -1,6 +1,7 @@
 import { expeditionPublic, checkExpedition } from "./expedition.mjs";
 import { waterQuestPublic, checkWaterQuest } from "./waterQuest.mjs";
 import { projectQuestPublic, checkProjectQuest } from "./projectQuest.mjs";
+import { traceMapPublic, checkTraceMap } from "./traceMap.mjs";
 import { buildMapPublic, checkBuildMap } from "./buildMap.mjs";
 import { DEMO_IDS, demoLesson, demoAnswer, demoCatalog, gradedHint } from "./demo.mjs";
 import http from "node:http";
@@ -397,6 +398,7 @@ export function createApp({
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/answers`),
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/expedition/check`),
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/build-map/check`),
+          ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/trace/check`),
         ].includes(path)
       ) {
         if (!user) fail(401, "سجّل الدخول أولًا");
@@ -446,6 +448,22 @@ export function createApp({
                 ? checkProjectQuest(expMatch[1], b)
                 : checkExpedition(expMatch[1], b);
           if (!result) fail(400, "الخطوة غير موجودة");
+          return send(result);
+        }
+        fail(405, "العملية غير متاحة");
+      }
+      // «تتبّع وارسم خريطتك»: drawings compared with the Nile here.
+      const traceMatch = path.match(/^\/api\/demo\/lessons\/([^/]+)\/trace(?:\/(check))?$/);
+      if (traceMatch) {
+        if (method === "GET" && !traceMatch[2]) {
+          const activity = traceMapPublic(traceMatch[1]);
+          if (!activity) fail(404, "لا يوجد نشاط «تتبّع وارسم خريطتك» لهذا الدرس");
+          return send({ activity });
+        }
+        if (method === "POST" && traceMatch[2]) {
+          rate(`trace:${req.socket.remoteAddress}`, 120);
+          const result = checkTraceMap(traceMatch[1], await body(req));
+          if (!result) fail(400, "المحاولة غير صالحة");
           return send(result);
         }
         fail(405, "العملية غير متاحة");

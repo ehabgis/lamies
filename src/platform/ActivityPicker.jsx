@@ -33,7 +33,7 @@ const FALLBACK = { title: "نشاط", hint: "أجب ثم اضغط تحقق", Ico
 
 export const activityMeta = (q) => META[q?.kind] || META[q?.type] || FALLBACK;
 
-export default function ActivityPicker({ activities, solved, hasBuildMap, onPick, onBuildMap, expedition, buildMapHref }) {
+export default function ActivityPicker({ activities, solved, hasBuildMap, onPick, onBuildMap, expedition, buildMapHref, traceHref }) {
   const done = activities.filter((q) => solved.includes(q.id)).length;
   // Same-type activities share one card (e.g. four «أكمل الفراغ» become one).
   const groups = [];
@@ -46,6 +46,7 @@ export default function ActivityPicker({ activities, solved, hasBuildMap, onPick
   const featured = [
     expedition && { href: expedition.href, title: expedition.title, text: "شاهد، ابحث، واكتشف", Icon: Compass },
     buildMapHref && { href: buildMapHref, title: "ابنِ خريطتك", text: "ضع الموارد في أماكنها", Icon: MapTrifold },
+    traceHref && { href: traceHref, title: "تتبّع وارسم خريطتك", text: "تدرّب على رسم معالم خريطة مصر خطوة بخطوة", Icon: PencilSimple },
   ].filter(Boolean);
   return (
     <section className="activity-picker is-v2" aria-labelledby="activity-picker-title">

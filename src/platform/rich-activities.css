@@ -760,3 +760,8 @@ button.ra-card:not(:disabled):hover {
     font-size: 19px;
   }
 }
+
+/* Three featured activities (lesson 2 adds «تتبّع وارسم خريطتك») */
+.activity-featured.count-3 {
+  grid-template-columns: repeat(3, 1fr);
+}

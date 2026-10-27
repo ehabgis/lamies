@@ -1220,6 +1220,7 @@ export default function LessonPage({ demo = false }) {
                     activities={filtered}
                     solved={solved}
                     buildMapHref={demo ? `/demo/${id}/build-map` : null}
+                    traceHref={demo && id === "lesson-2" ? `/demo/${id}/trace` : null}
                     hasBuildMap={!demo && questions.some((q) => q.type === "map")}
                     onBuildMap={() => {
                       setIndex(0);

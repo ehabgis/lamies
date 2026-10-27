@@ -17,6 +17,7 @@ const JourneyPage = lazy(() => import("./platform/JourneyPage"));
 const ClassroomPage = lazy(() => import("./platform/LessonPage"));
 const TripRoute = lazy(() => import("./platform/TripRoute"));
 const AchievementsPage = lazy(() => import("./platform/AchievementsPage"));
+const TraceMapPage = lazy(() => import("./platform/TraceMapPage"));
 const TripsPage = lazy(() => import("./platform/TripsPage"));
 const BuildMapPage = lazy(() => import("./platform/BuildMapPage"));
 const StudentProgress = lazy(() => import("./platform/ProgressPage"));
@@ -129,6 +130,7 @@ function AppContent() {
             <Route path="/achievements/certificate" element={<AchievementsPage />} />
             <Route path="/demo/trips" element={<TripsPage />} />
             <Route path="/demo/:id/build-map" element={<BuildMapPage />} />
+            <Route path="/demo/:id/trace" element={<TraceMapPage />} />
             <Route element={<AccountGuard />}>
               <Route path="/journey" element={<JourneyPage />} />
               <Route path="/my-progress" element={<StudentProgress />} />

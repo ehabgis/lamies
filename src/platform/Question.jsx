@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowUp, ArrowDown, Star, Lightbulb, Check, X, ArrowLeft, ArrowCounterClockwise } from "phosphor-react";
+import { ArrowUp, ArrowDown, Star, Lightbulb, Check, X, ArrowLeft, ArrowCounterClockwise, CheckCircle } from "phosphor-react";
 import { ClassifyActivity, MatchActivity, OrderActivity } from "./ActivityKinds";
 
 const LETTERS = ["أ", "ب", "ج", "د", "هـ", "و"];
@@ -542,15 +542,19 @@ function RichActivity({ q, kind, answer, setAnswer, reset, move, missing, total,
       </div>
       <footer className="ra-actions">
         <button className="p-button ra-check" disabled={locked || !complete}>
+          {!busy && !done && <CheckCircle size={22} weight="fill" aria-hidden="true" />}
           {busy ? "جارٍ التحقق…" : done ? "أتقنته ✓" : kind.check}
         </button>
         <small className="ra-note">{kind.note}</small>
-        <button type="button" className="p-secondary" onClick={reset} disabled={busy || done}>
-          <ArrowCounterClockwise size={18} aria-hidden="true" /> ابدأ من جديد
-        </button>
-        <button type="button" className="p-secondary" onClick={toggleHint} aria-pressed={showHint} disabled={done}>
-          <Lightbulb size={18} aria-hidden="true" /> تلميح
-        </button>
+        {/* In the sort activity these two sit in a side column (see CSS). */}
+        <span className="ra-side">
+          <button type="button" className="p-secondary ra-side-hint" onClick={toggleHint} aria-pressed={showHint} disabled={done}>
+            <Lightbulb size={22} weight="duotone" aria-hidden="true" /> تلميح
+          </button>
+          <button type="button" className="p-secondary" onClick={reset} disabled={busy || done}>
+            <ArrowCounterClockwise size={22} aria-hidden="true" /> ابدأ من جديد
+          </button>
+        </span>
       </footer>
     </form>
   );

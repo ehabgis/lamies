@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowUp, ArrowDown, Wind, Lightning } from "phosphor-react";
+import { ArrowUp, ArrowDown, Wind, Lightning, Package } from "phosphor-react";
 import ResourcePin from "../components/Map/ResourcePin";
 
 const label = (o) => (typeof o === "object" ? o.label || o.name || o.id : o);
@@ -82,7 +82,7 @@ export function ClassifyActivity({ q, answer, onChange, locked, resources = [] }
       >
         {r && (
           <span className="ra-card-icon" aria-hidden="true">
-            <ResourcePin resource={r} />
+            {ENERGY_ICON[r.id] || <ResourcePin resource={r} />}
           </span>
         )}
         <span>{item.label}</span>
@@ -120,7 +120,10 @@ export function ClassifyActivity({ q, answer, onChange, locked, resources = [] }
               {inside.length ? (
                 <div className="ra-zone-cards">{inside.map((item) => card(item, true))}</div>
               ) : (
-                <span className="ra-zone-empty">ضع البطاقات هنا</span>
+                <span className="ra-zone-empty">
+                  <Package size={40} weight="duotone" aria-hidden="true" />
+                  اسحب البطاقات هنا
+                </span>
               )}
             </div>
           );
@@ -129,7 +132,7 @@ export function ClassifyActivity({ q, answer, onChange, locked, resources = [] }
       {ghostItem &&
         createPortal(
           <span className="ra-ghost" style={{ left: ghost.x, top: ghost.y }} aria-hidden="true">
-            {resource(ghostItem.id) && <ResourcePin resource={resource(ghostItem.id)} />}
+            {resource(ghostItem.id) && (ENERGY_ICON[resource(ghostItem.id).id] || <ResourcePin resource={resource(ghostItem.id)} />)}
             {ghostItem.label}
           </span>,
           document.body,
@@ -348,3 +351,55 @@ function Turbine({ weight, ...props }) {
     </svg>
   );
 }
+
+// Flat pictures for the six energy cards of the sort activity (simpler than
+// the map pins, and each source looks different at a glance).
+const ENERGY_ICON = {
+  coal: (
+    <svg viewBox="0 0 48 48">
+      <path d="M6 38l5-12 9-4 6 5 8-6 9 6 3 11z" fill="#3b4148" />
+      <path d="M11 26l9-4 6 5-4 11H6z" fill="#545b63" />
+      <path d="M26 27l8-6 9 6-5 11H22z" fill="#2c3137" />
+      <path d="M14 27l5-2 3 3" stroke="#7d868f" strokeWidth="1.5" fill="none" />
+    </svg>
+  ),
+  solar: (
+    <svg viewBox="0 0 48 48">
+      <g stroke="#f4a40b" strokeWidth="3" strokeLinecap="round">
+        <path d="M24 4v6M24 38v6M4 24h6M38 24h6M10 10l4 4M34 34l4 4M38 10l-4 4M14 34l-4 4" />
+      </g>
+      <circle cx="24" cy="24" r="10" fill="#ffc21a" />
+    </svg>
+  ),
+  gas: (
+    <svg viewBox="0 0 48 48">
+      <path d="M24 4c3 9 14 14 14 26a14 14 0 0 1-28 0c0-7 4-11 6-15 1 4 3 6 5 6-1-7 1-12 3-17z" fill="#2f86e8" />
+      <path d="M24 26c2 4 6 6 6 11a6 6 0 0 1-12 0c0-3 2-5 3-7 1 2 2 2 3 2 0-2 0-4 0-6z" fill="#bfe3ff" />
+    </svg>
+  ),
+  wind: (
+    <svg viewBox="0 0 48 48">
+      <path d="M21 22h4l2 22h-8z" fill="#9fb2c4" />
+      <circle cx="23" cy="20" r="3" fill="#5e7488" />
+      <path d="M23 17l-2-14c3-1 5 1 5 3z" fill="#1c8fe8" />
+      <path d="M25.5 21.5l12 7c-1 3-4 3-5 2z" fill="#1c8fe8" />
+      <path d="M20.5 21.5l-12 7c1 3 4 3 5 2z" fill="#1c8fe8" />
+      <path d="M33 8h8M35 13h9M33 18h6" stroke="#8fc6ef" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  ),
+  oil: (
+    <svg viewBox="0 0 48 48">
+      <rect x="11" y="6" width="26" height="36" rx="3" fill="#2b3a4a" />
+      <path d="M11 14h26M11 34h26" stroke="#5b6d80" strokeWidth="2.5" />
+      <path d="M24 17c3 4 5 7 5 9a5 5 0 0 1-10 0c0-2 2-5 5-9z" fill="#ffc21a" />
+    </svg>
+  ),
+  hydro: (
+    <svg viewBox="0 0 48 48">
+      <path d="M6 14h36l-4 22H10z" fill="#7f8c99" />
+      <path d="M6 14h36v4H6z" fill="#5f6b77" />
+      <path d="M14 20v14M20 20v14M26 20v14M32 20v14" stroke="#2fa8ff" strokeWidth="3.5" strokeLinecap="round" />
+      <path d="M4 40q5-3 10 0t10 0 10 0 10 0" stroke="#2f86e8" strokeWidth="2.5" fill="none" />
+    </svg>
+  ),
+};

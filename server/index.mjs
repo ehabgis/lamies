@@ -15,6 +15,7 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { database, unpack, roles, kinds } from "./db.mjs";
+import { migrate as migrateProgress, logEvent, questionKind, childReport, newLinkCode, useLinkCode } from "./progressLog.mjs";
 import { serveClient } from "./staticFiles.mjs";
 export function hashPassword(password) {
   const salt = randomBytes(16).toString("hex");
@@ -65,6 +66,7 @@ export function createApp({
   clientDir = resolve("dist"),
 } = {}) {
   const db = database(dbPath);
+  migrateProgress(db);
   mkdirSync(uploadDir, { recursive: true });
   const limits = new Map();
   function visible(node) {
@@ -448,6 +450,9 @@ export function createApp({
                 ? checkProjectQuest(expMatch[1], b)
                 : checkExpedition(expMatch[1], b);
           if (!result) fail(400, "الخطوة غير موجودة");
+          // A signed-in student's journey steps go to their learning record.
+          if (result.correct && (b.step === "final" || (b.step === "use" && expMatch[1] !== "lesson-1")))
+            logEvent(db, user, expMatch[1], "journey", b.step === "final" ? "final" : b.missionId, true);
           return send(result);
         }
         fail(405, "العملية غير متاحة");
@@ -462,8 +467,10 @@ export function createApp({
         }
         if (method === "POST" && traceMatch[2]) {
           rate(`trace:${req.socket.remoteAddress}`, 120);
-          const result = checkTraceMap(traceMatch[1], await body(req));
+          const tb = await body(req);
+          const result = checkTraceMap(traceMatch[1], tb);
           if (!result) fail(400, "المحاولة غير صالحة");
+          if (tb.step === "draw" && tb.stage === "alone" && result.passed) logEvent(db, user, traceMatch[1], "trace", "alone", true);
           return send(result);
         }
         fail(405, "العملية غير متاحة");
@@ -480,8 +487,10 @@ export function createApp({
         }
         if (method === "POST" && buildMatch[2]) {
           rate(`build:${req.socket.remoteAddress}`, 120);
-          const result = checkBuildMap(buildMatch[1], await body(req));
+          const bb = await body(req);
+          const result = checkBuildMap(buildMatch[1], bb);
           if (!result) fail(400, "المحاولة غير صالحة");
+          if (result.correct && bb.itemId) logEvent(db, user, buildMatch[1], "build-map", bb.itemId, true);
           return send(result);
         }
         fail(405, "العملية غير متاحة");
@@ -504,6 +513,7 @@ export function createApp({
             fail(400, "الإجابة غير صالحة");
           const result = demoAnswer(b.questionId, b.answer, demoMatch[1], b.attempt);
           if (!result) fail(400, "السؤال غير موجود");
+          logEvent(db, user, demoMatch[1], questionKind(demoMatch[1], b.questionId), b.questionId, result.correct);
           return send(result);
         }
         fail(405, "العملية غير متاحة في التجربة");
@@ -532,14 +542,15 @@ export function createApp({
             400,
             "أدخل اسمًا وبريدًا صالحين وكلمة مرور من 10 أحرف على الأقل",
           );
-        if (b.role && b.role !== "student")
-          fail(403, "التسجيل العام للطلاب فقط");
+        // Students and parents may sign up; staff accounts come from the admin.
+        if (b.role && !["student", "parent"].includes(b.role))
+          fail(403, "التسجيل العام للطلاب وأولياء الأمور فقط");
         if (db.prepare("SELECT id FROM users WHERE email=?").get(email))
           fail(409, "البريد مسجل بالفعل");
         const id = token().slice(0, 24);
         db.prepare(
           "INSERT INTO users(id,name,email,password,role) VALUES(?,?,?,?,?)",
-        ).run(id, name, email, hashPassword(password), "student");
+        ).run(id, name, email, hashPassword(password), b.role === "parent" ? "parent" : "student");
         return send(
           startSession(db.prepare("SELECT * FROM users WHERE id=?").get(id)),
           201,
@@ -783,6 +794,38 @@ export function createApp({
           ),
         });
       }
+      // ---- parent follow-up: a student makes a one-time code, the parent
+      // enters it, and then sees only the students linked to them.
+      if (path === "/api/parent/link-code" && method === "POST") {
+        auth();
+        if (user.role !== "student") fail(403, "كود الربط من حساب الطالب فقط");
+        rate(`code:${user.id}`, 10);
+        return send(newLinkCode(db, user.id, randomBytes));
+      }
+      if (path === "/api/parent/link" && method === "POST") {
+        auth();
+        if (user.role !== "parent") fail(403, "لحساب ولي الأمر فقط");
+        rate(`link:${user.id}`, 10);
+        const studentId = useLinkCode(db, user.id, (await body(req)).code);
+        if (!studentId) fail(400, "الكود غير صحيح أو انتهت صلاحيته. اطلب كودًا جديدًا من حساب طفلك.");
+        return send({ linked: true });
+      }
+      const parentMatch = path.match(/^\/api\/parent\/children(?:\/([^/]+))?$/);
+      if (parentMatch) {
+        auth();
+        if (user.role !== "parent") fail(403, "لحساب ولي الأمر فقط");
+        if (method === "GET" && !parentMatch[1]) {
+          const children = db
+            .prepare("SELECT u.* FROM parent_links p JOIN users u ON u.id=p.student_id WHERE p.parent_id=? AND u.disabled=0 ORDER BY p.created_at")
+            .all(user.id);
+          return send({ parent: { name: user.name }, children: children.map((c) => childReport(db, c)) });
+        }
+        if (method === "DELETE" && parentMatch[1]) {
+          db.prepare("DELETE FROM parent_links WHERE parent_id=? AND student_id=?").run(user.id, parentMatch[1]);
+          return send({ unlinked: true });
+        }
+        fail(405, "العملية غير متاحة");
+      }
       if (path === "/api/reports" && method === "GET") {
         auth();
         if (!["super_admin", "content_admin", "teacher"].includes(user.role))
@@ -972,6 +1015,8 @@ export function createApp({
           db.prepare(
             "INSERT INTO answers(user_id,lesson_id,question_id,correct) VALUES(?,?,?,?) ON CONFLICT(user_id,lesson_id,question_id) DO UPDATE SET correct=MAX(answers.correct,excluded.correct),attempts=answers.attempts+1",
           ).run(user.id, n.id, q.id, +correct);
+          // The classroom lesson with the same id feeds the parent report too.
+          logEvent(db, user, n.id, ["choice", "boolean"].includes(q.type) && !q.kind ? "question" : "activity", q.id, correct);
           return send({
             correct,
             hint: correct ? null : gradedHint(q, b.attempt, b.answer),

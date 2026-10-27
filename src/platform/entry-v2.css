@@ -246,3 +246,27 @@
 .entry-experience .entry-robot-companion.is-bubble-only {
   justify-content: center;
 }
+
+/* Student or parent on sign-up (2026-10-27) */
+.entry-who {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.entry-who legend {
+  margin-bottom: 4px;
+  font-weight: 800;
+}
+.entry-who label {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+}
+.entry-who input {
+  width: auto !important;
+  min-height: 0 !important;
+}

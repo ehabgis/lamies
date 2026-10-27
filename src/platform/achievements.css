@@ -649,3 +649,28 @@
   width: 20px;
   height: 20px;
 }
+
+.ach-parent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ach-parent p {
+  margin: 0;
+  font-weight: 700;
+  color: #36506b;
+}
+.ach-parent .exp-secondary {
+  align-self: flex-start;
+  width: auto;
+}
+.ach-code {
+  display: flex;
+  flex-direction: column;
+}
+.ach-code bdi {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 8px;
+  color: #0b2f57;
+}

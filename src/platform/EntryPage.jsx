@@ -28,6 +28,7 @@ export default function EntryPage() {
   const [motion, setMotion] = useState(true);
   const [guest, setGuest] = useState(loadGuest);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [asParent, setAsParent] = useState(false);
   const resume = savedProgress();
   const welcome = "أهلًا يا مستكشف! اكتب اسمك ثم اضغط ابدأ المغامرة، وبعدها تختار صفك وفصلك الدراسي.";
   // Grade and term are chosen on the next page (/explore).
@@ -50,10 +51,11 @@ export default function EntryPage() {
             : { username: f.get("username") }),
           password: f.get("password"),
           name: f.get("name") || f.get("username"),
+          ...(mode === "register" && asParent ? { role: "parent" } : {}),
         },
       });
       setUser(result.user);
-      navigate(result.user.role === "student" ? "/journey" : "/admin");
+      navigate(result.user.role === "student" ? "/journey" : result.user.role === "parent" ? "/parent" : "/admin");
     } catch (e) {
       setError(e.message);
     } finally {
@@ -193,8 +195,19 @@ export default function EntryPage() {
               </div>
               <form onSubmit={submit} aria-busy={busy}>
                 {mode === "register" && (
+                  <fieldset className="entry-who">
+                    <legend>من يسجّل؟</legend>
+                    <label>
+                      <input type="radio" name="who" checked={!asParent} onChange={() => setAsParent(false)} /> طالب
+                    </label>
+                    <label>
+                      <input type="radio" name="who" checked={asParent} onChange={() => setAsParent(true)} /> ولي أمر
+                    </label>
+                  </fieldset>
+                )}
+                {mode === "register" && (
                   <label>
-                    اسم مستعار
+                    {asParent ? "اسمك" : "اسم مستعار"}
                     <input
                       name="name"
                       required

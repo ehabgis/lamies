@@ -18,6 +18,7 @@ const ClassroomPage = lazy(() => import("./platform/LessonPage"));
 const TripRoute = lazy(() => import("./platform/TripRoute"));
 const AchievementsPage = lazy(() => import("./platform/AchievementsPage"));
 const TraceMapPage = lazy(() => import("./platform/TraceMapPage"));
+const ParentPage = lazy(() => import("./platform/ParentPage"));
 const TripsPage = lazy(() => import("./platform/TripsPage"));
 const BuildMapPage = lazy(() => import("./platform/BuildMapPage"));
 const StudentProgress = lazy(() => import("./platform/ProgressPage"));
@@ -71,7 +72,8 @@ function AppContent() {
     ) ||
     location.pathname.startsWith("/classroom/") ||
     location.pathname.startsWith("/demo/") ||
-    location.pathname.startsWith("/achievements");
+    location.pathname.startsWith("/achievements") ||
+    location.pathname === "/parent";
   const isSimpleHomeRoute = location.pathname === "/home";
   const isFocusedMapRoute =
     location.pathname === "/map" || location.pathname === "/lesson/lesson-1";
@@ -127,6 +129,7 @@ function AppContent() {
             <Route path="/demo/:id" element={<ClassroomPage demo />} />
             <Route path="/demo/:id/expedition" element={<TripRoute />} />
             <Route path="/achievements" element={<AchievementsPage />} />
+            <Route path="/parent" element={<ParentPage />} />
             <Route path="/achievements/certificate" element={<AchievementsPage />} />
             <Route path="/demo/trips" element={<TripsPage />} />
             <Route path="/demo/:id/build-map" element={<BuildMapPage />} />

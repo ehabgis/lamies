@@ -170,26 +170,19 @@ export function playWaterEffect(map, { id, river, seas, sites, color, reduced })
     }
   }
 
+  // Rain keeps falling while the resource stays chosen (not only during the
+  // first few seconds); under reduced motion the drops stay still.
   if (kind === "rain") {
-    L.polyline(RAIN_BELT, {
-      pane: "water-effects",
-      interactive: false,
-      color: "#c9b8ff",
-      weight: 14,
-      opacity: 0.55,
-      lineCap: "round",
-      className: "wfx-rain-belt",
-    }).addTo(group);
     RAIN_BELT.forEach(([lat, lng], i) => {
       const drops = Array.from(
-        { length: 5 },
+        { length: 6 },
         (_, k) => `<i style="--x:${10 + k * 9}px;--d:${((k * 0.37 + i * 0.21) % 1).toFixed(2)}s"></i>`,
       ).join("");
       L.marker([lat + 0.32, lng], {
         pane: "water-effects",
         interactive: false,
         keyboard: false,
-        icon: icon("wfx-cloud", `<b></b>${drops}`, 60),
+        icon: icon(`wfx-cloud ${reduced ? "" : "is-raining"}`, `<b></b>${drops}`, 60),
       }).addTo(group);
     });
   }

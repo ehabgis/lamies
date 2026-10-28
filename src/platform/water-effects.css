@@ -92,10 +92,7 @@ path.wfx-sea-waves {
   }
 }
 
-/* ---- winter rain: a soft belt, clouds, falling drops */
-.wfx-rain-belt {
-  filter: blur(2px);
-}
+/* ---- winter rain: clouds along the north coast, drops falling all the time */
 .wfx-cloud b {
   position: absolute;
   left: 4px;
@@ -122,11 +119,11 @@ path.wfx-sea-waves {
 .wfx-play .wfx-cloud {
   animation: wfx-drift 3s ease-in-out infinite alternate;
 }
-.wfx-play .wfx-cloud i {
+.wfx-cloud.is-raining i {
   opacity: 0;
   animation: wfx-drop 0.9s linear var(--d) infinite;
 }
-.leaflet-container:not(.wfx-play) .wfx-cloud i {
+.wfx-cloud:not(.is-raining) i {
   top: 34px;
   opacity: 0.55;
 }
@@ -345,6 +342,7 @@ path.wfx-sea-waves {
   .wfx-play .wfx-arrow span,
   .wfx-play .wfx-cloud,
   .wfx-play .wfx-cloud i,
+  .wfx-cloud.is-raining i,
   .wfx-play .wfx-ripple i,
   .wfx-wells .esri-resource-marker .water-symbol,
   .map-teacher-hint,

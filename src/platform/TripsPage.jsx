@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Lock, Diamond, Drop, Buildings } from "phosphor-react";
 import { Frame } from "./ExpeditionPage";
@@ -5,9 +6,9 @@ import "./expedition.css";
 import "./water-quest.css";
 
 const TRIPS = [
-  { Icon: Diamond, lesson: "الدرس الأول", title: "رحلة كنوز مصر", text: "المعادن ومصادر الطاقة", href: "/demo/lesson-1/expedition" },
-  { Icon: Drop, lesson: "الدرس الثاني", title: "رحلة المياه", text: "ري المزرعة، مياه الواحة، المدينة الساحلية", href: "/demo/lesson-2/expedition" },
-  { Icon: Buildings, lesson: "الدرس الثالث", title: "نكتشف مشروعات مصر", text: "الدلتا الجديدة، بركة غليون، بنبان", href: "/demo/lesson-3/expedition" },
+  { photo: "trip-kunuz", Icon: Diamond, lesson: "الدرس الأول", title: "رحلة كنوز مصر", text: "المعادن ومصادر الطاقة", href: "/demo/lesson-1/expedition" },
+  { photo: "trip-water", Icon: Drop, lesson: "الدرس الثاني", title: "رحلة المياه", text: "ري المزرعة، مياه الواحة، المدينة الساحلية", href: "/demo/lesson-2/expedition" },
+  { photo: "trip-projects", Icon: Buildings, lesson: "الدرس الثالث", title: "نكتشف مشروعات مصر", text: "الدلتا الجديدة، بركة غليون، بنبان", href: "/demo/lesson-3/expedition" },
 ];
 
 export default function TripsPage() {
@@ -20,9 +21,7 @@ export default function TripsPage() {
             <li key={t.title}>
               {t.href ? (
                 <Link to={t.href} className="trip-card">
-                  <span className="trip-icon" aria-hidden="true">
-                    <t.Icon weight="duotone" />
-                  </span>
+                  <TripPhoto name={t.photo} Icon={t.Icon} />
                   <small>{t.lesson}</small>
                   <b>{t.title}</b>
                   <span>{t.text}</span>
@@ -47,5 +46,26 @@ export default function TripsPage() {
         </ul>
       </section>
     </Frame>
+  );
+}
+
+// A teacher photo for the card (public/lesson-media/sites/trip-kunuz.jpg …),
+// tried as jpg, png then webp; without one the card keeps its icon.
+const EXTS = ["jpg", "png", "webp", "jpeg"];
+function TripPhoto({ name, Icon }) {
+  const [i, setI] = useState(0);
+  if (i >= EXTS.length)
+    return (
+      <span className="trip-icon" aria-hidden="true">
+        <Icon weight="duotone" />
+      </span>
+    );
+  return (
+    <img
+      className="trip-photo"
+      src={`/lesson-media/sites/${name}.${EXTS[i]}`}
+      alt=""
+      onError={() => setI(i + 1)}
+    />
   );
 }

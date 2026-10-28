@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { X, ArrowsClockwise, Pause } from "phosphor-react";
+import { X, ArrowsClockwise, Pause, Cube } from "phosphor-react";
 
 // Tilted 3D view of a selected site: real Esri satellite imagery draped on
 // AWS terrain tiles, with OpenStreetMap buildings (via OpenFreeMap) extruded to
@@ -55,12 +55,18 @@ const STYLE = {
 const reducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export default function Site3DView({ site, onClose }) {
+// After the fly-in and a short orbit, the site's photo takes the same place
+// (lesson 3). Touching the scene keeps the 3D view open.
+const PHOTO_AFTER_MS = 9000;
+
+export default function Site3DView({ site, photo, onClose }) {
   const host = useRef(null);
   const mapRef = useRef(null);
   const closeRef = useRef(null);
+  const touched = useRef(false);
   const [failed, setFailed] = useState(false);
   const [orbiting, setOrbiting] = useState(!reducedMotion());
+  const [showPhoto, setShowPhoto] = useState(false);
 
   useEffect(() => {
     let map;
@@ -93,7 +99,10 @@ export default function Site3DView({ site, onClose }) {
       if (!reducedMotion())
         map.flyTo({ zoom: 14.6, pitch: 62, bearing: -25, duration: 3200, essential: false });
     });
-    const stop = () => setOrbiting(false);
+    const stop = () => {
+      touched.current = true;
+      setOrbiting(false);
+    };
     map.on("mousedown", stop);
     map.on("touchstart", stop);
     map.on("wheel", stop);
@@ -119,6 +128,16 @@ export default function Site3DView({ site, onClose }) {
     };
   }, [orbiting]);
 
+  useEffect(() => {
+    if (!photo || showPhoto) return undefined;
+    const t = setTimeout(() => !touched.current && setShowPhoto(true), failed ? 0 : reducedMotion() ? 5000 : PHOTO_AFTER_MS);
+    return () => clearTimeout(t);
+  }, [photo?.src, showPhoto, failed]);
+
+  useEffect(() => {
+    if (!showPhoto) mapRef.current?.resize();
+  }, [showPhoto]);
+
   // Subscribed once: re-subscribing on every render could drop the Escape
   // that triggered the render (listeners removed mid-dispatch never fire).
   const onCloseRef = useRef(onClose);
@@ -134,13 +153,16 @@ export default function Site3DView({ site, onClose }) {
       <header>
         <div>
           <h2>{site.resource?.label}</h2>
-          <p>عرض ثلاثي الأبعاد · {site.name}</p>
+          <p>{showPhoto ? "صورة الموقع" : "عرض ثلاثي الأبعاد"} · {site.name}</p>
         </div>
         <div className="site-3d-actions">
-          {!failed && (
+          {!failed && !showPhoto && (
             <button
               type="button"
-              onClick={() => setOrbiting((v) => !v)}
+              onClick={() => {
+                touched.current = true;
+                setOrbiting((v) => !v);
+              }}
               aria-pressed={orbiting}
               aria-label={orbiting ? "إيقاف الدوران" : "تدوير المشهد"}
               title={orbiting ? "إيقاف الدوران" : "تدوير المشهد"}
@@ -153,14 +175,29 @@ export default function Site3DView({ site, onClose }) {
           </button>
         </div>
       </header>
+      {showPhoto && (
+        <figure className="site-3d-photo">
+          <img src={photo.src} alt={`${site.resource?.label} — ${site.name}`} />
+          {photo.credit && <figcaption>{photo.credit}</figcaption>}
+          <button
+            type="button"
+            onClick={() => {
+              touched.current = true;
+              setShowPhoto(false);
+            }}
+          >
+            <Cube weight="duotone" aria-hidden="true" /> العرض ثلاثي الأبعاد مرة أخرى
+          </button>
+        </figure>
+      )}
       {failed ? (
         <p className="site-3d-fallback">
           لا يدعم هذا الجهاز العرض ثلاثي الأبعاد. يمكنك متابعة الموقع على الخريطة.
         </p>
       ) : (
-        <div ref={host} className="site-3d-map" />
+        <div ref={host} className="site-3d-map" hidden={showPhoto} />
       )}
-      <p className="site-3d-note">
+      <p className="site-3d-note" hidden={showPhoto}>
         اسحب لتحريك المشهد، واستعمل إصبعين لتدويره. صور أقمار صناعية وتضاريس حقيقية؛ المباني من OpenStreetMap وقد ينقص بعضها.
       </p>
     </section>

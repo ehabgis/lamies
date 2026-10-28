@@ -76,9 +76,12 @@ export const mapPosition = (l) => ({
   top: `${(365 - ((l.lat - 21) / 11) * 330) / 4}%`,
 });
 // The place's own photos first, then the teacher's preview, then the resource photo.
+// Chosen from the key (no site yet): the photos of all its sites, so the
+// card shows pictures at once.
 function siteImages(resource, location, localPhoto) {
+  const places = location ? [location] : resource.locations || [];
   const list = [
-    ...(location?.media?.images || []).map((src) => ({ src, credit: "صورة الموقع — تحتاج مراجعة المصدر" })),
+    ...places.flatMap((l) => l.media?.images || []).map((src) => ({ src, credit: "صورة الموقع — تحتاج مراجعة المصدر" })),
     localPhoto && { src: localPhoto, credit: "معاينة على هذا الجهاز فقط" },
     resource.media?.image && { src: resource.media.image, credit: resource.media.imageCredit },
   ].filter(Boolean);
@@ -384,9 +387,18 @@ export default function LessonPage({ demo = false }) {
     if (watch) cardTimer.current = setTimeout(() => setInfoOpen(true), EFFECT_MS - 1500);
     setVideoOpen(false);
     setResource(r);
+    clearTimeout(open3dTimer.current);
+    setView3d(null);
     if (singleSite) {
-      setLocation({ ...r.locations[0], resource: r });
-      setFocusRequest({ siteId: r.locations[0].id, nonce: Date.now() });
+      const site = { ...r.locations[0], resource: r };
+      setLocation(site);
+      setFocusRequest({ siteId: site.id, nonce: Date.now() });
+      // Same as tapping its marker: the 3D view, then its photo in that place.
+      if (has3D(r))
+        open3dTimer.current = setTimeout(
+          () => setView3d(site),
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 750,
+        );
     } else {
       setLocation(null);
       if (mustTapSite) setFocusRequest({ resourceId: r.id, nonce: Date.now() });
@@ -483,7 +495,7 @@ export default function LessonPage({ demo = false }) {
           key={`${resource.id}-${location?.id || ""}-${localPhotos[resource.id] || ""}`}
           label={location?.name || resource.label}
           images={siteImages(resource, location, localPhotos[resource.id])}
-          video={location?.media?.video || resource.media?.video}
+          video={location?.media?.video || resource.media?.video || (!location && resource.locations?.find((l) => l.media?.video)?.media.video)}
         />
         <div className="site-card-facts">
           <section>
@@ -921,6 +933,8 @@ export default function LessonPage({ demo = false }) {
             <button
               key={r.id}
               aria-pressed={resource?.id === r.id}
+              className={resource?.id === r.id ? "is-picked" : ""}
+              style={{ "--glow-color": r.color }}
               onClick={() => pick(r)}
             >
               <LessonSymbol resource={r} />
@@ -928,21 +942,13 @@ export default function LessonPage({ demo = false }) {
                 {r.label}
                 <small>{kindName(r)}</small>
               </span>
+              <i className="key-radio" aria-hidden="true" />
             </button>
           ))}
           {user && <div className="map-menu-navigation"><PlatformNavigation hideHome /></div>}
         </aside>
         <section className="classroom-map-region" aria-label="خريطة موارد مصر">
           <div className="classroom-map-meta">
-            <span>
-              {resource && !location && resource.locations?.length
-                ? `اضغط أحد مواقع ${resource.label} على الخريطة`
-                : resource
-                ? `المورد المختار: ${resource.label}`
-                : discovery && !full
-                  ? "اختر رمزًا لتظهر مواقعه"
-                  : "جميع الموارد"}
-            </span>
             <span>شمال ↑</span>
           </div>
           <EsriLessonMap
@@ -1016,6 +1022,7 @@ export default function LessonPage({ demo = false }) {
               <Site3DView
                 key={view3d.id}
                 site={view3d}
+                photo={siteImages(view3d.resource, view3d, localPhotos[view3d.resource.id])[0]}
                 onClose={() => {
                   setView3d(null);
                   document.querySelector(".resource-3d-button")?.focus({ preventScroll: true });

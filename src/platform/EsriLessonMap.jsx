@@ -783,14 +783,12 @@ export default function EsriLessonMap({
           )}
         </div>
       )}
-      <div className="esri-basemap-state" role="status">
-        {usingLocal
-          ? "الخريطة التعليمية المحلية"
-          : status === "loading"
-            ? "جارٍ تحميل خريطة Esri…"
-            : chosen.label}
-        {status === "partial" && " · بعض الصور لم تُحمّل"}
-      </div>
+      {/* Only loading and problems are announced; the basemap name stays in the gallery. */}
+      {(status === "loading" || status === "partial") && !usingLocal && (
+        <div className="esri-basemap-state" role="status">
+          {status === "loading" ? "جارٍ تحميل الخريطة…" : "بعض أجزاء الخريطة لم تُحمّل"}
+        </div>
+      )}
       <div className="esri-map-alerts">
         {status === "error" && basemap !== "local" && (
           <div className="esri-map-warning" role="status">

@@ -163,6 +163,38 @@
   cursor: pointer;
   text-align: start;
 }
+.entry-experience .entry-parent-open {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  margin-top: 10px;
+  padding: 8px 14px;
+  border: 1.5px solid #c9dbee;
+  border-radius: 14px;
+  background: #f5f9fe;
+  color: #0b2f57;
+  text-decoration: none;
+}
+.entry-experience .entry-parent-open > svg:first-child {
+  flex: none;
+  color: #0a62d6;
+}
+.entry-experience .entry-parent-open span {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.entry-experience .entry-parent-open b {
+  font-weight: 900;
+}
+.entry-experience .entry-parent-open small {
+  color: #4a6178;
+  font-weight: 700;
+}
+.entry-experience .entry-parent-open:hover {
+  background: #e9f3fe;
+}
 .entry-experience .entry-account-backdrop {
   position: fixed;
   inset: 0;

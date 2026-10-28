@@ -15,7 +15,7 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { database, unpack, roles, kinds } from "./db.mjs";
-import { migrate as migrateProgress, logEvent, questionKind, childReport, newLinkCode, useLinkCode } from "./progressLog.mjs";
+import { migrate as migrateProgress, logEvent, questionKind, childReport, newLinkCode, useLinkCode, previewLinkCode } from "./progressLog.mjs";
 import { serveClient } from "./staticFiles.mjs";
 export function hashPassword(password) {
   const salt = randomBytes(16).toString("hex");
@@ -802,12 +802,21 @@ export function createApp({
         rate(`code:${user.id}`, 10);
         return send(newLinkCode(db, user.id, randomBytes));
       }
+      // Check a code first: the parent sees whose account it is before linking.
+      if (path === "/api/parent/link/preview" && method === "POST") {
+        auth();
+        if (user.role !== "parent") fail(403, "لحساب ولي الأمر فقط");
+        rate(`link:${user.id}`, 20);
+        const child = previewLinkCode(db, (await body(req)).code);
+        if (!child) fail(400, "الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزًا جديدًا من حساب طفلك.");
+        return send({ child });
+      }
       if (path === "/api/parent/link" && method === "POST") {
         auth();
         if (user.role !== "parent") fail(403, "لحساب ولي الأمر فقط");
         rate(`link:${user.id}`, 10);
         const studentId = useLinkCode(db, user.id, (await body(req)).code);
-        if (!studentId) fail(400, "الكود غير صحيح أو انتهت صلاحيته. اطلب كودًا جديدًا من حساب طفلك.");
+        if (!studentId) fail(400, "الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزًا جديدًا من حساب طفلك.");
         return send({ linked: true });
       }
       const parentMatch = path.match(/^\/api\/parent\/children(?:\/([^/]+))?$/);
@@ -818,7 +827,8 @@ export function createApp({
           const children = db
             .prepare("SELECT u.* FROM parent_links p JOIN users u ON u.id=p.student_id WHERE p.parent_id=? AND u.disabled=0 ORDER BY p.created_at")
             .all(user.id);
-          return send({ parent: { name: user.name }, children: children.map((c) => childReport(db, c)) });
+          const period = new URL(req.url, "http://x").searchParams.get("period") || "all";
+          return send({ parent: { name: user.name }, children: children.map((c) => childReport(db, c, period)) });
         }
         if (method === "DELETE" && parentMatch[1]) {
           db.prepare("DELETE FROM parent_links WHERE parent_id=? AND student_id=?").run(user.id, parentMatch[1]);

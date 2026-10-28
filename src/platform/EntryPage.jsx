@@ -9,6 +9,7 @@ import {
   Play,
   Pause,
   Sparkle,
+  Users,
 } from "phosphor-react";
 import "./entry-experience.css";
 import "./platform-polish.css";
@@ -144,7 +145,7 @@ export default function EntryPage() {
               <p>أهلًا {user.name || user.username}، حسابك جاهز.</p>
               <Link
                 className="p-button"
-                to={user.role === "student" ? "/journey" : "/admin"}
+                to={user.role === "student" ? "/journey" : user.role === "parent" ? "/parent" : "/admin"}
               >
                 تابع رحلتك <ArrowLeft />
               </Link>
@@ -154,6 +155,14 @@ export default function EntryPage() {
             <button type="button" className="entry-account-open" onClick={() => setAccountOpen(true)}>
               <User size={20} aria-hidden="true" /> لديّ حساب أو أريد حسابًا لحفظ نتائجي
             </button>
+            <Link to="/parent" className="entry-parent-open">
+              <Users size={26} weight="duotone" aria-hidden="true" />
+              <span>
+                <b>متابعة ولي الأمر</b>
+                <small>تابع تقدم طفلك ونتائج أنشطته</small>
+              </span>
+              <ArrowLeft size={18} aria-hidden="true" />
+            </Link>
             {/* Its own window over the page, so it is visible on any screen height. */}
             {accountOpen && (
             <div

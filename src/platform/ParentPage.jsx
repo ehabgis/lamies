@@ -1,23 +1,30 @@
 import { useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   BookOpen,
   ClipboardText,
   CheckCircle,
   PuzzlePiece,
   ChartBar,
-  Lightbulb,
   Clock,
   Info,
   Drop,
   Diamond,
   Buildings,
   CircleNotch,
-  MinusCircle,
   Medal,
   SignOut,
   UserPlus,
-  CaretLeft,
+  Users,
+  User,
+  Eye,
+  EyeSlash,
+  ArrowRight,
+  LinkSimple,
+  WarningCircle,
+  Trophy,
+  CalendarBlank,
+  ListBullets,
   X,
 } from "phosphor-react";
 import { api } from "./api";
@@ -30,32 +37,35 @@ const LESSON_ICON = { "lesson-1": Diamond, "lesson-2": Drop, "lesson-3": Buildin
 const STATUS = {
   done: { label: "مكتمل", Icon: CheckCircle },
   active: { label: "قيد التعلم", Icon: CircleNotch },
-  new: { label: "لم يبدأ بعد", Icon: MinusCircle },
+  new: { label: "لم يبدأ بعد", Icon: Clock },
 };
+const PERIODS = [
+  ["week", "هذا الأسبوع"],
+  ["month", "هذا الشهر"],
+  ["all", "منذ البداية"],
+];
+const first = (name) => String(name || "").trim().split(/\s+/)[0];
 const when = (t) => {
-  if (!t) return "لا يوجد نشاط بعد";
-  const d = new Date(t);
+  if (!t) return "لا يوجد بعد";
   const days = Math.floor((new Date().setHours(0, 0, 0, 0) - new Date(t).setHours(0, 0, 0, 0)) / 86400000);
   if (days === 0) return "اليوم";
   if (days === 1) return "أمس";
-  return d.toLocaleDateString("ar-EG", { day: "numeric", month: "long" });
+  return new Date(t).toLocaleDateString("ar-EG", { day: "numeric", month: "long" });
 };
-const time = (t) => new Date(t).toLocaleTimeString("ar-EG", { hour: "numeric", minute: "2-digit" });
 
-// «متابعة تقدم طفلك»: what a linked parent sees, from the server's record of
-// graded work only. Finishing a lesson means meeting its requirements.
+// Parent area, all inside the app: the portal (sign in / create account),
+// «إضافة ابني» with a check of the child's name, then «متابعة تقدم طفلك».
 export default function ParentPage() {
   const { user, loading, logout } = useSession();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [childId, setChildId] = useState(null);
-  const [tab, setTab] = useState("summary");
-  const [open, setOpen] = useState(null);
-  const [linking, setLinking] = useState(false);
+  const [period, setPeriod] = useState("week");
+  const [adding, setAdding] = useState(false);
 
-  const load = () =>
-    api("/parent/children")
+  const load = (p = period) =>
+    api(`/parent/children?period=${p}`)
       .then((d) => {
         setData(d);
         setChildId((id) => (d.children.some((c) => c.id === id) ? id : d.children[0]?.id || null));
@@ -64,291 +74,544 @@ export default function ParentPage() {
   useEffect(() => {
     if (user?.role === "parent") load();
   }, [user?.id]);
+  useEffect(() => {
+    if (user && user.role !== "parent") navigate(user.role === "student" ? "/journey" : "/admin", { replace: true });
+  }, [user?.role]);
 
-  if (loading) return <p className="platform-loading">جارٍ الفتح…</p>;
-  if (!user) return <Navigate to="/" replace />;
-  if (user.role !== "parent")
-    return (
-      <div className="pr-page" dir="rtl">
-        <p className="pr-empty">هذه الصفحة لحسابات أولياء الأمور.</p>
-      </div>
-    );
+  if (loading) return <Shell />;
+  if (!user) return <Shell back><Portal /></Shell>;
+  if (user.role !== "parent") return <Shell />;
 
-  const child = data?.children.find((c) => c.id === childId);
-  const header = (
-    <header className="pr-top">
-      <span className="pr-brand">
-        <BrandMark size={38} /> الخرائط التعليمية الذكية
-      </span>
-      <span className="pr-who">
-        <b>{user.name}</b>
-        <small>{child ? `ولي أمر ${child.name.split(/\s+/)[0]}` : "ولي أمر"}</small>
-      </span>
-      <button
-        type="button"
-        className="pr-icon"
-        aria-label="تسجيل الخروج"
-        onClick={async () => {
-          await logout();
-          navigate("/");
-        }}
-      >
-        <SignOut size={22} />
-      </button>
-    </header>
-  );
-
+  const signOut = async () => {
+    await logout();
+    navigate("/");
+  };
   if (error)
     return (
-      <div className="pr-page" dir="rtl">
-        {header}
+      <Shell user={user} onSignOut={signOut}>
         <p className="pr-empty" role="alert">
           تعذر تحميل التقدم. {error}
         </p>
-      </div>
+      </Shell>
     );
   if (!data)
     return (
-      <div className="pr-page" dir="rtl">
-        {header}
+      <Shell user={user} onSignOut={signOut}>
         <p className="pr-empty" role="status">
           نجمع تقدم طفلك…
         </p>
-      </div>
+      </Shell>
     );
-
-  if (!data.children.length || linking)
+  if (!data.children.length || adding)
     return (
-      <div className="pr-page" dir="rtl">
-        {header}
-        <main className="pr-main">
-          <LinkChild
-            first={!data.children.length}
-            onCancel={data.children.length ? () => setLinking(false) : null}
-            onLinked={() => {
-              setLinking(false);
-              load();
-            }}
-          />
-        </main>
-      </div>
+      <Shell user={user} onSignOut={signOut}>
+        <AddChild
+          canGoBack={data.children.length > 0}
+          onBack={() => setAdding(false)}
+          onLinked={() => {
+            setAdding(false);
+            load();
+          }}
+        />
+      </Shell>
     );
+  const child = data.children.find((c) => c.id === childId) || data.children[0];
+  return (
+    <Shell user={user} onSignOut={signOut}>
+      <Dashboard
+        child={child}
+        all={data.children}
+        onChild={setChildId}
+        period={period}
+        onPeriod={(p) => {
+          setPeriod(p);
+          load(p);
+        }}
+        onAdd={() => setAdding(true)}
+      />
+    </Shell>
+  );
+}
 
-  const t = child.totals;
-  const lesson = child.lessons.find((l) => l.id === open);
+function Shell({ user, onSignOut, back, children }) {
   return (
     <div className="pr-page" dir="rtl">
-      {header}
-      <main className="pr-main">
-        <section className="pr-hero">
-          <div>
-            <h1>متابعة تقدم طفلك</h1>
-            <p>اطمئن على خطواته في التعلم</p>
-          </div>
-          <div className="pr-child">
-            <span className="pr-avatar" aria-hidden="true">
-              {child.name.trim()[0]}
+      <span className="pr-globe" aria-hidden="true" />
+      <header className="pr-top">
+        <Link to="/" className="pr-brand">
+          <BrandMark size={44} /> الخرائط التعليمية الذكية
+        </Link>
+        {user && (
+          <>
+            <span className="pr-hello">
+              <User size={22} weight="fill" aria-hidden="true" /> مرحبًا، {first(user.name)}
             </span>
-            <div>
-              <b>{child.name}</b>
-              <span>{child.grade}</span>
-              <small>
-                <i className={child.lastActive ? "is-on" : ""} /> آخر نشاط: {when(child.lastActive)}
-              </small>
-            </div>
-            {data.children.length > 1 && (
-              <select aria-label="اختر الطالب" value={childId} onChange={(e) => setChildId(e.target.value)}>
-                {data.children.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-          <p className="pr-summary">{child.summary}</p>
-        </section>
-
-        <section className="pr-stats" aria-label="ملخص الأرقام">
-          <Stat Icon={BookOpen} label="الدروس المكتملة" value={`${t.lessons.done} من ${t.lessons.total}`} tone="blue" />
-          <Stat Icon={ClipboardText} label="الأسئلة المُجابة" value={t.answered} tone="blue" />
-          <Stat Icon={CheckCircle} label="الإجابات الصحيحة" value={t.right} hint="من المحاولة الأولى" tone="green" />
-          <Stat Icon={PuzzlePiece} label="الأنشطة المكتملة" value={`${t.activities.done} من ${t.activities.total}`} tone="amber" />
-        </section>
-
-        {tab === "summary" && (
-          <div className="pr-grid">
-            <section className="pr-card pr-lessons" aria-labelledby="pr-lessons">
-              <h2 id="pr-lessons">
-                <ChartBar size={24} weight="fill" aria-hidden="true" /> تقدم الدروس
-              </h2>
-              <ul>
-                {child.lessons.map((l) => {
-                  const Icon = LESSON_ICON[l.id];
-                  const s = STATUS[l.status];
-                  return (
-                    <li key={l.id} className={open === l.id ? "is-open" : ""}>
-                      <button type="button" aria-expanded={open === l.id} onClick={() => setOpen(open === l.id ? null : l.id)}>
-                        <span className="pr-lesson-icon" aria-hidden="true">
-                          <Icon weight="duotone" />
-                        </span>
-                        <span className="pr-lesson-main">
-                          <b>{l.title}</b>
-                          <span className="pr-bar" role="progressbar" aria-label={`تقدم ${l.title}`} aria-valuenow={l.percent} aria-valuemin={0} aria-valuemax={100}>
-                            <i className={`is-${l.status}`} style={{ width: `${l.percent}%` }} />
-                          </span>
-                          <small>{progressLine(l)}</small>
-                        </span>
-                        <span className={`pr-status is-${l.status}`}>
-                          <s.Icon size={18} weight="fill" aria-hidden="true" /> {s.label}
-                        </span>
-                        <bdi className="pr-percent">{l.percent}٪</bdi>
-                      </button>
-                      {open === l.id && <LessonDetail lesson={l} />}
-                    </li>
-                  );
-                })}
-              </ul>
-              <p className="pr-note">
-                <Info size={18} aria-hidden="true" /> فتح الدرس وحده لا يعني إتمام تعلمه؛ يكتمل الدرس عند إتمام متطلباته.
-              </p>
-            </section>
-            <div className="pr-side">
-              <section className={`pr-card pr-review ${child.review ? "" : "is-calm"}`}>
-                <div>
-                  <h2>
-                    <Lightbulb size={26} weight="fill" aria-hidden="true" /> {child.review ? "يحتاج إلى مراجعة" : "أداء مطمئن"}
-                  </h2>
-                  <p>
-                    {child.review
-                      ? `يُنصح بمراجعة ${child.review.topic} في درس ${child.review.lesson}.`
-                      : t.answered
-                        ? "لا توجد موضوعات تحتاج مراجعة الآن."
-                        : "ستظهر هنا اقتراحات المراجعة بعد أن يجيب عن أسئلة الدروس."}
-                  </p>
-                  {child.review && (
-                    <button
-                      type="button"
-                      className="pr-dark"
-                      onClick={() => setOpen(child.lessons.find((l) => l.review)?.id)}
-                    >
-                      عرض التفاصيل <CaretLeft size={16} aria-hidden="true" />
-                    </button>
-                  )}
-                </div>
-                <span className="pr-robot" aria-hidden="true">
-                  <RobotGuide />
-                </span>
-              </section>
-              <section className="pr-card pr-recent" aria-labelledby="pr-recent">
-                <h2 id="pr-recent">
-                  <Clock size={24} aria-hidden="true" /> آخر الأنشطة
-                </h2>
-                {child.recent.length ? (
-                  <ol>
-                    {child.recent.slice(0, 4).map((r, i) => (
-                      <li key={i}>
-                        <span className="pr-recent-icon" aria-hidden="true">
-                          {r.kind === "question" ? <ClipboardText size={20} /> : <PuzzlePiece size={20} />}
-                        </span>
-                        <span>{r.text}</span>
-                        <time>
-                          {when(r.at)}
-                          <small>{time(r.at)}</small>
-                        </time>
-                      </li>
-                    ))}
-                  </ol>
-                ) : (
-                  <p className="pr-muted">لا توجد أنشطة بعد.</p>
-                )}
-              </section>
-            </div>
-          </div>
+            <button type="button" className="pr-out" onClick={onSignOut}>
+              <SignOut size={20} aria-hidden="true" /> خروج
+            </button>
+          </>
         )}
-
-        {tab === "results" && (
-          <section className="pr-card pr-results" aria-label="نتائج الأنشطة">
-            <h2>
-              <ClipboardText size={24} aria-hidden="true" /> نتائج الأنشطة
-            </h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>الدرس</th>
-                  <th>رحلة الاستكشاف</th>
-                  <th>النشاط الرئيسي</th>
-                  <th>ابنِ خريطتك</th>
-                  <th>الأسئلة</th>
-                </tr>
-              </thead>
-              <tbody>
-                {child.lessons.map((l) => (
-                  <tr key={l.id}>
-                    <th scope="row">{l.title}</th>
-                    <td>{l.activities.journey ? "✓ مكتملة" : "—"}</td>
-                    <td>{l.activities.activity ? "✓ مكتمل" : "—"}</td>
-                    <td>{l.activities.buildMap ? "✓ مكتمل" : "—"}</td>
-                    <td>
-                      {l.questions.answered ? (
-                        <>
-                          <bdi>{l.questions.right}</bdi> صحيحة من <bdi>{l.questions.answered}</bdi>
-                        </>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
+        {back && (
+          <Link to="/" className="pr-out">
+            العودة إلى البداية <ArrowRight size={18} aria-hidden="true" />
+          </Link>
         )}
-
-        {tab === "certificates" && (
-          <section className={`pr-card pr-cert ${child.certificate ? "is-ready" : ""}`}>
-            <Medal size={56} weight="duotone" aria-hidden="true" />
-            <div>
-              <h2>شهادة المستكشف الصغير</h2>
-              <p>
-                {child.certificate
-                  ? `أكمل ${child.name.split(/\s+/)[0]} رحلات الوحدة الثلاث وأنشطة «ابنِ خريطتك»؛ يمكنه عرض شهادته وطباعتها من صفحة «إنجازاتي».`
-                  : "تصبح جاهزة بعد إكمال رحلات الوحدة الثلاث ونشاط «ابنِ خريطتك» في كل درس."}
-              </p>
-            </div>
-          </section>
-        )}
-
-        <button type="button" className="pr-link" onClick={() => setLinking(true)}>
-          <UserPlus size={18} aria-hidden="true" /> ربط طفل آخر
-        </button>
-      </main>
-      <nav className="pr-tabs" aria-label="أقسام المتابعة">
-        {[
-          ["summary", "ملخص التقدم", ChartBar],
-          ["results", "نتائج الأنشطة", ClipboardText],
-          ["certificates", "الشهادات", Medal],
-        ].map(([id, label, Icon]) => (
-          <button key={id} type="button" className={tab === id ? "is-current" : ""} aria-current={tab === id ? "page" : undefined} onClick={() => setTab(id)}>
-            <Icon size={22} weight={tab === id ? "fill" : "regular"} aria-hidden="true" /> {label}
-          </button>
-        ))}
-      </nav>
-      {lesson && <span className="sr-only" aria-live="polite">تفاصيل {lesson.title}</span>}
+      </header>
+      <main className="pr-main">{children}</main>
     </div>
   );
 }
 
-function Stat({ Icon, label, value, hint, tone }) {
+// ---------------------------------------------------------------- portal
+function Portal() {
+  const { setUser } = useSession();
+  const [mode, setMode] = useState("login");
+  const [show, setShow] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function submit(e) {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    setBusy(true);
+    setError("");
+    try {
+      const email = String(f.get("email") || "").trim();
+      const r = await api(`/auth/${mode}`, {
+        method: "POST",
+        body:
+          mode === "login"
+            ? { email, username: email, password: f.get("password") }
+            : { name: f.get("name"), email, password: f.get("password"), role: "parent" },
+      });
+      setUser(r.user);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
-    <div className="pr-stat">
+    <section className="pr-portal">
+      <span className="pr-peek-robot" aria-hidden="true">
+        <RobotGuide />
+      </span>
+      <div className="pr-sheet">
+        <span className="pr-sheet-icon" aria-hidden="true">
+          <Users size={44} />
+        </span>
+        <h1>بوابة ولي الأمر</h1>
+        <p>{mode === "login" ? "سجّل الدخول لمتابعة تقدم طفلك" : "أنشئ حسابًا لمتابعة تقدم طفلك"}</p>
+        <div className="pr-seg" role="tablist" aria-label="الدخول أو إنشاء حساب">
+          <button type="button" role="tab" aria-selected={mode === "login"} onClick={() => (setMode("login"), setError(""))}>
+            تسجيل الدخول
+          </button>
+          <button type="button" role="tab" aria-selected={mode === "register"} onClick={() => (setMode("register"), setError(""))}>
+            إنشاء حساب
+          </button>
+        </div>
+        <form onSubmit={submit} className="pr-form" aria-busy={busy}>
+          {mode === "register" && (
+            <label>
+              اسم ولي الأمر
+              <input name="name" required minLength={2} maxLength={60} autoComplete="name" />
+            </label>
+          )}
+          <label>
+            البريد الإلكتروني
+            <input name="email" type={mode === "register" ? "email" : "text"} required dir="ltr" autoComplete="email" placeholder="example@email.com" />
+          </label>
+          <label>
+            كلمة المرور
+            <span className="pr-pass">
+              <input
+                name="password"
+                type={show ? "text" : "password"}
+                required
+                minLength={mode === "register" ? 10 : 1}
+                maxLength={128}
+                autoComplete={mode === "register" ? "new-password" : "current-password"}
+                dir="ltr"
+              />
+              <button type="button" aria-label={show ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"} onClick={() => setShow(!show)}>
+                {show ? <EyeSlash size={22} /> : <Eye size={22} />}
+              </button>
+            </span>
+            {mode === "register" && <small>10 أحرف على الأقل</small>}
+          </label>
+          {error && (
+            <p className="pr-error" role="alert">
+              {error}
+            </p>
+          )}
+          <button className="pr-dark-btn" disabled={busy}>
+            {busy ? "لحظة…" : mode === "login" ? "تسجيل الدخول" : "إنشاء الحساب"}
+          </button>
+        </form>
+        <p className="pr-switch">
+          <span>{mode === "login" ? "ليس لديك حساب؟" : "لديك حساب بالفعل؟"}</span>
+          <button type="button" onClick={() => (setMode(mode === "login" ? "register" : "login"), setError(""))}>
+            {mode === "login" ? "إنشاء حساب" : "تسجيل الدخول"}
+          </button>
+        </p>
+      </div>
+      <ul className="pr-features" aria-label="ما الذي تتابعه">
+        <li>
+          <i className="tone-blue">
+            <BookOpen size={30} />
+          </i>
+          تقدم الدروس
+        </li>
+        <li>
+          <i className="tone-green">
+            <ChartBar size={30} weight="fill" />
+          </i>
+          نتائج الأنشطة
+        </li>
+        <li>
+          <i className="tone-amber">
+            <Trophy size={30} weight="fill" />
+          </i>
+          الإنجازات
+        </li>
+      </ul>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------- add a child
+function AddChild({ canGoBack, onBack, onLinked }) {
+  const [code, setCode] = useState("");
+  const [child, setChild] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function run(path, then) {
+    if (!code.trim()) return setError("اكتب رمز الربط أولًا");
+    setBusy(true);
+    setError("");
+    try {
+      then(await api(path, { method: "POST", body: { code } }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <section className="pr-portal">
+      <span className="pr-peek-robot" aria-hidden="true">
+        <RobotGuide />
+      </span>
+      <div className="pr-sheet pr-add">
+        <span className="pr-sheet-icon" aria-hidden="true">
+          <LinkSimple size={42} />
+        </span>
+        <h1>إضافة ابني</h1>
+        <p>اربط حساب طفلك لبدء متابعة تقدمه</p>
+        <div className="pr-howto">
+          <b>من حساب الطالب:</b>
+          <span>افتح «إنجازاتي» ثم اختر «اعرض كود الربط»</span>
+        </div>
+        <label className="pr-form">
+          رمز ربط الطالب
+          <input
+            className="pr-code"
+            value={code}
+            onChange={(e) => {
+              setCode(e.target.value.toUpperCase());
+              setChild(null);
+              setError("");
+            }}
+            maxLength={8}
+            dir="ltr"
+            autoComplete="off"
+            spellCheck={false}
+            aria-invalid={!!error}
+            aria-describedby={error ? "pr-code-error" : undefined}
+          />
+        </label>
+        {!child && (
+          <button type="button" className="pr-outline-btn" disabled={busy} onClick={() => run("/parent/link/preview", (r) => setChild(r.child))}>
+            {busy ? "لحظة…" : "التحقق من الرمز"}
+          </button>
+        )}
+        {error && (
+          <p id="pr-code-error" className="pr-error" role="alert">
+            {error}
+          </p>
+        )}
+        {child && (
+          <>
+            <div className="pr-found" role="status">
+              <span className="pr-avatar" aria-hidden="true">
+                {child.name.trim()[0]}
+              </span>
+              <span>
+                <b>{child.name}</b>
+                <span>{child.grade}</span>
+                <small>تأكد من اسم الطالب قبل تأكيد الربط</small>
+              </span>
+            </div>
+            <button type="button" className="pr-dark-btn" disabled={busy} onClick={() => run("/parent/link", onLinked)}>
+              {busy ? "لحظة…" : "تأكيد الربط"}
+            </button>
+          </>
+        )}
+        {canGoBack && (
+          <button type="button" className="pr-text-btn" onClick={onBack}>
+            العودة إلى حسابي
+          </button>
+        )}
+        <small className="pr-once">الربط يتم مرة واحدة فقط</small>
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------- dashboard
+function Dashboard({ child, all, onChild, period, onPeriod, onAdd }) {
+  const [tab, setTab] = useState("summary");
+  const [open, setOpen] = useState(null);
+  const [mistakes, setMistakes] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const t = child.totals;
+  const reviewLesson = child.lessons.find((l) => l.review);
+  const last = child.recent[0];
+  return (
+    <section className="pr-board">
+      <div className="pr-board-head">
+        <div>
+          <h1>متابعة تقدم طفلك</h1>
+          <p>خطوات واضحة لمتابعة التعلم</p>
+          <div className="pr-childpick">
+            <button type="button" className="pr-child" aria-expanded={picking} onClick={() => setPicking(!picking)}>
+              <span className="pr-avatar" aria-hidden="true">
+                {child.name.trim()[0]}
+              </span>
+              <span>
+                <b>{child.name}</b>
+                <small>{child.grade}</small>
+              </span>
+              <CaretMark />
+            </button>
+            {picking && (
+              <ul className="pr-menu">
+                {all.map((c) => (
+                  <li key={c.id}>
+                    <button
+                      type="button"
+                      aria-current={c.id === child.id}
+                      onClick={() => {
+                        onChild(c.id);
+                        setPicking(false);
+                        setOpen(null);
+                      }}
+                    >
+                      {c.name}
+                    </button>
+                  </li>
+                ))}
+                <li>
+                  <button type="button" onClick={onAdd}>
+                    <UserPlus size={18} aria-hidden="true" /> إضافة ابن آخر
+                  </button>
+                </li>
+              </ul>
+            )}
+          </div>
+        </div>
+        <div className="pr-when">
+          <span>
+            <i className={child.lastActive ? "is-on" : ""} /> آخر نشاط: {when(child.lastActive)}
+          </span>
+          <label className="pr-period">
+            <CalendarBlank size={20} aria-hidden="true" />
+            <span className="sr-only">الفترة</span>
+            <select value={period} onChange={(e) => onPeriod(e.target.value)}>
+              {PERIODS.map(([id, label]) => (
+                <option key={id} value={id}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div className="pr-stats">
+        <Stat Icon={BookOpen} label="الدروس المكتملة" value={`${t.lessons.done} من ${t.lessons.total}`} tone="blue" />
+        <Stat Icon={PuzzlePiece} label="الأنشطة المكتملة" value={`${t.activities.done} من ${t.activities.total}`} tone="green" />
+        <Stat Icon={ClipboardText} label="الأسئلة المجاب عليها" value={t.answered} tone="blue" />
+        <Stat Icon={CheckCircle} label="الإجابات الصحيحة" value={`${t.right} من ${t.answered}`} tone="green" />
+      </div>
+
+      {tab === "summary" && (
+        <div className="pr-grid">
+          <section className="pr-panel" aria-labelledby="pr-lessons">
+            <h2 id="pr-lessons">
+              <span className="pr-h-icon">
+                <BookOpen size={22} aria-hidden="true" />
+              </span>
+              تقدم الدروس
+            </h2>
+            <ul className="pr-lessons">
+              {child.lessons.map((l) => {
+                const Icon = LESSON_ICON[l.id];
+                const s = STATUS[l.status];
+                return (
+                  <li key={l.id} className={open === l.id ? "is-open" : ""}>
+                    <div className="pr-lesson">
+                      <span className="pr-thumb" aria-hidden="true">
+                        {l.image ? <img src={l.image} alt="" loading="lazy" /> : <Icon weight="duotone" />}
+                      </span>
+                      <span className="pr-lesson-text">
+                        <b>{l.title}</b>
+                        <small>{progressLine(l)}</small>
+                      </span>
+                      <span className={`pr-status is-${l.status}`}>
+                        <s.Icon size={18} weight="fill" aria-hidden="true" /> {s.label}
+                      </span>
+                      <button type="button" className="pr-small-btn" aria-expanded={open === l.id} onClick={() => setOpen(open === l.id ? null : l.id)}>
+                        التفاصيل
+                      </button>
+                    </div>
+                    {open === l.id && <LessonDetail lesson={l} />}
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="pr-note">
+              <Info size={20} aria-hidden="true" /> إتمام الدرس ونتيجة التقييم يظهران بشكل منفصل
+            </p>
+          </section>
+          <div className="pr-side">
+            <section className={`pr-panel pr-review ${child.review ? "" : "is-calm"}`}>
+              <div>
+                <h2>
+                  {child.review ? <WarningCircle size={26} weight="fill" aria-hidden="true" /> : <CheckCircle size={26} weight="fill" aria-hidden="true" />}
+                  {child.review ? "يحتاج إلى مراجعة" : "أداء مطمئن"}
+                </h2>
+                <p>
+                  {child.review
+                    ? child.review.topic
+                    : t.answered
+                      ? "لا توجد موضوعات تحتاج مراجعة الآن."
+                      : "تظهر هنا اقتراحات المراجعة بعد أن يجيب عن أسئلة الدروس."}
+                </p>
+                {child.review && <small>بناءً على إجاباته في درس {child.review.lesson}</small>}
+                {reviewLesson?.wrong.length > 0 && (
+                  <button type="button" className="pr-amber-btn" aria-expanded={mistakes} onClick={() => setMistakes(!mistakes)}>
+                    عرض الأخطاء
+                  </button>
+                )}
+                {mistakes && reviewLesson && (
+                  <ul className="pr-mistakes">
+                    {reviewLesson.wrong.map((w, i) => (
+                      <li key={i}>{w}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <span className="pr-robot" aria-hidden="true">
+                <RobotGuide />
+              </span>
+            </section>
+            <section className="pr-panel pr-last" aria-labelledby="pr-last">
+              <div>
+                <h2 id="pr-last">
+                  <Clock size={22} aria-hidden="true" /> آخر نشاط
+                </h2>
+                <p>{last ? last.text : "لا يوجد نشاط في هذه الفترة."}</p>
+                {last && <small>{when(last.at)}</small>}
+              </div>
+              <span className="pr-last-icon" aria-hidden="true">
+                <ClipboardText size={30} weight="fill" />
+              </span>
+            </section>
+          </div>
+        </div>
+      )}
+
+      {tab === "results" && (
+        <section className="pr-panel pr-results" aria-label="نتائج الأنشطة">
+          <table>
+            <thead>
+              <tr>
+                <th>الدرس</th>
+                <th>رحلة الاستكشاف</th>
+                <th>النشاط الرئيسي</th>
+                <th>ابنِ خريطتك</th>
+                <th>الأسئلة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {child.lessons.map((l) => (
+                <tr key={l.id}>
+                  <th scope="row">{l.title}</th>
+                  <td>{l.activities.journey ? "✓ مكتملة" : "—"}</td>
+                  <td>{l.activities.activity ? "✓ مكتمل" : "—"}</td>
+                  <td>{l.activities.buildMap ? "✓ مكتمل" : "—"}</td>
+                  <td>
+                    {l.questions.answered ? (
+                      <>
+                        <bdi>{l.questions.right}</bdi> صحيحة من <bdi>{l.questions.answered}</bdi>
+                      </>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      {tab === "certificates" && (
+        <section className={`pr-panel pr-cert ${child.certificate ? "is-ready" : ""}`}>
+          <Medal size={56} weight="duotone" aria-hidden="true" />
+          <div>
+            <h2>شهادة المستكشف الصغير</h2>
+            <p>
+              {child.certificate
+                ? `أكمل ${first(child.name)} رحلات الوحدة الثلاث وأنشطة «ابنِ خريطتك»؛ يمكنه عرض شهادته وطباعتها من صفحة «إنجازاتي».`
+                : "تصبح جاهزة بعد إكمال رحلات الوحدة الثلاث ونشاط «ابنِ خريطتك» في كل درس."}
+            </p>
+          </div>
+        </section>
+      )}
+
+      <nav className="pr-tabs" aria-label="أقسام المتابعة">
+        {[
+          ["summary", "ملخص التقدم", ChartBar],
+          ["results", "نتائج الأنشطة", ListBullets],
+          ["certificates", "الشهادات", Trophy],
+        ].map(([id, label, Icon]) => (
+          <button key={id} type="button" className={tab === id ? "is-current" : ""} aria-current={tab === id ? "page" : undefined} onClick={() => setTab(id)}>
+            <Icon size={26} weight={tab === id ? "fill" : "regular"} aria-hidden="true" /> {label}
+          </button>
+        ))}
+      </nav>
+    </section>
+  );
+}
+
+function CaretMark() {
+  return (
+    <svg className="pr-caret" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+      <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function Stat({ Icon, label, value, tone }) {
+  return (
+    <div className={`pr-stat tone-${tone}`}>
       <span>
         <small>{label}</small>
         <b>{value}</b>
-        {hint && <em>{hint}</em>}
       </span>
-      <i className={`tone-${tone}`} aria-hidden="true">
-        <Icon size={30} weight="duotone" />
+      <i aria-hidden="true">
+        <Icon size={34} weight="duotone" />
       </i>
     </div>
   );
@@ -362,89 +625,25 @@ function LessonDetail({ lesson }) {
       <ul>
         {lesson.steps.map((s) => (
           <li key={s.label} className={s.done ? "is-done" : ""}>
-            {s.done ? <CheckCircle size={20} weight="fill" aria-label="مكتمل" /> : <MinusCircle size={20} aria-label="لم يكتمل" />}
+            {s.done ? <CheckCircle size={20} weight="fill" aria-label="مكتمل" /> : <X size={18} aria-label="لم يكتمل" />}
             {s.label}
             {s.detail && !s.done && <small> ({s.detail})</small>}
           </li>
         ))}
       </ul>
       <p>
-        {q.answered
-          ? `أجاب عن ${q.answered} أسئلة؛ منها ${q.right} إجابات صحيحة من المحاولة الأولى.`
-          : "لم يُجب عن أسئلة هذا الدرس بعد."}{" "}
+        {q.answered ? `أجاب عن ${q.answered} أسئلة؛ منها ${q.right} إجابات صحيحة من المحاولة الأولى.` : "لم يُجب عن أسئلة هذا الدرس بعد."}{" "}
         {lesson.review ? <b>يُنصح بمراجعة {lesson.review}.</b> : q.answered >= 3 ? "مستوى الفهم جيد." : ""}
       </p>
     </div>
   );
 }
 
-function LinkChild({ first, onLinked, onCancel }) {
-  const [code, setCode] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  return (
-    <section className="pr-card pr-linkcard">
-      {onCancel && (
-        <button type="button" className="pr-icon pr-close" aria-label="إلغاء" onClick={onCancel}>
-          <X size={20} />
-        </button>
-      )}
-      <span className="pr-robot" aria-hidden="true">
-        <RobotGuide />
-      </span>
-      <h1>{first ? "اربط حساب طفلك" : "ربط طفل آخر"}</h1>
-      <ol>
-        <li>يدخل طفلك إلى حسابه، ويفتح صفحة «إنجازاتي».</li>
-        <li>يضغط «اربط ولي الأمر» فيظهر له كود من 6 حروف وأرقام.</li>
-        <li>اكتب الكود هنا. الكود صالح 7 أيام ولمرة واحدة.</li>
-      </ol>
-      <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          if (!code.trim()) return setError("اكتب الكود أولًا");
-          setBusy(true);
-          setError("");
-          try {
-            await api("/parent/link", { method: "POST", body: { code } });
-            onLinked();
-          } catch (err) {
-            setError(err.message);
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        <label>
-          كود الربط
-          <input
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
-            maxLength={8}
-            dir="ltr"
-            autoComplete="off"
-            spellCheck={false}
-            aria-invalid={!!error}
-            aria-describedby={error ? "pr-code-error" : undefined}
-          />
-        </label>
-        {error && (
-          <p id="pr-code-error" className="pr-error" role="alert">
-            {error}
-          </p>
-        )}
-        <button className="pr-primary" disabled={busy}>
-          {busy ? "جارٍ الربط…" : "اربط الحساب"}
-        </button>
-      </form>
-    </section>
-  );
-}
-
-// «أكمل الاستكشاف والنشاط • لم يكمل الأسئلة»
+// «أكمل المحتوى والنشاط • التقييم لم يكتمل»
 const join = (list) => (list.length > 1 ? `${list.slice(0, -1).join("، ")} و${list[list.length - 1]}` : list[0]);
 function progressLine(l) {
   if (l.status === "new") return "لم يبدأ أنشطة هذا الدرس";
   const done = l.steps.filter((s) => s.done).map((s) => s.short);
   const left = l.steps.filter((s) => !s.done).map((s) => s.short);
-  return [done.length && `أكمل ${join(done)}`, left.length && `لم يكمل ${join(left)}`].filter(Boolean).join(" • ");
+  return [done.length && `أكمل ${join(done)}`, left.length && `${join(left)} لم يكتمل`].filter(Boolean).join(" • ");
 }

@@ -54,6 +54,11 @@ test("a linked parent sees only their child's graded progress", async () => {
     assert.match(code, /^[A-Z2-9]{6}$/);
     assert.equal((await api("/api/parent/children", "GET", null, ahmed)).status, 403);
     assert.equal((await api("/api/parent/link", "POST", { code: "WRONG1" }, parent)).status, 400);
+    assert.equal((await api("/api/parent/link/preview", "POST", { code: "WRONG1" }, parent)).status, 400);
+    assert.equal((await api("/api/parent/link/preview", "POST", { code }, ahmed)).status, 403);
+    const preview = await api("/api/parent/link/preview", "POST", { code }, parent);
+    assert.equal(preview.value.child.name, "أحمد محمد", "the parent checks the name before linking");
+    assert.deepEqual(Object.keys(preview.value.child).sort(), ["grade", "name"]);
     assert.equal((await api("/api/parent/link", "POST", { code: code.toLowerCase() }, parent)).status, 200);
     assert.equal((await api("/api/parent/link", "POST", { code }, stranger)).status, 400, "used codes do not work again");
 
@@ -69,6 +74,12 @@ test("a linked parent sees only their child's graded progress", async () => {
     assert.equal(r.lessons[1].status, "new");
     assert.match(r.summary, /^أحمد يتعلّم الآن/);
     assert(r.recent.some((x) => /أجاب عن 5 أسئلة/.test(x.text)));
+    assert.equal(r.period, "all");
+    const week = (await api("/api/parent/children?period=week", "GET", null, parent)).value.children[0];
+    assert.equal(week.period, "week");
+    assert.equal(week.totals.answered, 5, "today's answers are inside this week");
+    assert(Array.isArray(r.lessons[0].wrong) && r.lessons[0].wrong.length === 5, "missed prompts are listed (prompts only)");
+    assert(!("firstTries" in r.lessons[0]));
     assert.deepEqual((await api("/api/parent/children", "GET", null, stranger)).value.children, []);
     assert(!JSON.stringify(kids).includes("mona"), "other students stay private");
 

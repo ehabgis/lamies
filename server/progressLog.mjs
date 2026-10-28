@@ -5,6 +5,7 @@
 // only when its requirements are met; opening a lesson alone does not count.
 import { demoLesson } from "./demo.mjs";
 import { buildMapPublic } from "./buildMap.mjs";
+import { mediaIndex, findMedia, IMAGE_EXT } from "./mediaFiles.mjs";
 
 const ORDER = ["lesson-1", "lesson-2", "lesson-3"];
 const QUESTIONS_NEEDED = 5;
@@ -82,7 +83,12 @@ function lessonReport(lessonId, events) {
 
   // Understanding = first try at each short question.
   const firstTry = new Map();
-  for (const e of mine) if (e.kind === "question" && !firstTry.has(e.item_id)) firstTry.set(e.item_id, !!e.correct);
+  const firstAt = new Map();
+  for (const e of mine)
+    if (e.kind === "question" && !firstTry.has(e.item_id)) {
+      firstTry.set(e.item_id, !!e.correct);
+      firstAt.set(e.item_id, e.created_at);
+    }
   const answered = firstTry.size;
   const right = [...firstTry.values()].filter(Boolean).length;
 
@@ -109,6 +115,12 @@ function lessonReport(lessonId, events) {
     if (topic) missed[topic] = (missed[topic] || 0) + 1;
   }
   const weakest = Object.entries(missed).sort((a, b) => b[1] - a[1])[0]?.[0];
+  // The questions themselves (no answers), for «عرض الأخطاء».
+  const wrong = [...firstTry]
+    .filter(([, ok]) => !ok)
+    .map(([qid]) => content.questions.find((x) => x.id === qid)?.prompt)
+    .filter(Boolean)
+    .slice(0, 8);
   const needsReview = answered >= 3 && right / answered < 0.7;
   return {
     id: lessonId,
@@ -120,8 +132,22 @@ function lessonReport(lessonId, events) {
     activities: { journey: journeyDone, activity: activityDone, buildMap: mapDone },
     review: needsReview ? weakest || "أسئلة هذا الدرس" : null,
     lastAt: mine.length ? mine[mine.length - 1].created_at : null,
+    wrong,
+    image: lessonPhoto(lessonId, content),
+    firstTries: [...firstTry].map(([qid, ok]) => ({ at: firstAt.get(qid), ok })),
   };
 }
+// A teacher photo of one of the lesson's places, if there is one.
+function lessonPhoto(lessonId, content) {
+  const index = mediaIndex("sites");
+  for (const r of content.resources || [])
+    for (const l of r.locations || []) {
+      const found = findMedia("sites", index, l.id, IMAGE_EXT);
+      if (found) return found;
+    }
+  return null;
+}
+const PERIOD = { week: 7, month: 30 };
 
 // Recent milestones, newest first, in sentences a parent can read.
 function recent(events) {
@@ -152,13 +178,18 @@ function recent(events) {
   return out.map(({ text, at, kind }) => ({ text, at, kind }));
 }
 
-export function childReport(db, student) {
+// period: week · month · all. Lesson completion always counts everything;
+// the question totals and recent list follow the chosen period.
+export function childReport(db, student, period = "all") {
   const events = db
     .prepare("SELECT lesson_id,kind,item_id,correct,created_at FROM activity_events WHERE user_id=? ORDER BY created_at, id")
     .all(student.id);
+  const since = PERIOD[period] ? Date.now() - PERIOD[period] * 86400000 : 0;
   const lessons = ORDER.map((id) => lessonReport(id, events));
-  const answered = lessons.reduce((n, l) => n + l.questions.answered, 0);
-  const right = lessons.reduce((n, l) => n + l.questions.right, 0);
+  const tries = lessons.flatMap((l) => l.firstTries).filter((t) => t.at >= since);
+  const answered = tries.length;
+  const right = tries.filter((t) => t.ok).length;
+  for (const l of lessons) delete l.firstTries;
   const activitiesDone = lessons.reduce((n, l) => n + Object.values(l.activities).filter(Boolean).length, 0);
   const current = lessons.filter((l) => l.lastAt).sort((a, b) => b.lastAt - a.lastAt)[0] || null;
   const review = lessons.find((l) => l.review);
@@ -193,7 +224,8 @@ export function childReport(db, student) {
     },
     lessons,
     review: review ? { lesson: review.title, topic: review.review } : null,
-    recent: recent(events),
+    period: PERIOD[period] ? period : "all",
+    recent: recent(events.filter((e) => e.created_at >= since)),
     certificate: lessons.every((l) => l.activities.journey && l.activities.buildMap),
   };
 }
@@ -218,4 +250,17 @@ export function useLinkCode(db, parentId, code) {
   db.prepare("DELETE FROM link_codes WHERE code=?").run(row.code);
   db.prepare("INSERT OR IGNORE INTO parent_links(parent_id,student_id,created_at) VALUES(?,?,?)").run(parentId, row.student_id, Date.now());
   return row.student_id;
+}
+
+const cleanCode = (code) => String(code || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+export function previewLinkCode(db, code) {
+  const row = db
+    .prepare("SELECT u.name, u.enrollment FROM link_codes c JOIN users u ON u.id=c.student_id WHERE c.code=? AND c.expires>? AND u.disabled=0")
+    .get(cleanCode(code), Date.now());
+  if (!row) return null;
+  let enrollment = {};
+  try {
+    enrollment = JSON.parse(row.enrollment || "{}") || {};
+  } catch {}
+  return { name: row.name, grade: enrollment.gradeName || "الصف الخامس الابتدائي" };
 }

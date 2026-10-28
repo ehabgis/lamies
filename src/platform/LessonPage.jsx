@@ -264,6 +264,12 @@ export default function LessonPage({ demo = false }) {
       active = false;
     };
   }, [id, demo]);
+  // «شاهد على الخريطة» from the lesson book: open with that resource chosen.
+  const pickById = useRef(null);
+  const wanted = search.get("resource");
+  useEffect(() => {
+    if (stateReady && wanted) pickById.current?.(wanted);
+  }, [stateReady, wanted]);
   useEffect(() => {
     if (!pulse) return;
     const t = setTimeout(() => setPulse(false), 2600);
@@ -405,6 +411,10 @@ export default function LessonPage({ demo = false }) {
     }
     setNotice("");
   }
+  pickById.current = (rid) => {
+    const r = resources.find((x) => x.id === rid);
+    if (r) pick(r);
+  };
   function another() {
     setResource(null);
     setLocation(null);

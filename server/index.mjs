@@ -15,6 +15,7 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { database, unpack, roles, kinds } from "./db.mjs";
+import { lessonBook } from "./lessonBook.mjs";
 import { migrate as migrateProgress, logEvent, questionKind, childReport, newLinkCode, useLinkCode, previewLinkCode } from "./progressLog.mjs";
 import { serveClient } from "./staticFiles.mjs";
 export function hashPassword(password) {
@@ -428,6 +429,13 @@ export function createApp({
       };
       if (path === "/api/demo/catalog" && method === "GET")
         return send({ nodes: demoCatalog(), demo: true });
+      // «كتابي التفاعلي»: the lesson's explanation screens (no questions).
+      const bookMatch = path.match(/^\/api\/demo\/lessons\/([^/]+)\/book$/);
+      if (bookMatch && method === "GET") {
+        const book = lessonBook(bookMatch[1]);
+        if (!book) fail(404, "لا يوجد شرح لهذا الدرس بعد");
+        return send({ book });
+      }
       // Exploration activity (رحلة الاستكشاف): public content without answers,
       // graded here. Stateless, like the rest of the demo.
       const expMatch = path.match(

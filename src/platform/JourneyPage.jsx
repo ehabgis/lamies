@@ -7,6 +7,8 @@ import {
   BookOpen,
   CheckCircle,
   Compass,
+  Info,
+  MapTrifold,
   Star,
 } from "phosphor-react";
 import Shell from "./Shell";
@@ -268,7 +270,7 @@ export default function JourneyPage({ demo = false }) {
           aria-busy={loading || saving}
         >
           <h2 id="journey-step-title" ref={heading} tabIndex={-1}>
-            {step === 0 ? "اختر صفّك وفصلك الدراسي" : "اختر الوحدة، وابدأ الدرس"}
+            {step === 0 ? "اختر صفّك وفصلك الدراسي" : "اختر الوحدة وطريقة التعلم"}
           </h2>
           {loading ? (
             <p role="status">جارٍ تحميل الخيارات…</p>
@@ -329,40 +331,49 @@ export default function JourneyPage({ demo = false }) {
                       const p = progress.lessons.find(
                         (x) => x.lessonId === lesson.id,
                       );
+                      const [head, tail] = lesson.title.split(/\s*\((.+)\)\s*$/);
+                      const unavailable = saving || lesson.available === false;
                       return (
                         <article className="journey-lesson" key={lesson.id}>
                           <span className="journey-lesson-icon">
                             <BookOpen size={30} weight="duotone" />
                           </span>
                           <div>
+                            <h3>{head}</h3>
                             <small>
                               {lesson.available === false
                                 ? "قيد التجهيز · المحتوى لم يُضف بعد"
-                                : lesson.demo
-                                  ? "تجربة · لا تُحفظ نتائج رسمية"
-                                  : p?.completed
-                                    ? "درس مكتمل · يمكنك مراجعته"
-                                    : "درس منشور"}
+                                : tail ||
+                                  (p?.completed ? "درس مكتمل · يمكنك مراجعته" : !lesson.demo ? "درس منشور" : "")}
                             </small>
-                            <h3>{lesson.title}</h3>
                           </div>
-                          <button
-                            className="p-button"
-                            disabled={saving || lesson.available === false}
-                            onClick={() => {
-                              play("project");
-                              openLesson(lesson);
-                            }}
-                          >
-                            {lesson.available === false
-                              ? "قيد التجهيز"
-                              : saving
-                                ? "جارٍ فتح الدرس…"
-                                : p?.completed
-                                  ? "راجع الدرس"
-                                  : "ابدأ الدرس"}
-                            <ArrowLeft size={19} />
-                          </button>
+                          <div className="journey-lesson-ways">
+                            {lesson.demoLessonId && (
+                              <button
+                                type="button"
+                                className="journey-study"
+                                disabled={unavailable}
+                                onClick={() => {
+                                  play("open");
+                                  navigate(`/demo/${lesson.demoLessonId}/book`);
+                                }}
+                              >
+                                <BookOpen size={22} aria-hidden="true" /> ذاكر الدرس
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              className="journey-explore"
+                              disabled={unavailable}
+                              onClick={() => {
+                                play("project");
+                                openLesson(lesson);
+                              }}
+                            >
+                              <MapTrifold size={22} aria-hidden="true" />
+                              {lesson.available === false ? "قيد التجهيز" : saving ? "جارٍ الفتح…" : "استكشف الخريطة"}
+                            </button>
+                          </div>
                         </article>
                       );
                     })
@@ -391,6 +402,11 @@ export default function JourneyPage({ demo = false }) {
                 </button>
               )}
             </div>
+          )}
+          {step === 1 && selection.unitId && lessons.length > 0 && (
+            <p className="journey-switch-note">
+              <Info size={20} aria-hidden="true" /> يمكنك الانتقال بين شرح الدرس وخريطته في أي وقت.
+            </p>
           )}
           <div className="journey-actions">
             {step > 0 && (
@@ -427,7 +443,7 @@ export default function JourneyPage({ demo = false }) {
             <p>
               {step === 0
                 ? "أهلًا يا مستكشف! اختر صفّك، ثم الفصل الدراسي."
-                : "وصلنا! اختر الوحدة، ثم اضغط «ابدأ الدرس»."}
+                : "اختر درسك، ثم ذاكره أو استكشف خريطته."}
             </p>
           </div>
           <GuideArt />

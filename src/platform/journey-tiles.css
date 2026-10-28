@@ -149,6 +149,65 @@
   white-space: nowrap;
 }
 
+/* Two ways into each lesson (2026-10-28): «ذاكر الدرس» opens the book
+   explanation, «استكشف الخريطة» the lesson map and activities. */
+.journey-picker .journey-lesson > .journey-lesson-ways {
+  flex: none;
+  display: flex;
+  gap: 8px;
+}
+.journey-picker .journey-lesson-ways button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 6px 16px;
+  border: 0;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.journey-picker .journey-study {
+  background: #e3f0ff;
+  color: #0a55c4;
+}
+.journey-picker .journey-study:hover:not(:disabled) {
+  background: #d2e6fe;
+}
+.journey-picker .journey-explore {
+  background: #0a5fd8;
+  color: #ffffff;
+}
+.journey-picker .journey-explore:hover:not(:disabled) {
+  background: #084db0;
+}
+.journey-picker .journey-lesson-ways button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.journey-picker .journey-lesson small:empty {
+  display: none;
+}
+.journey-switch-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid #e1ecf4;
+  color: #36506b;
+  font-size: 14px;
+  font-weight: 700;
+}
+.journey-switch-note svg {
+  flex: none;
+  color: #0a5fd8;
+}
+
 /* The picker card no longer needs its fixed tall body. */
 .journey-picker {
   padding: 22px 24px;
@@ -184,6 +243,13 @@
   .journey-picker .journey-lesson .p-button {
     width: 100%;
     justify-content: center;
+  }
+  .journey-picker .journey-lesson > .journey-lesson-ways {
+    flex: 1 1 100%;
+  }
+  .journey-picker .journey-lesson-ways button {
+    flex: 1;
+    padding: 6px 10px;
   }
 }
 
@@ -227,9 +293,13 @@
     height: 18px;
   }
   .journey-picker .journey-lesson {
-    flex-wrap: nowrap;
-    padding: 6px 8px;
+    flex-wrap: wrap;
+    padding: 8px;
     gap: 8px;
+  }
+  .journey-picker .journey-lesson-ways button {
+    min-height: 44px;
+    font-size: 14px;
   }
   .journey-picker .journey-lesson-icon {
     display: none;

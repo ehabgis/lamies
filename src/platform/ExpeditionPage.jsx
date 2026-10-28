@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -165,7 +165,7 @@ export default function ExpeditionPage({ demo = true }) {
     go({ done, view: "pick", resourceId: null, step: 1, picked: null });
     if (left) say(`رائع! اكتشفت ${resource.label}. اختر كنزًا آخر!`);
     else if (mission.id === "minerals") say("أكملت كنوز المعادن! فتحت مهمة مصادر الطاقة.");
-    else say("أكملت مصادر الطاقة! حان وقت التحدي الختامي.");
+    else say("أكملت مصادر الطاقة! حان وقت حصاد رحلتك.");
   }
   async function checkFinal() {
     const attempt = (p.attempts || 0) + 1;
@@ -245,7 +245,7 @@ export default function ExpeditionPage({ demo = true }) {
             : mineralsDone && energyDone
               ? p.finalDone
                 ? "شاهد شارتك"
-                : "إلى التحدي الختامي"
+                : "إلى حصاد رحلتك"
               : "أكمل رحلتك"}
           <ArrowLeft size={22} aria-hidden="true" />
         </button>
@@ -311,7 +311,7 @@ export default function ExpeditionPage({ demo = true }) {
             </button>
           ) : (
             <button className="exp-primary" onClick={() => go({ view: p.finalDone ? "done" : "final" })}>
-              {p.finalDone ? "شاهد شارتك" : "إلى التحدي الختامي"} <ArrowLeft size={22} aria-hidden="true" />
+              {p.finalDone ? "شاهد شارتك" : "إلى حصاد رحلتك"} <ArrowLeft size={22} aria-hidden="true" />
             </button>
           )
         ) : (
@@ -443,7 +443,7 @@ export default function ExpeditionPage({ demo = true }) {
           <button className="exp-back" onClick={() => go({ view: "start" })} aria-label="العودة إلى بداية الرحلة">
             <ArrowRight size={20} aria-hidden="true" />
           </button>
-          <h1>التحدي الختامي</h1>
+          <h1>حصاد رحلتك</h1>
           <p>{data.final.prompt}</p>
         </header>
         <fieldset className="exp-final-step">
@@ -500,7 +500,7 @@ export default function ExpeditionPage({ demo = true }) {
   const progressStages = [
     { key: "minerals", label: "كنوز المعادن", done: mineralsDone },
     { key: "energy", label: "مصادر الطاقة", done: energyDone },
-    { key: "final", label: "التحدي الختامي", done: p.finalDone },
+    { key: "final", label: "حصاد رحلتك", done: p.finalDone },
   ];
 
   return (
@@ -565,6 +565,7 @@ export default function ExpeditionPage({ demo = true }) {
 }
 
 export function Frame({ title, children, stars, onSettings, lessonPath = "/demo/lesson-1", extraNav, className = "", current = "trips" }) {
+  const navigate = useNavigate();
   return (
     <div className={`lamis-platform expedition ${className}`} dir="rtl">
       <header className="exp-top">
@@ -574,6 +575,14 @@ export function Frame({ title, children, stars, onSettings, lessonPath = "/demo/
         </Link>
         <strong className="exp-lesson-title">{title}</strong>
         <div className="exp-top-tools">
+          <button
+            type="button"
+            className="exp-return"
+            aria-label="رجوع"
+            onClick={() => (window.history.length > 1 ? navigate(-1) : navigate(lessonPath))}
+          >
+            <ArrowRight size={20} aria-hidden="true" /> <span>رجوع</span>
+          </button>
           {stars != null && (
             <span className="exp-stars" title="النجوم">
               <Star size={18} weight="fill" aria-hidden="true" /> <bdi>{stars}</bdi>

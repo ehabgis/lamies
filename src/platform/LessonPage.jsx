@@ -912,11 +912,6 @@ export default function LessonPage({ demo = false }) {
             <Compass size={21} /><span className="ux-long">عرض الجميع</span><span className="ux-short" aria-hidden="true">الكل</span>
           </button>
           </div>
-          <div className="map-handle-group">
-          <button aria-pressed={showLocationNames} aria-label={showLocationNames ? "إخفاء أسماء المعالم" : "إظهار أسماء المعالم"} title="إظهار أو إخفاء أسماء المعالم على الخريطة" onClick={() => setShowLocationNames(v => !v)}>
-            <span className="map-label-icon" aria-hidden="true">أ</span><span className="ux-long">أسماء المعالم</span><span className="ux-short" aria-hidden="true">المعالم</span>
-          </button>
-          </div>
         </div>
         <aside
           id="lesson-legend"
@@ -958,14 +953,12 @@ export default function LessonPage({ demo = false }) {
           {user && <div className="map-menu-navigation"><PlatformNavigation hideHome /></div>}
         </aside>
         <section className="classroom-map-region" aria-label="خريطة موارد مصر">
-          <div className="classroom-map-meta">
-            <span>شمال ↑</span>
-          </div>
           <EsriLessonMap
             sites={sites.filter(showSite)}
             activeResourceId={resource?.id}
             selectedLocationId={location?.id}
             showNames={showLocationNames}
+            onToggleNames={() => setShowLocationNames((v) => !v)}
             resetKey={resetMap}
             focusRequest={focusRequest}
             waterLesson={demo && id === "lesson-2"}

@@ -29,8 +29,7 @@ export default function Shell({
         {children}
       </main>
       <footer className="platform-footer">
-        تعلّم بهدوء، وحاول مرة أخرى دائمًا.{" "}
-        <Link to="/legacy">النسخة السابقة</Link>
+        تعلّم بهدوء، وحاول مرة أخرى دائمًا.
         <span>
           {user
             ? "نتائج الحساب منفصلة عن التجربة · لا نطلب اسمك الحقيقي"

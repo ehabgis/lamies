@@ -1024,7 +1024,8 @@
   transform-origin: 50% 100%;
 }
 .esri-resource-marker.has-water-symbol .water-symbol {
-  transform-origin: 50% 50%;
+  width: 42px;
+  height: 49px;
 }
 .esri-resource-marker.is-highlighted .resource-pin,
 .esri-resource-marker.is-highlighted .water-symbol {
@@ -1049,9 +1050,7 @@
   z-index: -1;
   animation: picked-halo 2.2s ease-in-out infinite;
 }
-.esri-resource-marker.has-water-symbol.is-highlighted:not(.water-source-glow)::before {
-  top: 50%;
-}
+
 @keyframes picked-halo {
   0%,
   100% {

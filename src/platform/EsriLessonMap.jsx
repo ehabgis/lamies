@@ -61,6 +61,7 @@ export default function EsriLessonMap({
   spotlight = null,
   onReset,
   onToolOpen,
+  onToggleNames,
 }) {
   const host = useRef(null),
     mapRef = useRef(null),
@@ -447,10 +448,10 @@ export default function EsriLessonMap({
         icon: L.divIcon({
           className: `esri-resource-marker ${round ? "has-water-symbol" : ""} ${highlighted ? "is-highlighted" : ""} ${selectedLocationId === site.id ? "is-selected" : ""}`,
           html: renderToStaticMarkup(<LessonSymbol resource={site.resource} />),
-          // Round symbols sit centred on the place; pins stand on their tip.
-          iconSize: round ? [40, 40] : [38, 48],
-          iconAnchor: round ? [20, 20] : [19, 45],
-          tooltipAnchor: round ? [0, -18] : [0, -35],
+          // Lesson 2's illustrated pins are a little larger; all stand on their tip.
+          iconSize: round ? [42, 49] : [38, 48],
+          iconAnchor: round ? [21, 47] : [19, 45],
+          tooltipAnchor: round ? [0, -40] : [0, -35],
         }),
       });
       marker.on("click", () => {
@@ -704,6 +705,17 @@ export default function EsriLessonMap({
         aria-label="خريطة مصر؛ استخدم أزرار التكبير أو اسحب الخريطة"
       />
       <div className="esri-map-toolbar">
+        {onToggleNames && (
+          <button
+            aria-pressed={showNames}
+            aria-label={showNames ? "إخفاء أسماء المعالم" : "إظهار أسماء المعالم"}
+            title="إظهار أو إخفاء أسماء المعالم على الخريطة"
+            onClick={onToggleNames}
+          >
+            <span className="map-label-icon" aria-hidden="true">أ</span>
+            <span className="ux-long">أسماء المعالم</span><span className="ux-short" aria-hidden="true">المعالم</span>
+          </button>
+        )}
         <button
           ref={galleryButton}
           aria-expanded={gallery}

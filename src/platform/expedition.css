@@ -82,6 +82,34 @@
   color: var(--exp-navy);
 }
 
+.exp-return {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 4px 14px;
+  border: 1.5px solid #c9dbee;
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--exp-navy);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.exp-return:hover {
+  background: var(--exp-blue-soft);
+}
+@media (max-width: 560px) {
+  .exp-return {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+  .exp-return span {
+    display: none;
+  }
+}
+
 /* Main */
 .exp-main {
   flex: 1;
@@ -357,7 +385,7 @@
 /* Start: missions */
 .exp-missions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
 }
 .exp-mission {
@@ -374,6 +402,8 @@
 }
 .exp-mission-symbols {
   display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
   justify-content: center;
   align-items: center;
   gap: 4px;

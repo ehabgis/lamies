@@ -282,9 +282,6 @@ export default function EntryPage() {
             )}
             </>
           )}
-          <Link to="/legacy" className="p-text-link">
-            فتح النسخة السابقة
-          </Link>
         </section>
       </main>
     </div>

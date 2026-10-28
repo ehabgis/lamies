@@ -85,7 +85,8 @@ export default function JourneyPage({ demo = false }) {
         const t = g && catalog.nodes.find((n) => n.id === params.get("term") && n.parentId === g.id);
         const y = t && catalog.nodes.find((n) => n.kind === "year" && n.parentId === t.id);
         if (g && t && y) {
-          setSelection({ yearTitle: y.title, stageId: g.parentId, gradeId: g.id, termId: t.id });
+          const u = catalog.nodes.find((n) => n.id === params.get("unit") && n.kind === "unit");
+          setSelection({ yearTitle: y.title, stageId: g.parentId, gradeId: g.id, termId: t.id, ...(u ? { unitId: u.id } : {}) });
           setStep(1);
         } else {
           setSelection(year ? { ...enrolled, yearTitle: year.title } : {});

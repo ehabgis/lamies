@@ -35,6 +35,14 @@ import * as narrator from "./narrator";
 import { play } from "./sfx";
 import "./book.css";
 
+const LESSONS = [
+  ["lesson-1", "الدرس الأول", "الثروة المعدنية ومصادر الطاقة"],
+  ["lesson-2", "الدرس الثاني", "موارد المياه"],
+  ["lesson-3", "الدرس الثالث", "المشروعات القومية"],
+];
+// «كتابي التفاعلي» goes back to the unit's lessons on the journey page.
+const LESSONS_HREF = "/explore?grade=demo-grade-5&term=demo-grade-5-term-1&unit=demo-grade-5-term-1-year-social-unit-3";
+
 const ICON = {
   target: Target,
   minerals: Diamond,
@@ -100,7 +108,7 @@ export default function BookPage() {
   const go = (i) => {
     play("select");
     setIndexOpen(false);
-    setSearch(i ? { s: String(i) } : {}, { replace: true });
+    setSearch(i ? { s: String(i) } : {});
   };
   const mapHref = (rid) => `/demo/${id}${rid ? `?resource=${encodeURIComponent(rid)}` : ""}`;
 
@@ -171,7 +179,7 @@ export default function BookPage() {
             <ArrowRight size={20} aria-hidden="true" /> السابق
           </button>
         ) : (
-          <Link className="bk-side-btn" to="/explore">
+          <Link className="bk-side-btn" to={LESSONS_HREF}>
             <ArrowRight size={20} aria-hidden="true" /> دروس الوحدة
           </Link>
         )}
@@ -207,6 +215,7 @@ export default function BookPage() {
 }
 
 function Frame({ id, children }) {
+  const navigate = useNavigate();
   return (
     <div className="bk-shell" dir="rtl">
       <header className="bk-top">
@@ -214,17 +223,31 @@ function Frame({ id, children }) {
           <BrandMark size={42} /> <span>الخرائط التعليمية الذكية</span>
         </Link>
         <nav aria-label="التنقل">
-          <Link to="/explore">
+          <button type="button" onClick={() => (window.history.length > 1 ? navigate(-1) : navigate(LESSONS_HREF))}>
+            <ArrowRight size={22} aria-hidden="true" /> <span>رجوع</span>
+          </button>
+          <Link to="/">
             <House size={22} aria-hidden="true" /> <span>الرئيسية</span>
           </Link>
-          <span className="is-current" aria-current="page">
+          <Link to={LESSONS_HREF} className="is-current" title="العودة إلى دروس الوحدة">
             <BookOpen size={22} aria-hidden="true" /> <span>كتابي التفاعلي</span>
-          </span>
+          </Link>
           <Link to={`/demo/${id}`}>
             <MapTrifold size={22} aria-hidden="true" /> <span>الخريطة التعليمية</span>
           </Link>
         </nav>
       </header>
+      <nav className="bk-lessons" aria-label="دروس الوحدة الثالثة: كنوز مصر">
+        {LESSONS.map(([lid, n, name], i) => (
+          <Link key={lid} to={`/demo/${lid}/book`} aria-current={lid === id ? "page" : undefined} onClick={() => play("select")}>
+            <b aria-hidden="true">{i + 1}</b>
+            <span>
+              <strong>{n}</strong>
+              <small>{name}</small>
+            </span>
+          </Link>
+        ))}
+      </nav>
       {children}
       <span className="bk-ground" aria-hidden="true" />
     </div>

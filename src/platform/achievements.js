@@ -18,9 +18,9 @@ const MINERALS = ["iron", "manganese", "phosphate", "gold"];
 const ENERGY = ["oil", "coal", "gas", "wind", "solar"];
 
 export const JOURNEYS = [
-  { id: "lesson-1", title: "رحلة كنوز مصر", href: "/demo/lesson-1/expedition" },
-  { id: "lesson-2", title: "رحلة المياه", href: "/demo/lesson-2/expedition" },
-  { id: "lesson-3", title: "نكتشف مشروعات مصر", href: "/demo/lesson-3/expedition" },
+  { id: "lesson-1", title: "رحلة كنوز مصر", name: "كنوز مصر", text: "اكتشف المعادن ومصادر الطاقة في مصر.", href: "/demo/lesson-1/expedition" },
+  { id: "lesson-2", title: "رحلة المياه", name: "المياه في مصر", text: "تعرّف على نهر النيل وموارد المياه.", href: "/demo/lesson-2/expedition" },
+  { id: "lesson-3", title: "نكتشف مشروعات مصر", name: "مشروعات مصر القومية", text: "اكتشف المشروعات التي تبني مستقبل مصر.", href: "/demo/lesson-3/expedition" },
 ];
 const MAPS = [
   { id: "lesson-1", title: "ابنِ خريطتك: الثروة المعدنية", href: "/demo/lesson-1/build-map" },
@@ -59,11 +59,11 @@ export function readAchievements() {
   const [l1, l2, l3] = journeys;
   const anyMap = maps.some((m) => m.done);
   const badges = [
-    { id: "minerals", title: "مستكشف المعادن", Icon: "Diamond", earned: l1.minerals, how: "أكمل مهمة «كنوز المعادن» في رحلة كنوز مصر.", why: "اكتشفت الحديد والمنجنيز والفوسفات والذهب في رحلة كنوز مصر." },
-    { id: "energy", title: "خبير الطاقة", Icon: "Lightbulb", earned: l1.energy, how: "أكمل مهمة «مصادر الطاقة» في رحلة كنوز مصر.", why: "اكتشفت خمسة مصادر للطاقة في رحلة كنوز مصر." },
-    { id: "water", title: "بطل المياه", Icon: "Drop", earned: l2.done, how: "أكمل المهام الثلاث في رحلة المياه.", why: "ساعدت المزرعة والواحة والمدينة الساحلية في رحلة المياه." },
-    { id: "projects", title: "مستكشف مشروعات مصر", Icon: "Buildings", earned: l3.done, how: "أكمل المحطات الثلاث في رحلة «نكتشف مشروعات مصر».", why: "زرت الدلتا الجديدة وبركة غليون وبنبان." },
-    { id: "maps", title: "صانع الخرائط", Icon: "MapTrifold", earned: anyMap, how: "أكمل نشاط «ابنِ خريطتك» في أحد الدروس.", why: "بنيت خريطة كاملة ووضعت كل رمز في مكانه." },
+    { id: "minerals", title: "مستكشف المعادن", Icon: "Diamond", earned: l1.minerals, short: "اكتشفت موارد مصر المعدنية", how: "أكمل مهمة «كنوز المعادن» في رحلة كنوز مصر.", why: "اكتشفت الحديد والمنجنيز والفوسفات والذهب في رحلة كنوز مصر." },
+    { id: "energy", title: "خبير الطاقة", Icon: "Lightbulb", earned: l1.energy, short: "اكتشفت مصادر الطاقة", how: "أكمل مهمة «مصادر الطاقة» في رحلة كنوز مصر.", why: "اكتشفت خمسة مصادر للطاقة في رحلة كنوز مصر." },
+    { id: "water", title: "بطل المياه", Icon: "Drop", earned: l2.done, short: "ساعدت في رحلة المياه", how: "أكمل المهام الثلاث في رحلة المياه.", why: "ساعدت المزرعة والواحة والمدينة الساحلية في رحلة المياه." },
+    { id: "projects", title: "مستكشف المشروعات", Icon: "Buildings", earned: l3.done, short: "اكتشفت مشروعات مصر", how: "أكمل المحطات الثلاث في رحلة «نكتشف مشروعات مصر».", why: "زرت الدلتا الجديدة وبركة غليون وبنبان." },
+    { id: "maps", title: "صانع الخرائط", Icon: "MapTrifold", earned: anyMap, short: "بنيت خريطتك كاملة", how: "أكمل نشاط «ابنِ خريطتك» في أحد الدروس.", why: "بنيت خريطة كاملة ووضعت كل رمز في مكانه." },
   ];
   const stars = journeys.reduce((n, j) => n + j.stars, 0) + maps.reduce((n, m) => n + m.stars, 0);
   const journeysDone = journeys.filter((j) => j.done).length;

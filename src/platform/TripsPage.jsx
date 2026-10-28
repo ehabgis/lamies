@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Lock, Diamond, Drop, Buildings } from "phosphor-react";
 import { Frame } from "./ExpeditionPage";
+import TripPhoto from "./TripPhoto";
 import "./expedition.css";
 import "./water-quest.css";
 
@@ -13,7 +13,7 @@ const TRIPS = [
 
 export default function TripsPage() {
   return (
-    <Frame title="رحلات الاستكشاف" lessonPath="/explore">
+    <Frame title="رحلات الاستكشاف" lessonPath="/explore" back={false}>
       <section className="trips" aria-labelledby="trips-title">
         <h1 id="trips-title">اختر رحلة الاستكشاف</h1>
         <ul>
@@ -49,23 +49,3 @@ export default function TripsPage() {
   );
 }
 
-// A teacher photo for the card (public/lesson-media/sites/trip-kunuz.jpg …),
-// tried as jpg, png then webp; without one the card keeps its icon.
-const EXTS = ["jpg", "png", "webp", "jpeg"];
-function TripPhoto({ name, Icon }) {
-  const [i, setI] = useState(0);
-  if (i >= EXTS.length)
-    return (
-      <span className="trip-icon" aria-hidden="true">
-        <Icon weight="duotone" />
-      </span>
-    );
-  return (
-    <img
-      className="trip-photo"
-      src={`/lesson-media/sites/${name}.${EXTS[i]}`}
-      alt=""
-      onError={() => setI(i + 1)}
-    />
-  );
-}

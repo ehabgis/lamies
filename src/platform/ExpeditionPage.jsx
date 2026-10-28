@@ -14,6 +14,7 @@ import {
   Lightbulb,
   ArrowCounterClockwise,
   X,
+  BookBookmark,
 } from "phosphor-react";
 import { api } from "./api";
 import BrandMark from "./BrandMark";
@@ -24,6 +25,7 @@ import NarrationControls from "./NarrationControls";
 import * as narrator from "./narrator";
 import { play, resourceSound } from "./sfx";
 import "./expedition.css";
+import { LESSONS_HREF } from "./links";
 import { studentKey } from "./guestProfile";
 
 const STEPS = ["شاهد واكتشف", "ابحث على الخريطة", "استخدم ما تعلمته"];
@@ -564,7 +566,7 @@ export default function ExpeditionPage({ demo = true }) {
   );
 }
 
-export function Frame({ title, children, stars, onSettings, lessonPath = "/demo/lesson-1", extraNav, className = "", current = "trips" }) {
+export function Frame({ title, children, stars, onSettings, lessonPath = "/demo/lesson-1", extraNav, className = "", current = "trips", back = true }) {
   const navigate = useNavigate();
   return (
     <div className={`lamis-platform expedition ${className}`} dir="rtl">
@@ -575,14 +577,16 @@ export function Frame({ title, children, stars, onSettings, lessonPath = "/demo/
         </Link>
         <strong className="exp-lesson-title">{title}</strong>
         <div className="exp-top-tools">
-          <button
-            type="button"
-            className="exp-return"
-            aria-label="رجوع"
-            onClick={() => (window.history.length > 1 ? navigate(-1) : navigate(lessonPath))}
-          >
-            <ArrowRight size={20} aria-hidden="true" /> <span>رجوع</span>
-          </button>
+          {back && (
+            <button
+              type="button"
+              className="exp-return"
+              aria-label="رجوع"
+              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate(lessonPath))}
+            >
+              <ArrowRight size={20} aria-hidden="true" /> <span>رجوع</span>
+            </button>
+          )}
           {stars != null && (
             <span className="exp-stars" title="النجوم">
               <Star size={18} weight="fill" aria-hidden="true" /> <bdi>{stars}</bdi>
@@ -603,6 +607,9 @@ export function Frame({ title, children, stars, onSettings, lessonPath = "/demo/
         </Link>
         <Link to={lessonPath}>
           <BookOpen size={22} aria-hidden="true" /> الدروس
+        </Link>
+        <Link to={LESSONS_HREF} className="exp-book-link">
+          <BookBookmark size={22} aria-hidden="true" /> كتابي التفاعلي
         </Link>
         {extraNav}
         <Link

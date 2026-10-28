@@ -34,14 +34,13 @@ import { LessonSymbol } from "../components/Map/WaterSymbol";
 import * as narrator from "./narrator";
 import { play } from "./sfx";
 import "./book.css";
+import { LESSONS_HREF } from "./links";
 
 const LESSONS = [
   ["lesson-1", "الدرس الأول", "الثروة المعدنية ومصادر الطاقة"],
   ["lesson-2", "الدرس الثاني", "موارد المياه"],
   ["lesson-3", "الدرس الثالث", "المشروعات القومية"],
 ];
-// «كتابي التفاعلي» goes back to the unit's lessons on the journey page.
-const LESSONS_HREF = "/explore?grade=demo-grade-5&term=demo-grade-5-term-1&unit=demo-grade-5-term-1-year-social-unit-3";
 
 const ICON = {
   target: Target,

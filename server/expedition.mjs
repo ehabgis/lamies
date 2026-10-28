@@ -281,6 +281,8 @@ export function expeditionPublic(lessonId) {
     approxNote: APPROX,
     missions: MISSIONS.map((m) => ({
       ...m,
+      // Cover of the mission card: sites/trip-minerals.jpg, sites/trip-energy.jpg.
+      image: findMedia("sites", photos, `trip-${m.id}`, IMAGE_EXT),
       resources: m.resources.map(strip),
       sites: missionSites(m),
     })),

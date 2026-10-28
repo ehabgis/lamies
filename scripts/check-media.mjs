@@ -9,6 +9,9 @@ const siteIds = new Map();
 for (const id of DEMO_IDS)
   for (const r of demoLesson(id).content.resources || [])
     for (const l of r.locations || []) siteIds.set(l.id.toLowerCase(), `${l.name} (${r.label})`);
+// Covers of the two «رحلة كنوز مصر» mission cards.
+siteIds.set("trip-minerals", "غلاف مهمة «كنوز المعادن» (رحلة كنوز مصر)");
+siteIds.set("trip-energy", "غلاف مهمة «مصادر الطاقة» (رحلة كنوز مصر)");
 const waterNames = new Map([
   ["farm", "مهمة ري المزرعة"],
   ["oasis", "مهمة مياه الواحة"],

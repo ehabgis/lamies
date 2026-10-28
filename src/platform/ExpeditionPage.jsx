@@ -211,8 +211,8 @@ export default function ExpeditionPage({ demo = true }) {
                   <img src={m.image} alt="" loading="lazy" />
                 ) : (
                   <span className="exp-mission-symbols" aria-hidden="true">
-                    {m.resources.map((id) => (
-                      <ResourcePin key={id} resource={{ id }} />
+                    {m.resources.map((r) => (
+                      <ResourcePin key={r.id} resource={r} />
                     ))}
                   </span>
                 )}

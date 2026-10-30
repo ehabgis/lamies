@@ -12,6 +12,7 @@ for (const id of DEMO_IDS)
 // Covers of the two «رحلة كنوز مصر» mission cards.
 siteIds.set("trip-minerals", "غلاف مهمة «كنوز المعادن» (رحلة كنوز مصر)");
 siteIds.set("trip-energy", "غلاف مهمة «مصادر الطاقة» (رحلة كنوز مصر)");
+siteIds.set("train-marker", "صورة القطار المتحرك على الخريطة (PNG بخلفية شفافة) — رحلة القطار السريع");
 siteIds.set("trip-kunuz", "صورة بطاقة «رحلة كنوز مصر» في صفحة الرحلات");
 siteIds.set("trip-water", "صورة بطاقة «رحلة المياه» في صفحة الرحلات");
 siteIds.set("trip-projects", "صورة بطاقة «نكتشف مشروعات مصر» في صفحة الرحلات");

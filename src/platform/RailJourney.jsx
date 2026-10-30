@@ -14,6 +14,30 @@ const TRAIN_ICON = L.divIcon({
   iconSize: [40, 40],
   iconAnchor: [20, 20],
 });
+// Teacher photos, used only when the files exist in public/lesson-media/sites/:
+// the real train in the card (high-speed-rail.jpg, the same photo as its place on
+// the map) and a side view on a clear background for the moving marker
+// (train-marker.png).
+const PHOTO_EXTS = ["jpg", "png", "webp", "jpeg"];
+const MARKER_SRC = "/lesson-media/sites/train-marker.png";
+const photoIcon = L.divIcon({
+  className: "rj-train-photo",
+  html: `<img src="${MARKER_SRC}" alt="">`,
+  iconSize: [76, 40],
+  iconAnchor: [38, 26],
+});
+function TrainPhoto() {
+  const [i, setI] = useState(0);
+  if (i >= PHOTO_EXTS.length) return null;
+  return (
+    <img
+      className="rj-photo"
+      src={`/lesson-media/sites/high-speed-rail.${PHOTO_EXTS[i]}`}
+      alt="القطار الكهربائي السريع"
+      onError={() => setI(i + 1)}
+    />
+  );
+}
 
 // «رحلة القطار السريع» on the lesson-3 map, after the train is chosen in the key:
 // choose a line → see it with its stations → «ابدأ الرحلة»: a small train runs
@@ -53,8 +77,13 @@ export default function RailJourney({ map }) {
       map.getPane("rail-journey").style.zIndex = "640";
     }
     const group = L.layerGroup().addTo(map);
-    L.polyline(line.path, { pane: "rail-journey", color: "#ffffff", weight: 11, opacity: 0.9, interactive: false }).addTo(group);
-    L.polyline(line.path, { pane: "rail-journey", color: line.color, weight: 6, opacity: 1, interactive: false, className: "rj-line" }).addTo(group);
+    // Light along the whole line: a wide soft halo, the bright line, and a
+    // light that runs along it (still under reduced motion).
+    const glow = line.glow || line.color;
+    L.polyline(line.path, { pane: "rail-journey", color: glow, weight: 26, opacity: 0.5, interactive: false, className: "rj-halo" }).addTo(group);
+    L.polyline(line.path, { pane: "rail-journey", color: "#0b2a5b", weight: 10, opacity: 0.55, interactive: false }).addTo(group);
+    L.polyline(line.path, { pane: "rail-journey", color: glow, weight: 6, opacity: 1, interactive: false, className: "rj-line" }).addTo(group);
+    L.polyline(line.path, { pane: "rail-journey", color: "#ffffff", weight: 2.5, opacity: 0.9, dashArray: "2 22", interactive: false, className: "rj-flow" }).addTo(group);
     // Labels alternate sides (left/right on a north–south line, above/below on
     // an east–west one), so close stations stay readable.
     const lats = line.path.map((p) => p[0]),
@@ -69,7 +98,7 @@ export default function RailJourney({ map }) {
         radius: 8,
         color: "#ffffff",
         weight: 3,
-        fillColor: line.color,
+        fillColor: line.glow || line.color,
         fillOpacity: 1,
         interactive: false,
         className: "rj-station",
@@ -84,6 +113,10 @@ export default function RailJourney({ map }) {
     );
     train.current = L.marker(line.path[0], { icon: TRAIN_ICON, pane: "rail-journey", interactive: false, keyboard: false, zIndexOffset: 1000 }).addTo(group);
     train.current.getElement()?.style.setProperty("--line", line.color);
+    // A realistic train for the marker, if the teacher added one.
+    const probe = new Image();
+    probe.onload = () => train.current?.setIcon(photoIcon);
+    probe.src = MARKER_SRC;
     layers.current = group;
     frame(line);
     return () => {
@@ -97,7 +130,7 @@ export default function RailJourney({ map }) {
     if (!line) return;
     stationDots.current.forEach((dot, i) => {
       const lit = (phase === "station" || phase === "done") && i === stop;
-      dot.setStyle({ radius: lit ? 12 : 8, fillColor: lit ? "#ffd23f" : line.color });
+      dot.setStyle({ radius: lit ? 12 : 8, fillColor: lit ? "#ffd23f" : line.glow || line.color });
       dot.getElement()?.classList.toggle("is-current", lit);
     });
   }, [phase, stop, line]);
@@ -212,6 +245,7 @@ export default function RailJourney({ map }) {
               </small>
             </span>
           </header>
+          {phase !== "station" && <TrainPhoto />}
           {phase === "route" && (
             <>
               <p>شاهد المسار ومحطاته على الخريطة، ثم ابدأ الرحلة.</p>

@@ -329,3 +329,44 @@ path.rj-station.is-current {
     animation: none;
   }
 }
+/* Teacher photos (optional): the train in the card, and a realistic marker. */
+.rj-photo {
+  width: 100%;
+  height: 120px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+.rj-train-photo {
+  background: none !important;
+  border: 0 !important;
+}
+.rj-train-photo img {
+  width: 76px;
+  height: auto;
+  filter: drop-shadow(0 3px 4px rgb(8 30 60 / 0.5));
+}
+@media (max-width: 850px) {
+  .rj-photo {
+    height: 80px;
+  }
+}
+/* The chosen line glows along its whole length. */
+path.rj-halo {
+  filter: blur(4px);
+}
+path.rj-line {
+  filter: drop-shadow(0 0 4px rgb(255 255 255 / 0.7));
+}
+path.rj-flow {
+  animation: rj-flow 1.4s linear infinite;
+}
+@keyframes rj-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  path.rj-flow {
+    animation: none;
+  }
+}

@@ -12,6 +12,9 @@ export const RAIL_LINES = [
     id: "green",
     name: "الخط الأخضر",
     color: "#1f9d55",
+    // The line on the map glows in neon green (the teacher's design); the
+    // buttons and card keep the darker green so white text stays readable.
+    glow: "#39ff6e",
     path: [
       [29.6, 32.32],
       [29.85, 32.05],

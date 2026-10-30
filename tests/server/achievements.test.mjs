@@ -17,12 +17,11 @@ test("achievements start empty and point to the first journey", () => {
   const a = readAchievements();
   assert.equal(a.stars, 0);
   assert.equal(a.started, false);
-  assert.equal(a.eligible, false);
   assert.equal(a.next.href, "/demo/lesson-1/expedition");
   assert(a.badges.every((b) => !b.earned));
 });
 
-test("the certificate needs all three journeys and all three maps", () => {
+test("each journey earns its own certificate as soon as it is finished", () => {
   store.clear();
   put("lamis.expedition.lesson-1.v1", { view: "done", done: { iron: 1, manganese: 1, phosphate: 1, gold: 1 }, finalDone: false });
   put("lamis.water.lesson-2.v1", { view: "mission", done: { farm: true } });
@@ -33,15 +32,15 @@ test("the certificate needs all three journeys and all three maps", () => {
   assert.equal(a.next.id, "lesson-1");
 
   put("lamis.expedition.lesson-1.v1", { view: "done", done: { iron: 1, manganese: 1, phosphate: 1, gold: 1, oil: 1, coal: 1, gas: 1, wind: 1, solar: 1 }, finalDone: true });
+  a = readAchievements();
+  assert.deepEqual(a.journeys.map((j) => j.done), [true, false, false], "only «كنوز مصر» is finished; its certificate is ready alone");
   put("lamis.water.lesson-2.v1", { done: { farm: true, oasis: true, coast: true } });
   put("lamis.projects.lesson-3.v1", { done: { "new-delta": true, "birket-ghalioun": true, "benban-solar": true } });
   a = readAchievements();
   assert.equal(a.journeysDone, 3);
-  assert.equal(a.eligible, false, "maps are still missing");
   assert.equal(a.next.href, "/demo/lesson-1/build-map");
   for (const id of ["lesson-1", "lesson-2", "lesson-3"]) put(`lamis.buildmap.${id}.v1`, { finished: true, placed: { x: { state: "locked" } } });
   a = readAchievements();
-  assert.equal(a.eligible, true);
   assert.equal(a.stars, 10 + 3 + 3 + 3);
 });
 

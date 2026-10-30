@@ -18,9 +18,9 @@ const MINERALS = ["iron", "manganese", "phosphate", "gold"];
 const ENERGY = ["oil", "coal", "gas", "wind", "solar"];
 
 export const JOURNEYS = [
-  { id: "lesson-1", title: "رحلة كنوز مصر", name: "كنوز مصر", text: "اكتشف المعادن ومصادر الطاقة في مصر.", href: "/demo/lesson-1/expedition" },
-  { id: "lesson-2", title: "رحلة المياه", name: "المياه في مصر", text: "تعرّف على نهر النيل وموارد المياه.", href: "/demo/lesson-2/expedition" },
-  { id: "lesson-3", title: "نكتشف مشروعات مصر", name: "مشروعات مصر القومية", text: "اكتشف المشروعات التي تبني مستقبل مصر.", href: "/demo/lesson-3/expedition" },
+  { id: "lesson-1", title: "رحلة كنوز مصر", lesson: "الدرس الأول", lessonTitle: "الثروة المعدنية ومصادر الطاقة في مصر", name: "كنوز مصر", text: "اكتشف المعادن ومصادر الطاقة في مصر.", href: "/demo/lesson-1/expedition" },
+  { id: "lesson-2", title: "رحلة المياه", lesson: "الدرس الثاني", lessonTitle: "موارد المياه في مصر", name: "المياه في مصر", text: "تعرّف على نهر النيل وموارد المياه.", href: "/demo/lesson-2/expedition" },
+  { id: "lesson-3", title: "نكتشف مشروعات مصر", lesson: "الدرس الثالث", lessonTitle: "المشروعات القومية", name: "مشروعات مصر", text: "اكتشف المشروعات التي تبني مستقبل مصر.", href: "/demo/lesson-3/expedition" },
 ];
 const MAPS = [
   { id: "lesson-1", title: "ابنِ خريطتك: الثروة المعدنية", href: "/demo/lesson-1/build-map" },
@@ -68,10 +68,9 @@ export function readAchievements() {
   const stars = journeys.reduce((n, j) => n + j.stars, 0) + maps.reduce((n, m) => n + m.stars, 0);
   const journeysDone = journeys.filter((j) => j.done).length;
   const mapsDone = maps.filter((m) => m.done).length;
-  const eligible = journeysDone === journeys.length && mapsDone === maps.length;
   // «أكمل رحلتي» goes to the first unfinished part, which resumes where it stopped.
   const next = journeys.find((j) => !j.done) || maps.find((m) => !m.done) || null;
-  return { journeys, maps, badges, stars, journeysDone, mapsDone, eligible, next, started: stars > 0 || journeys.some((j) => j.started) };
+  return { journeys, maps, badges, stars, journeysDone, mapsDone, next, started: stars > 0 || journeys.some((j) => j.started) };
 }
 
 const CERT_KEY = "lamis.certificate.v1";

@@ -84,7 +84,7 @@
   grid-template-columns: minmax(260px, 1fr) minmax(0, 2.1fr);
 }
 .ach-row-bottom {
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.4fr);
+  grid-template-columns: minmax(260px, 1fr) minmax(0, 2.1fr);
 }
 .ach-card {
   padding: 18px 20px;
@@ -315,125 +315,134 @@
   color: #36506b;
 }
 
-/* certificate card */
-.ach-cert {
-  display: flex;
-  align-items: center;
-  gap: 18px;
+/* «شهاداتي»: one certificate per journey */
+.ach-certs ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.ach-cert-body {
-  flex: 1;
+.ach-certs li {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  min-width: 0;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 10px;
+  border: 1.5px solid #dbe6f2;
+  border-radius: 18px;
+  background: #f7f9fc;
+  color: #6b7f96;
+  text-align: center;
 }
-.ach-cert-body .ach-sub {
-  margin-bottom: 2px;
+.ach-certs li.is-earned {
+  border-color: #9cbcf0;
+  background: #eef5ff;
+  color: #0b2a5b;
+}
+.ach-certs li > b {
+  margin-top: 4px;
+  color: #0b2a5b;
+  font-size: 18px;
+  font-weight: 900;
+}
+.ach-certs li > span:not(.ach-cert-art) {
+  color: #0b2a5b;
+  font-size: 16px;
+  font-weight: 800;
+}
+.ach-certs li > small {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.ach-cert-got {
+  color: #178a4a;
+  font-style: normal;
+  font-weight: 900;
 }
 .ach-cert-art {
   position: relative;
-  flex: none;
   display: grid;
   place-items: center;
-  width: 210px;
-  height: 180px;
-  border-radius: 18px;
-  background: radial-gradient(circle, #eaf4ff 60%, transparent 62%);
+  width: 110px;
+  height: 78px;
 }
 .ach-cert-paper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  width: 160px;
-  padding: 16px 14px;
-  border: 3px solid #f2d27a;
-  border-radius: 10px;
-  background: #fffaf0;
-  transform: rotate(-6deg);
-  box-shadow: 0 8px 16px rgb(11 47 87 / 0.12);
+  gap: 5px;
+  width: 92px;
+  padding: 8px 10px;
+  border: 2px solid #c9d3df;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #b9c5d3;
+  transform: rotate(-4deg);
+}
+.ach-cert-paper svg {
+  width: 22px;
+  height: 22px;
 }
 .ach-cert-paper i {
   display: block;
   width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: #e5dcc5;
+  height: 4px;
+  border-radius: 2px;
+  background: #e1e7ef;
 }
-.ach-cert-paper i:last-child {
-  width: 60%;
+.is-earned .ach-cert-paper {
+  border-color: #f0c44c;
+  background: #fff6d8;
+  color: #d99a00;
 }
 .ach-cert-lock,
-.ach-cert-medal {
+.ach-cert-ok {
   position: absolute;
-  right: 28px;
-  bottom: 18px;
-  width: 52px;
-  height: 52px;
+  right: 0;
+  bottom: 0;
+  width: 34px;
+  height: 34px;
 }
 .ach-cert-lock {
-  padding: 10px;
+  padding: 7px;
   border-radius: 50%;
   background: #1f3557;
   color: #ffffff;
 }
-.ach-cert-medal {
-  color: #e0a100;
+.ach-cert-ok {
+  border-radius: 50%;
+  background: #ffffff;
+  color: #178a4a;
 }
-.ach-cert.is-ready {
-  border-color: #f2d27a;
-  background: #fffbef;
-}
-.ach-progress {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 16px;
-  font-weight: 800;
-}
-.ach-bar {
-  display: block;
-  height: 14px;
-  border-radius: 7px;
-  background: #e2eaf3;
-  overflow: hidden;
-}
-.ach-bar i {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #4c9bff, #1a5fd0);
-}
-.achievements .ach-go {
+.achievements .ach-cert-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-height: 56px;
+  width: 100%;
+  min-height: 44px;
   margin-top: 6px;
-  padding: 6px 22px;
   border: 0;
-  border-radius: 999px;
-  background: linear-gradient(#17a39a, #0e8c84);
+  border-radius: 12px;
+  background: #0a62d6;
   color: #ffffff;
   font: inherit;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 900;
   text-decoration: none;
-  box-shadow: 0 6px 14px rgb(14 140 132 / 0.3);
   cursor: pointer;
 }
-.achievements .ach-go:hover {
-  background: #0c7a73;
+.achievements .ach-cert-btn:hover {
+  background: #084db0;
 }
-.ach-lock-note {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  color: #4a6178;
-  font-weight: 700;
+.achievements .ach-cert-btn.is-soft {
+  background: #e3efff;
+  color: #0a4fb0;
+  font-size: 14px;
+}
+.ach-parent-link {
+  margin-top: 6px;
 }
 .ach-note {
   color: #4a6178;
@@ -526,23 +535,122 @@
   font-weight: 800 !important;
 }
 
-/* ---- the certificate */
-.cert-page {
+/* ---- the certificate of a journey, in a large window */
+.cert-backdrop {
+  position: fixed;
+  z-index: 4000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(6 22 44 / 0.55);
+}
+.cert-dialog {
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 12px;
+  width: min(960px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 16px 20px 18px;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgb(6 22 44 / 0.35);
 }
-.cert-back {
-  align-self: flex-start;
+.cert-dialog > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cert-dialog > header h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #0b2a5b;
+  font-size: 26px;
+  font-weight: 900;
+}
+.cert-dialog > header h2 svg {
+  color: #1a5fd0;
+}
+.cert-dialog .ach-x {
+  position: static;
+}
+.cert-dialog .cert-sheet {
+  width: 100%;
+  margin: 0 auto;
+  max-width: calc((100vh - 230px) * 297 / 210);
+}
+.cert-brand {
+  display: flex;
+  align-items: center;
+  gap: 1.2cqw;
+  margin: 0;
+  font-size: 3cqw;
+  font-weight: 900;
+}
+.cert-brand svg {
+  width: 5.6cqw;
+  height: 5.6cqw;
+}
+.cert-lesson {
+  margin: 0;
+  font-size: 3.1cqw;
+  font-weight: 900;
+}
+.cert-date {
+  margin: 0;
+  font-size: 2.1cqw;
+  font-weight: 700;
+}
+.cert-robot {
+  position: absolute;
+  inset-inline-start: 7cqw;
+  bottom: 9cqw;
+  width: 11cqw;
+}
+.cert-robot svg {
+  width: 100%;
+  height: auto;
+}
+.cert-act {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  min-height: 54px;
+  border: 2px solid #1a3b6e;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #0b2a5b;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.cert-act.is-main {
+  border-color: #0a62d6;
+  background: #0a62d6;
+  color: #ffffff;
+}
+.cert-act.is-soft {
+  border-color: #e3efff;
+  background: #e3efff;
+}
+.cert-rename {
+  align-self: center;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   border: 0;
   background: none;
-  color: #0b4f9c;
+  color: #1a5fd0;
   font: inherit;
   font-weight: 800;
+  cursor: pointer;
 }
 .cert-sheet {
   width: min(900px, 100%);
@@ -597,10 +705,6 @@
   border-left: 0;
   border-top: 0;
 }
-.cert-logo svg {
-  width: 6.5cqw;
-  height: 6.5cqw;
-}
 .cert-medal {
   position: absolute;
   inset-inline-end: 6cqw;
@@ -636,28 +740,12 @@
 .cert-grade {
   color: #36506b;
 }
-.cert-frame footer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4cqw;
-  margin-top: 1.2cqw;
-  font-size: 2.1cqw;
-}
-.cert-frame footer b {
-  font-size: 2.6cqw;
-}
 .cert-actions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: 10px;
 }
-.cert-actions .exp-primary,
-.cert-actions .exp-secondary {
-  width: auto;
-  min-width: 170px;
-}
+
 
 @media (max-width: 1100px) {
   .ach-hero {
@@ -714,13 +802,11 @@
     grid-row: 1;
     grid-column: 3;
   }
-  .ach-cert {
-    flex-direction: column-reverse;
-    align-items: stretch;
+  .ach-certs ul {
+    grid-template-columns: 1fr;
   }
-  .ach-cert-art {
-    align-self: center;
-    height: 150px;
+  .cert-actions {
+    flex-direction: column;
   }
   .ach-dialog {
     padding: 22px 18px 18px;
@@ -785,4 +871,286 @@
   font-weight: 900;
   letter-spacing: 8px;
   color: #0b2f57;
+}
+
+/* Desktop: everything on one screen, no scrolling (2026-10-30). */
+@media (min-width: 1101px) {
+  .achievements .exp-main {
+    gap: 10px;
+  }
+  .ach-hero-title h1 {
+    font-size: 40px;
+  }
+  .ach-hero-title p {
+    font-size: 16px;
+  }
+  .ach-landmarks {
+    max-height: 84px;
+    width: auto;
+  }
+  .ach-robot span {
+    width: 72px;
+  }
+  .ach-robot p {
+    padding: 10px 16px;
+    font-size: 15px;
+  }
+  .ach-row {
+    gap: 12px;
+  }
+  .ach-card {
+    padding: 12px 16px;
+  }
+  .ach-card h2 {
+    font-size: 22px;
+  }
+  .ach-sub {
+    margin: 0 0 8px;
+    font-size: 13.5px;
+  }
+  .ach-stars-box {
+    margin-top: 8px;
+    padding: 10px;
+  }
+  .ach-big-star svg {
+    width: 76px;
+    height: 76px;
+  }
+  .ach-stars-box b {
+    font-size: 56px;
+  }
+  .ach-stars-box p > span:last-child span {
+    font-size: 22px;
+  }
+  .ach-stars-box small {
+    margin-top: 8px;
+    padding-top: 8px;
+    font-size: 13.5px;
+  }
+  .ach-badges ul {
+    padding: 8px 6px;
+  }
+  .ach-badge-hex {
+    width: 74px;
+    height: 82px;
+  }
+  .ach-badge-hex svg {
+    width: 38px;
+    height: 38px;
+  }
+  .ach-badge-lock {
+    bottom: 12px;
+    width: 22px !important;
+    height: 22px !important;
+  }
+  .ach-badge b {
+    font-size: 15px;
+  }
+  .ach-badge small {
+    font-size: 12px;
+  }
+  .ach-badge-info {
+    margin-top: 6px;
+    font-size: 13.5px;
+  }
+  .ach-journeys ul {
+    gap: 6px;
+  }
+  .ach-journeys a {
+    grid-template-columns: 76px minmax(0, 1fr) auto auto;
+    gap: 10px;
+    padding: 5px 6px;
+  }
+  .ach-thumb {
+    width: 76px;
+    height: 50px;
+  }
+  .ach-journey-text b {
+    font-size: 16px;
+  }
+  .ach-journey-text small {
+    font-size: 12.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ach-status {
+    padding: 3px 10px;
+    font-size: 12.5px;
+  }
+  .ach-certs li {
+    padding: 8px;
+  }
+  .ach-cert-art {
+    width: 84px;
+    height: 56px;
+  }
+  .ach-cert-paper {
+    width: 70px;
+    padding: 5px 8px;
+    gap: 3px;
+  }
+  .ach-cert-paper svg {
+    width: 16px;
+    height: 16px;
+  }
+  .ach-cert-lock,
+  .ach-cert-ok {
+    width: 26px;
+    height: 26px;
+  }
+  .ach-cert-lock {
+    padding: 5px;
+  }
+  .ach-certs li > b {
+    font-size: 16px;
+  }
+  .ach-certs li > span:not(.ach-cert-art) {
+    font-size: 14px;
+  }
+  .achievements .ach-cert-btn {
+    min-height: 38px;
+    margin-top: 4px;
+    font-size: 14.5px;
+  }
+  .ach-note {
+    font-size: 12.5px;
+  }
+}
+.ach-badge-info:empty {
+  display: none;
+}
+@media (min-width: 1101px) {
+  .ach-landmarks {
+    max-height: 66px;
+  }
+  .ach-hero-title h1 {
+    font-size: 36px;
+  }
+  .ach-robot span {
+    width: 60px;
+  }
+  .ach-robot p {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+  .ach-note {
+    margin-top: -4px;
+  }
+}
+/* Short laptop screens (e.g. 1366×768): tighter still. */
+@media (min-width: 1101px) and (max-height: 860px) {
+  .achievements .exp-main {
+    gap: 8px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .ach-landmarks {
+    display: none;
+  }
+  .ach-hero {
+    grid-template-columns: auto 1fr;
+  }
+  .ach-robot {
+    justify-self: end;
+  }
+  .ach-hero-title h1 {
+    font-size: 30px;
+  }
+  .ach-sub {
+    display: none;
+  }
+  .ach-card h2 {
+    font-size: 19px;
+  }
+  .ach-card {
+    padding: 8px 14px;
+  }
+  .ach-badges ul {
+    margin-top: 6px;
+  }
+  .ach-badge-hex {
+    width: 58px;
+    height: 64px;
+  }
+  .ach-badge-hex svg {
+    width: 30px;
+    height: 30px;
+  }
+  .ach-badge-lock {
+    bottom: 8px;
+    width: 18px !important;
+    height: 18px !important;
+    padding: 2px;
+  }
+  .ach-badge b {
+    font-size: 13.5px;
+  }
+  .ach-badge small {
+    display: none;
+  }
+  .ach-big-star svg {
+    width: 56px;
+    height: 56px;
+  }
+  .ach-stars-box b {
+    font-size: 44px;
+  }
+  .ach-stars-box small {
+    display: none;
+  }
+  .ach-journeys ul {
+    margin-top: 6px;
+  }
+  .ach-journeys a {
+    padding: 3px 6px;
+  }
+  .ach-thumb {
+    height: 40px;
+  }
+  .ach-certs ul {
+    margin-top: 6px;
+  }
+  .ach-cert-art {
+    height: 46px;
+  }
+  .ach-cert-paper i {
+    display: none;
+  }
+  .ach-certs li > small {
+    display: none;
+  }
+  .ach-note {
+    display: none;
+  }
+}
+@media (min-width: 1101px) and (min-height: 861px) and (max-height: 960px) {
+  .achievements .exp-main {
+    gap: 8px;
+    padding-bottom: 4px;
+  }
+  .ach-badge-hex {
+    width: 66px;
+    height: 72px;
+  }
+  .ach-thumb {
+    height: 42px;
+  }
+  .ach-card {
+    padding: 10px 16px;
+  }
+}
+.cert-dialog .ach-x {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #d6e3f0;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #0b2a5b;
+}
+.cert-dialog .ach-x svg {
+  width: 22px;
+  height: 22px;
 }

@@ -10,7 +10,6 @@ import {
   CheckCircle,
   Lock,
   Medal,
-  ArrowRight,
   X,
   Printer,
   DownloadSimple,
@@ -42,8 +41,7 @@ const arabicDate = (iso) => {
   }
 };
 
-// «إنجازاتي»: stars, badges and journeys, with the Little Explorer
-// certificate always in view as the goal.
+// «إنجازاتي»: stars, badges, journeys and one certificate per journey.
 export default function AchievementsPage() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -53,38 +51,30 @@ export default function AchievementsPage() {
   const [asking, setAsking] = useState(false);
   const guestName = currentStudent()?.name || loadGuest().name || "";
   const firstName = (cert.name || guestName).trim().split(/\s+/)[0];
-  const showing = pathname.endsWith("/certificate") && a.eligible && cert.name;
+  // One certificate per journey: finishing «كنوز مصر» alone earns its certificate.
+  const [viewing, setViewing] = useState(() =>
+    pathname.endsWith("/certificate") ? a.journeys.find((j) => j.done)?.id || null : null,
+  );
+  const [pendingView, setPendingView] = useState(null);
+  const earned = cert.earned || {};
 
-  // The date the certificate became ready is kept, so it does not change.
+  // The day each journey's certificate was earned is kept, so it does not change.
   useEffect(() => {
-    if (a.eligible && !cert.earnedAt) {
-      saveCertificate({ earnedAt: today() });
+    const fresh = a.journeys.filter((j) => j.done && !earned[j.id]);
+    if (fresh.length) {
+      saveCertificate({ earned: { ...earned, ...Object.fromEntries(fresh.map((j) => [j.id, today()])) } });
       setCert(loadCertificate());
     }
-  }, [a.eligible]);
-
-  if (showing)
-    return (
-      <Frame title="شهادتي" lessonPath="/explore" current="achievements" className="achievements">
-        <CertificateView
-          name={cert.name}
-          date={cert.earnedAt || today()}
-          onEdit={() => setAsking(true)}
-          onBack={() => navigate("/achievements")}
-        />
-        {asking && (
-          <NameDialog
-            initial={cert.name}
-            onClose={() => setAsking(false)}
-            onSave={(name) => {
-              saveCertificate({ name });
-              setCert(loadCertificate());
-              setAsking(false);
-            }}
-          />
-        )}
-      </Frame>
-    );
+  }, []);
+  const open = (id) => {
+    play("open");
+    if (cert.name) setViewing(id);
+    else {
+      setPendingView(id);
+      setAsking(true);
+    }
+  };
+  const shown = a.journeys.find((j) => j.id === viewing && j.done);
 
   const chosen = a.badges.find((b) => b.id === badge);
   return (
@@ -99,6 +89,7 @@ export default function AchievementsPage() {
               ? `أحسنت يا ${firstName || "مستكشف"}! كل رحلة تقربك من إنجاز جديد`
               : `مرحبًا يا ${firstName || "مستكشف"}! رحلتك تبدأ بخطوة`}
           </p>
+          <ParentLinkButton className="ach-parent-link" />
         </div>
         <Landmarks />
         <div className="ach-robot">
@@ -157,7 +148,7 @@ export default function AchievementsPage() {
             })}
           </ul>
           <p className="ach-badge-info" aria-live="polite">
-            {chosen ? (chosen.earned ? chosen.why : chosen.how) : "اضغط على شارة لتعرف كيف تحصل عليها."}
+            {chosen ? (chosen.earned ? chosen.why : chosen.how) : ""}
           </p>
         </section>
       </div>
@@ -188,51 +179,42 @@ export default function AchievementsPage() {
           </ul>
         </section>
 
-        <section className={`ach-card ach-cert ${a.eligible ? "is-ready" : ""}`} aria-labelledby="ach-cert">
-          <div className="ach-cert-body">
-            <h2 id="ach-cert">
-              <Medal size={30} weight="duotone" aria-hidden="true" /> شهادة المستكشف الصغير
-            </h2>
-            <p className="ach-sub">
-              {a.eligible
-                ? `أحسنت يا ${firstName || "مستكشف"}! أصبحت شهادتك جاهزة.`
-                : "أكمل رحلات الوحدة والأنشطة المطلوبة لتحصل على شهادتك."}
-            </p>
-            <Progress label="الرحلات المكتملة" done={a.journeysDone} total={a.journeys.length} />
-            <Progress label="أنشطة ابنِ خريطتك" done={a.mapsDone} total={a.maps.length} />
-            {a.eligible ? (
-              <button
-                type="button"
-                className="ach-go"
-                onClick={() => {
-                  play("open");
-                  setAsking(true);
-                }}
-              >
-                اعرض شهادتي <CaretLeft size={22} weight="bold" aria-hidden="true" />
-              </button>
-            ) : (
-              a.next && (
-                <Link className="ach-go" to={a.next.href}>
-                  أكمل {a.next.title} <CaretLeft size={22} weight="bold" aria-hidden="true" />
-                </Link>
-              )
-            )}
-            {!a.eligible && (
-              <small className="ach-lock-note">
-                <Lock size={18} weight="fill" aria-hidden="true" /> أكمل المتطلبات لفتح الشهادة.
-              </small>
-            )}
-          </div>
-          <div className="ach-cert-art" aria-hidden="true">
-            <span className="ach-cert-paper">
-              <BrandMark size={40} />
-              <i />
-              <i />
-              <i />
-            </span>
-            {a.eligible ? <Medal className="ach-cert-medal" weight="fill" /> : <Lock className="ach-cert-lock" weight="fill" />}
-          </div>
+        <section className="ach-card ach-certs" aria-labelledby="ach-certs">
+          <h2 id="ach-certs">
+            <Medal size={30} weight="duotone" aria-hidden="true" /> شهاداتي
+          </h2>
+          <p className="ach-sub">لكل رحلة شهادة: أكمل الرحلة لتحصل على شهادتها.</p>
+          <ul>
+            {a.journeys.map((j) => (
+              <li key={j.id} className={j.done ? "is-earned" : ""}>
+                <span className="ach-cert-art" aria-hidden="true">
+                  <span className="ach-cert-paper">
+                    <Medal weight="fill" />
+                    <i />
+                    <i />
+                  </span>
+                  {j.done ? <CheckCircle className="ach-cert-ok" weight="fill" /> : <Lock className="ach-cert-lock" weight="fill" />}
+                </span>
+                <b>شهادة {j.lesson}</b>
+                <span>رحلة {j.name}</span>
+                {j.done ? (
+                  <>
+                    <em className="ach-cert-got">تم الحصول عليها</em>
+                    <button type="button" className="ach-cert-btn" onClick={() => open(j.id)}>
+                      اعرض شهادتك
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <small>أكمل الرحلة للحصول على الشهادة.</small>
+                    <Link className="ach-cert-btn is-soft" to={j.href}>
+                      أكمل رحلة {j.name}
+                    </Link>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
         </section>
       </div>
 
@@ -241,34 +223,35 @@ export default function AchievementsPage() {
         <Link to="/">طالب آخر؟ اكتب اسمك</Link>
       </small>
 
-      <LinkParent />
-
       {asking && (
         <NameDialog
           initial={cert.name || guestName}
-          onClose={() => setAsking(false)}
+          onClose={() => {
+            setAsking(false);
+            setPendingView(null);
+          }}
           onSave={(name) => {
             saveCertificate({ name });
             setCert(loadCertificate());
             setAsking(false);
-            navigate("/achievements/certificate");
+            if (pendingView) setViewing(pendingView);
+            setPendingView(null);
+          }}
+        />
+      )}
+      {shown && !asking && (
+        <CertificateDialog
+          journey={shown}
+          name={cert.name}
+          date={earned[shown.id] || today()}
+          onEdit={() => setAsking(true)}
+          onClose={() => {
+            setViewing(null);
+            if (pathname.endsWith("/certificate")) navigate("/achievements", { replace: true });
           }}
         />
       )}
     </Frame>
-  );
-}
-
-function Progress({ label, done, total }) {
-  return (
-    <div className="ach-progress">
-      <span>
-        {label}: <bdi>{done}</bdi> من <bdi>{total}</bdi>
-      </span>
-      <span className="ach-bar" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={total} aria-valuenow={done}>
-        <i style={{ width: `${total ? (done / total) * 100 : 0}%` }} />
-      </span>
-    </div>
   );
 }
 
@@ -357,80 +340,85 @@ function NameDialog({ initial, onSave, onClose }) {
   );
 }
 
-function CertificateView({ name, date, onEdit, onBack }) {
+// The certificate of one journey, large, over «إنجازاتي», with download and print.
+function CertificateDialog({ journey, name, date, onEdit, onClose }) {
   const sheet = useRef(null);
+  const closeButton = useRef(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  useEffect(() => {
+    closeButton.current?.focus();
+    const esc = (e) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", esc);
+    return () => document.removeEventListener("keydown", esc);
+  }, []);
   async function pdf() {
     setBusy(true);
     setError("");
     try {
       const { downloadCertificatePdf } = await import("./certificatePdf");
-      await downloadCertificatePdf(sheet.current, `شهادة-${name.replace(/\s+/g, "-")}.pdf`);
+      await downloadCertificatePdf(sheet.current, `شهادة-${journey.name.replace(/\s+/g, "-")}-${name.replace(/\s+/g, "-")}.pdf`);
     } catch {
-      setError("تعذّر تجهيز ملف PDF الآن. جرّب «طباعة الشهادة» ثم اختر الحفظ كملف PDF.");
+      setError("تعذّر تجهيز ملف PDF الآن. جرّب «طباعة» ثم اختر الحفظ كملف PDF.");
     } finally {
       setBusy(false);
     }
   }
   return (
-    <div className="cert-page">
-      <button type="button" className="cert-back" onClick={onBack}>
-        <ArrowRight size={18} aria-hidden="true" /> العودة إلى إنجازاتي
-      </button>
-      <article ref={sheet} className="cert-sheet" aria-label={`شهادة إنجاز باسم ${name}`}>
-        <div className="cert-frame">
-          <span className="cert-corner tl" />
-          <span className="cert-corner tr" />
-          <span className="cert-corner bl" />
-          <span className="cert-corner br" />
-          <span className="cert-logo" aria-hidden="true">
-            <BrandMark size={58} />
-          </span>
-          <Medal className="cert-medal" weight="fill" aria-hidden="true" />
-          <h1>شهادة إنجاز</h1>
-          <p className="cert-to">تُمنح للمستكشف الصغير</p>
-          <p className="cert-name">{name}</p>
-          <p className="cert-for">تقديرًا لإتمام رحلات وأنشطة الوحدة الثالثة: «كنوز مصر»</p>
-          <p className="cert-grade">الصف الخامس الابتدائي — الفصل الدراسي الأول</p>
-          <footer>
-            <b>الخرائط التعليمية الذكية</b>
-            <span>
-              تاريخ الإنجاز: <bdi>{arabicDate(date)}</bdi>
+    <div className="cert-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <section className="cert-dialog" role="dialog" aria-modal="true" aria-labelledby="cert-dialog-title">
+        <header>
+          <h2 id="cert-dialog-title">
+            <Medal size={30} weight="duotone" aria-hidden="true" /> شهادة {journey.lesson}
+          </h2>
+          <button ref={closeButton} type="button" className="ach-x" aria-label="إغلاق" onClick={onClose}>
+            <X size={22} weight="bold" />
+          </button>
+        </header>
+        <article ref={sheet} className="cert-sheet" aria-label={`شهادة إتمام رحلة ${journey.name} باسم ${name}`}>
+          <div className="cert-frame">
+            <span className="cert-corner tl" />
+            <span className="cert-corner tr" />
+            <span className="cert-corner bl" />
+            <span className="cert-corner br" />
+            <p className="cert-brand">
+              <BrandMark size={44} /> الخرائط التعليمية الذكية
+            </p>
+            <h1>شهادة إنجاز</h1>
+            <p className="cert-to">تُمنح هذه الشهادة إلى</p>
+            <p className="cert-name">{name}</p>
+            <p className="cert-for">تقديرًا لإتمامه رحلة {journey.name}</p>
+            <p className="cert-lesson">{journey.lessonTitle}</p>
+            <p className="cert-grade">{journey.lesson} — الصف الخامس الابتدائي</p>
+            <p className="cert-date">
+              تاريخ الإتمام: <bdi>{arabicDate(date)}</bdi>
+            </p>
+            <span className="cert-robot" aria-hidden="true">
+              <RobotGuide />
             </span>
-          </footer>
+            <Medal className="cert-medal" weight="fill" aria-hidden="true" />
+          </div>
+        </article>
+        <div className="cert-actions">
+          <button type="button" className="cert-act is-main" onClick={pdf} disabled={busy}>
+            <DownloadSimple size={22} aria-hidden="true" /> {busy ? "جارٍ التجهيز…" : "تحميل الشهادة"}
+          </button>
+          <button type="button" className="cert-act" onClick={() => window.print()}>
+            <Printer size={22} aria-hidden="true" /> طباعة
+          </button>
+          <button type="button" className="cert-act is-soft" onClick={onClose}>
+            العودة إلى إنجازاتي
+          </button>
         </div>
-      </article>
-      <div className="cert-actions">
-        <button type="button" className="exp-primary" onClick={pdf} disabled={busy}>
-          <DownloadSimple size={20} aria-hidden="true" /> {busy ? "جارٍ التجهيز…" : "تحميل PDF"}
+        <button type="button" className="cert-rename" onClick={onEdit}>
+          <PencilSimple size={16} aria-hidden="true" /> تعديل الاسم
         </button>
-        <button type="button" className="exp-primary" onClick={() => window.print()}>
-          <Printer size={20} aria-hidden="true" /> طباعة الشهادة
-        </button>
-        <button type="button" className="exp-secondary" onClick={onEdit}>
-          <PencilSimple size={18} aria-hidden="true" /> تعديل الاسم
-        </button>
-      </div>
-      {error && (
-        <p className="ach-error" role="alert">
-          {error}
-        </p>
-      )}
+        {error && (
+          <p className="ach-error" role="alert">
+            {error}
+          </p>
+        )}
+      </section>
     </div>
-  );
-}
-
-// A signed-in student can let a parent follow their progress: «ربط ولي الأمر»
-// opens the one-time code the parent types in their own account.
-function LinkParent() {
-  const session = useSession();
-  if (session?.user?.role !== "student") return null;
-  return (
-    <section className="ach-card ach-parent" aria-labelledby="ach-parent">
-      <h2 id="ach-parent">اربط ولي الأمر</h2>
-      <p>يتابع ولي أمرك تقدمك من حسابه: انسخ رمز الربط وأعطه له ليكتبه في شاشة «إضافة ابني».</p>
-      <ParentLinkButton />
-    </section>
   );
 }

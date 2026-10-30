@@ -226,7 +226,8 @@ export function childReport(db, student, period = "all") {
     review: review ? { lesson: review.title, topic: review.review } : null,
     period: PERIOD[period] ? period : "all",
     recent: recent(events.filter((e) => e.created_at >= since)),
-    certificate: lessons.every((l) => l.activities.journey && l.activities.buildMap),
+    // One certificate per journey, as on the student's «شهاداتي».
+    certificates: lessons.map((l) => ({ id: l.id, title: l.title, earned: l.activities.journey })),
   };
 }
 

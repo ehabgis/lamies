@@ -575,16 +575,21 @@ function Dashboard({ child, all, onChild, period, onPeriod, onAdd }) {
       )}
 
       {tab === "certificates" && (
-        <section className={`pr-panel pr-cert ${child.certificate ? "is-ready" : ""}`}>
-          <Medal size={56} weight="duotone" aria-hidden="true" />
-          <div>
-            <h2>شهادة المستكشف الصغير</h2>
-            <p>
-              {child.certificate
-                ? `أكمل ${first(child.name)} رحلات الوحدة الثلاث وأنشطة «ابنِ خريطتك»؛ يمكنه عرض شهادته وطباعتها من صفحة «إنجازاتي».`
-                : "تصبح جاهزة بعد إكمال رحلات الوحدة الثلاث ونشاط «ابنِ خريطتك» في كل درس."}
-            </p>
-          </div>
+        <section className="pr-panel" aria-label="الشهادات">
+          <ul className="pr-certs">
+            {child.certificates.map((c, i) => (
+              <li key={c.id} className={c.earned ? "is-ready" : ""}>
+                <Medal size={44} weight={c.earned ? "fill" : "duotone"} aria-hidden="true" />
+                <b>شهادة {["الدرس الأول", "الدرس الثاني", "الدرس الثالث"][i]}</b>
+                <span>{c.title}</span>
+                <small>
+                  {c.earned
+                    ? `حصل عليها ${first(child.name)}؛ يعرضها ويطبعها من صفحة «إنجازاتي».`
+                    : "تصبح جاهزة بعد إتمام رحلة الاستكشاف في هذا الدرس."}
+                </small>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

@@ -80,6 +80,7 @@ test("a linked parent sees only their child's graded progress", async () => {
     assert.equal(week.totals.answered, 5, "today's answers are inside this week");
     assert(Array.isArray(r.lessons[0].wrong) && r.lessons[0].wrong.length === 5, "missed prompts are listed (prompts only)");
     assert(!("firstTries" in r.lessons[0]));
+    assert.deepEqual(r.certificates.map((c) => c.earned), [false, false, false], "one certificate per journey, none finished yet");
     assert.deepEqual((await api("/api/parent/children", "GET", null, stranger)).value.children, []);
     assert(!JSON.stringify(kids).includes("mona"), "other students stay private");
 

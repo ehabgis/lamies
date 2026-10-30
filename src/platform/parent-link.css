@@ -1,0 +1,118 @@
+/* «ربط ولي الأمر»: button beside the student's name and the code window. */
+.parent-link-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 4px 12px;
+  border: 1.5px solid #9cbcf0;
+  border-radius: 999px;
+  background: #eef5ff;
+  color: #0a4fb0;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.parent-link-open:hover {
+  background: #dfecff;
+}
+.parent-link-backdrop {
+  position: fixed;
+  z-index: 4000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(6 22 44 / 0.5);
+}
+.parent-link-dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: min(440px, 100%);
+  padding: 26px 24px 22px;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgb(6 22 44 / 0.3);
+  color: #0b2f57;
+  font-family: Cairo, system-ui, sans-serif;
+  text-align: center;
+}
+.parent-link-dialog h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+}
+.parent-link-dialog p {
+  margin: 0;
+  color: #36506b;
+  font-weight: 700;
+  line-height: 1.7;
+}
+.parent-link-dialog small {
+  color: #6b8299;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.parent-link-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #e6f1ff;
+  color: #0a62d6;
+}
+.parent-link-x {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #d6e3f0;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #12345a;
+  cursor: pointer;
+}
+.parent-link-code {
+  width: 100%;
+  min-height: 64px;
+  border: 2px dashed #9cbcf0;
+  border-radius: 16px;
+  background: #f5f9ff;
+  color: #0b2f57;
+  font: inherit;
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: 10px;
+  text-align: center;
+}
+.parent-link-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  border: 0;
+  border-radius: 14px;
+  background: #0a62d6;
+  color: #ffffff;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.parent-link-copy:hover {
+  background: #084db0;
+}
+.parent-link-error {
+  color: #b42318 !important;
+}

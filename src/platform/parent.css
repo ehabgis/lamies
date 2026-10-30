@@ -940,3 +940,12 @@ i.tone-amber {
     transition: none !important;
   }
 }
+.pr-other {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #fff6e0;
+  color: #6b4a00 !important;
+  font-size: 14px !important;
+  font-weight: 700;
+}

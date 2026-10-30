@@ -24,7 +24,7 @@ import { Frame } from "./ExpeditionPage";
 import { loadGuest, currentStudent } from "./guestProfile";
 import { readAchievements, loadCertificate, saveCertificate } from "./achievements";
 import { play } from "./sfx";
-import { api } from "./api";
+import ParentLinkButton from "./ParentLinkButton";
 import { useSession } from "./Session";
 import "./expedition.css";
 import TripPhoto, { TRIP_PHOTO } from "./TripPhoto";
@@ -421,40 +421,16 @@ function CertificateView({ name, date, onEdit, onBack }) {
   );
 }
 
-// A signed-in student can let a parent follow their progress: a one-time
-// code the parent types in their own account.
+// A signed-in student can let a parent follow their progress: «ربط ولي الأمر»
+// opens the one-time code the parent types in their own account.
 function LinkParent() {
   const session = useSession();
-  const [code, setCode] = useState(null);
-  const [error, setError] = useState("");
   if (session?.user?.role !== "student") return null;
   return (
     <section className="ach-card ach-parent" aria-labelledby="ach-parent">
       <h2 id="ach-parent">اربط ولي الأمر</h2>
-      <p>يتابع ولي أمرك تقدمك من حسابه: أعطه هذا الكود ليكتبه في صفحة «متابعة تقدم طفلك».</p>
-      {code ? (
-        <p className="ach-code" aria-live="polite">
-          <bdi dir="ltr">{code.code}</bdi>
-          <small>صالح لمرة واحدة حتى {new Date(code.expires).toLocaleDateString("ar-EG", { day: "numeric", month: "long" })}</small>
-        </p>
-      ) : (
-        <button
-          type="button"
-          className="exp-secondary"
-          onClick={() =>
-            api("/parent/link-code", { method: "POST", body: {} })
-              .then(setCode)
-              .catch((e) => setError(e.message))
-          }
-        >
-          اعرض كود الربط
-        </button>
-      )}
-      {error && (
-        <p className="ach-error" role="alert">
-          {error}
-        </p>
-      )}
+      <p>يتابع ولي أمرك تقدمك من حسابه: انسخ رمز الربط وأعطه له ليكتبه في شاشة «إضافة ابني».</p>
+      <ParentLinkButton />
     </section>
   );
 }

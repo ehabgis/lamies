@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { BookOpen, Compass, SignOut, Star, Gear } from "phosphor-react";
 import { useSession } from "./Session";
 import BrandMark from "./BrandMark";
+import ParentLinkButton from "./ParentLinkButton";
 export default function Shell({
   children,
   mapPage = false,
@@ -22,6 +23,7 @@ export default function Shell({
             <BrandMark size={46} />
             <div>الخرائط التعليمية الذكية</div>
           </Link>
+          <ParentLinkButton />
           <PlatformNavigation />
         </header>
       )}

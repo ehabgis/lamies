@@ -27,6 +27,7 @@ import {
   Drop,
   Waves,
   Recycle,
+  BookBookmark,
 } from "phosphor-react";
 import * as narrator from "./narrator";
 import Shell, { PlatformNavigation } from "./Shell";
@@ -81,7 +82,7 @@ export const mapPosition = (l) => ({
 function siteImages(resource, location, localPhoto) {
   const places = location ? [location] : resource.locations || [];
   const list = [
-    ...places.flatMap((l) => l.media?.images || []).map((src) => ({ src, credit: "صورة الموقع — تحتاج مراجعة المصدر" })),
+    ...places.flatMap((l) => l.media?.images || []).map((src) => ({ src })),
     localPhoto && { src: localPhoto, credit: "معاينة على هذا الجهاز فقط" },
     resource.media?.image && { src: resource.media.image, credit: resource.media.imageCredit },
   ].filter(Boolean);
@@ -1117,6 +1118,18 @@ export default function LessonPage({ demo = false }) {
             <Target />
             <span className="ux-long">أسئلة الدرس</span><span className="ux-short" aria-hidden="true">الأسئلة</span>
           </button>
+          {demo && (
+            <button
+              className="dock-book"
+              onClick={() => {
+                play("open");
+                navigate(`/demo/${id}/book`);
+              }}
+            >
+              <BookBookmark />
+              <span className="ux-long">كتابي التفاعلي</span><span className="ux-short" aria-hidden="true">الكتاب</span>
+            </button>
+          )}
           <button
             aria-controls="lesson-learning-drawer"
             aria-expanded={modal === "activities"}

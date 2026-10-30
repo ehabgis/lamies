@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Star, SpeakerHigh, SpeakerSlash } from "phosphor-react";
 import { isMuted, onMuteChange, play, setMuted } from "./sfx";
+import ParentLinkButton from "./ParentLinkButton";
 
 // The explorer's name at the top of the lesson, with stars earned in this
 // lesson and the sound-effects switch.
@@ -17,6 +18,7 @@ export default function ExplorerChip({ name, solved = 0, total = 0 }) {
         <small>المستكشف</small>
         <strong>{name}</strong>
       </span>
+      <ParentLinkButton />
       {total > 0 && (
         <span className="explorer-stars" title="الأسئلة والأنشطة التي أنجزتها">
           <Star size={18} weight="fill" aria-hidden="true" />

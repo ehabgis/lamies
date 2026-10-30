@@ -74,13 +74,16 @@ export default function ParentPage() {
   useEffect(() => {
     if (user?.role === "parent") load();
   }, [user?.id]);
-  useEffect(() => {
-    if (user && user.role !== "parent") navigate(user.role === "student" ? "/journey" : "/admin", { replace: true });
-  }, [user?.role]);
 
   if (loading) return <Shell />;
-  if (!user) return <Shell back><Portal /></Shell>;
-  if (user.role !== "parent") return <Shell />;
+  // «متابعة ولي الأمر» always opens the portal; signing in as a parent here
+  // replaces a student's session on a shared device.
+  if (!user || user.role !== "parent")
+    return (
+      <Shell back>
+        <Portal other={user} />
+      </Shell>
+    );
 
   const signOut = async () => {
     await logout();
@@ -163,7 +166,7 @@ function Shell({ user, onSignOut, back, children }) {
 }
 
 // ---------------------------------------------------------------- portal
-function Portal() {
+function Portal({ other }) {
   const { setUser } = useSession();
   const [mode, setMode] = useState("login");
   const [show, setShow] = useState(false);
@@ -201,6 +204,11 @@ function Portal() {
         </span>
         <h1>بوابة ولي الأمر</h1>
         <p>{mode === "login" ? "سجّل الدخول لمتابعة تقدم طفلك" : "أنشئ حسابًا لمتابعة تقدم طفلك"}</p>
+        {other && (
+          <p className="pr-other" role="note">
+            هذا الجهاز مسجّل الآن باسم «{other.name || other.username}». دخول ولي الأمر هنا يُنهي تلك الجلسة.
+          </p>
+        )}
         <div className="pr-seg" role="tablist" aria-label="الدخول أو إنشاء حساب">
           <button type="button" role="tab" aria-selected={mode === "login"} onClick={() => (setMode("login"), setError(""))}>
             تسجيل الدخول

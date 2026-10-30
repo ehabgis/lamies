@@ -59,7 +59,9 @@ const reducedMotion = () =>
 // (lesson 3). Touching the scene keeps the 3D view open.
 const PHOTO_AFTER_MS = 9000;
 
-export default function Site3DView({ site, photo, onClose }) {
+// `inline`: the scene takes the map's own place (the New Capital in lesson 3),
+// starting from the 2D map's zoom so the change reads as the map tilting.
+export default function Site3DView({ site, photo, onClose, inline = false, startZoom }) {
   const host = useRef(null);
   const mapRef = useRef(null);
   const closeRef = useRef(null);
@@ -75,7 +77,7 @@ export default function Site3DView({ site, photo, onClose }) {
         container: host.current,
         style: STYLE,
         center: [site.lng, site.lat],
-        zoom: reducedMotion() ? 14.6 : 11.5,
+        zoom: reducedMotion() ? 14.6 : startZoom ?? 11.5,
         pitch: reducedMotion() ? 60 : 0,
         bearing: reducedMotion() ? -25 : 0,
         maxPitch: 75,
@@ -148,6 +150,33 @@ export default function Site3DView({ site, photo, onClose }) {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
+  if (inline)
+    return (
+      <section className="site-3d-inline" aria-label={`مشهد ثلاثي الأبعاد: ${site.resource?.label}`}>
+        {failed ? (
+          <p className="site-3d-fallback">لا يدعم هذا الجهاز العرض ثلاثي الأبعاد. يمكنك متابعة الموقع على الخريطة.</p>
+        ) : (
+          <div ref={host} className="site-3d-map" />
+        )}
+        {!failed && (
+          <button
+            type="button"
+            className="site-3d-hint"
+            aria-pressed={orbiting}
+            onClick={() => {
+              touched.current = true;
+              setOrbiting((v) => !v);
+            }}
+          >
+            {orbiting ? <Pause weight="bold" aria-hidden="true" /> : <ArrowsClockwise weight="bold" aria-hidden="true" />}
+            {orbiting ? "إيقاف الدوران" : "اسحب لتدوير المشهد"}
+          </button>
+        )}
+        <p className="site-3d-inline-note">
+          صور أقمار صناعية وتضاريس حقيقية؛ المباني من OpenStreetMap وقد ينقص بعضها.
+        </p>
+      </section>
+    );
   return (
     <section className="site-3d-panel" role="dialog" aria-label={`عرض ثلاثي الأبعاد: ${site.resource?.label}`}>
       <header>

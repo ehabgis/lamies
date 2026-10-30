@@ -56,6 +56,7 @@ import RobotGuide from "../components/Map/RobotGuide";
 import BrandMark from "./BrandMark";
 import ExplorerChip from "./ExplorerChip";
 import RailJourney from "./RailJourney";
+import { CapitalApproach, CapitalCard, CAPITAL_ID, CAPITAL_QUESTION } from "./CapitalTour";
 import LessonMontage from "./LessonMontage";
 import { buildScenes, SECTIONS } from "./montageScenes";
 import { loadGuest } from "./guestProfile";
@@ -210,6 +211,8 @@ export default function LessonPage({ demo = false }) {
     [pickActivity, setPickActivity] = useState(true),
     [activityGroup, setActivityGroup] = useState(null),
     [view3d, setView3d] = useState(null),
+    // Lesson 3's New Capital: { site, zoom } while the map flies there, then the scene.
+    [capital, setCapital] = useState(null),
     [montage, setMontage] = useState(null),
     [spotlight, setSpotlight] = useState(null),
     open3dTimer = useRef(null),
@@ -392,15 +395,21 @@ export default function LessonPage({ demo = false }) {
     setLegendOpen(false);
     // The card opens straight from the key, as in lesson 2; its site list
     // lets the child move to each place.
-    setInfoOpen(!watch && !(demo && id === "lesson-3" && r.id === "high-speed-rail"));
+    setInfoOpen(!watch && !(demo && id === "lesson-3" && ["high-speed-rail", CAPITAL_ID].includes(r.id)));
     if (watch) cardTimer.current = setTimeout(() => setInfoOpen(true), EFFECT_MS - 1500);
     setVideoOpen(false);
     setResource(r);
     clearTimeout(open3dTimer.current);
     setView3d(null);
+    setCapital(null);
     // The train's trip draws its own lines and stations; no single place to open.
     if (demo && id === "lesson-3" && r.id === "high-speed-rail") {
       setLocation(null);
+    } else if (demo && id === "lesson-3" && r.id === CAPITAL_ID && r.locations?.length) {
+      // The capital: fly there on this map, then tilt into its scene.
+      const site = { ...r.locations[0], resource: r };
+      setLocation(site);
+      setCapital({ site, phase: "approach" });
     } else if (singleSite) {
       const site = { ...r.locations[0], resource: r };
       setLocation(site);
@@ -971,12 +980,25 @@ export default function LessonPage({ demo = false }) {
             focusRequest={focusRequest}
             waterLesson={demo && id === "lesson-2"}
             railLesson={demo && id === "lesson-3"}
-            hideRail={railTrip}
-            overlay={railTrip ? (map) => <RailJourney map={map} /> : undefined}
+            hideRail={railTrip || Boolean(capital)}
+            overlay={
+              railTrip
+                ? (map) => <RailJourney map={map} />
+                : capital?.phase === "approach"
+                  ? (map) => (
+                      <CapitalApproach
+                        map={map}
+                        site={capital.site}
+                        onArrive={(zoom) => setCapital((c) => c && { ...c, phase: "scene", zoom })}
+                      />
+                    )
+                  : undefined
+            }
             spotlight={montage ? spotlight : null}
             onReset={showAll}
             onToolOpen={() => { setLegendOpen(false); setInfoOpen(false); setPanel(null); }}
             onSelect={(site) => {
+              if (demo && id === "lesson-3" && site.resource.id === CAPITAL_ID) return pick(site.resource);
               play(resourceSound(site.resource));
               clearTimeout(open3dTimer.current);
               setView3d(null);
@@ -1042,6 +1064,22 @@ export default function LessonPage({ demo = false }) {
                 }}
               />
             </Suspense>
+          )}
+          {capital?.phase === "scene" && (
+            <>
+              <Suspense fallback={<div className="site-3d-inline site-3d-loading" role="status">نجهّز المشهد…</div>}>
+                <Site3DView inline site={capital.site} startZoom={capital.zoom - 1} onClose={() => setCapital(null)} />
+              </Suspense>
+              <CapitalCard
+                resource={capital.site.resource}
+                lessonId={id}
+                question={questions.find((q) => q.id === CAPITAL_QUESTION)}
+                onBack={() => {
+                  setCapital(null);
+                  setFocusRequest({ siteId: capital.site.id, nonce: Date.now() });
+                }}
+              />
+            </>
           )}
           {videoOpen && resource && (
             <MapVideoPanel

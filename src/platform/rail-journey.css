@@ -270,12 +270,12 @@
   border-top-color: #0b2a5b !important;
 }
 path.rj-station.is-current {
-  filter: drop-shadow(0 0 8px #ffd23f);
+  filter: drop-shadow(0 0 10px #ffd23f) drop-shadow(0 0 18px #ffd23f);
   animation: rj-glow 1.4s ease-in-out infinite;
 }
 @keyframes rj-glow {
   50% {
-    filter: drop-shadow(0 0 14px #ffd23f);
+    filter: drop-shadow(0 0 16px #ffd23f) drop-shadow(0 0 28px #fff2b0);
   }
 }
 
@@ -368,5 +368,137 @@ path.rj-flow {
 @media (prefers-reduced-motion: reduce) {
   path.rj-flow {
     animation: none;
+  }
+}
+
+/* 2026-10-30: the teacher's train drawing, a white-core neon line, a
+   distinct light at the stopped station, and a progress strip. */
+.rj-train-photo img {
+  width: 96px;
+  height: auto;
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 0 6px rgb(255 255 255 / 0.85)) drop-shadow(0 4px 5px rgb(8 30 60 / 0.5));
+}
+path.rj-line {
+  filter: drop-shadow(0 0 6px rgb(255 255 255 / 0.6));
+}
+.rj-photo.is-drawing {
+  height: 86px;
+  object-fit: contain;
+  background: linear-gradient(#eef6ff, #ffffff);
+}
+.rj-photo.is-small {
+  height: 64px;
+}
+/* The stopped station */
+.rj-burst {
+  pointer-events: none;
+}
+.rj-burst i,
+.rj-burst b {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+.rj-burst b {
+  inset: 38px;
+  background: radial-gradient(circle, rgb(255 255 255 / 0.55) 0 25%, rgb(255 210 63 / 0.55) 55%, transparent 72%);
+  box-shadow: 0 0 22px 8px rgb(255 210 63 / 0.75), 0 0 44px 14px rgb(255 255 255 / 0.4);
+  animation: rj-shine 1.6s ease-in-out infinite;
+}
+@keyframes rj-shine {
+  50% {
+    box-shadow: 0 0 32px 14px rgb(255 210 63 / 0.95), 0 0 60px 20px rgb(255 255 255 / 0.5);
+  }
+}
+.rj-burst i {
+  border: 5px solid var(--line);
+  box-shadow: 0 0 16px var(--line), inset 0 0 12px var(--line);
+  animation: rj-burst 1.6s ease-out infinite;
+}
+.rj-burst i + i {
+  animation-delay: 0.8s;
+}
+@keyframes rj-burst {
+  from {
+    transform: scale(0.3);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+.rj-station-label.is-current {
+  background: #ffffff;
+  color: #0b2a5b;
+  box-shadow: 0 0 0 3px #39ff6e, 0 0 16px #39ff6e;
+  font-size: 15px;
+}
+.rj-station-label.is-current::before {
+  border-top-color: #ffffff !important;
+}
+/* Progress strip: stations as dots, the train between them */
+.rj-controls {
+  flex-wrap: wrap;
+  justify-content: center;
+  border-radius: 22px;
+}
+.rj-strip {
+  position: relative;
+  flex-basis: 100%;
+  height: 34px;
+  margin: 0 22px;
+}
+.rj-strip::before,
+.rj-strip::after {
+  content: "";
+  position: absolute;
+  top: 15px;
+  height: 5px;
+  border-radius: 3px;
+  inset-inline-start: 0;
+}
+.rj-strip::before {
+  inset-inline-end: 0;
+  background: #dde7f2;
+}
+.rj-strip::after {
+  width: var(--done);
+  background: var(--line);
+  box-shadow: 0 0 8px var(--line);
+}
+.rj-strip i {
+  position: absolute;
+  z-index: 1;
+  top: 11px;
+  width: 13px;
+  height: 13px;
+  margin-inline-start: -6px;
+  border: 2px solid #9fb3c8;
+  border-radius: 50%;
+  background: #ffffff;
+}
+.rj-strip i.is-passed {
+  border-color: #ffffff;
+  background: var(--line);
+  box-shadow: 0 0 6px var(--line);
+}
+.rj-strip img {
+  position: absolute;
+  z-index: 2;
+  top: 2px;
+  inset-inline-start: var(--done);
+  width: 64px;
+  margin-inline-start: -32px;
+  transform: scaleX(-1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rj-burst i,
+  .rj-burst b {
+    animation: none;
+  }
+  .rj-burst i {
+    transform: scale(0.8);
   }
 }

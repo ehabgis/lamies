@@ -976,7 +976,7 @@ export default function LessonPage({ demo = false }) {
         </aside>
         <section className="classroom-map-region" aria-label="خريطة موارد مصر">
           <EsriLessonMap
-            sites={sites.filter(showSite)}
+            sites={sites.filter((s) => showSite(s) && !(railTrip && s.resource.id === "high-speed-rail"))}
             activeResourceId={resource?.id}
             selectedLocationId={location?.id}
             showNames={showLocationNames}

@@ -23,16 +23,20 @@ const MARKER_SRC = "/lesson-media/sites/train-marker.png";
 const photoIcon = L.divIcon({
   className: "rj-train-photo",
   html: `<img src="${MARKER_SRC}" alt="">`,
-  iconSize: [76, 40],
-  iconAnchor: [38, 26],
+  iconSize: [96, 32],
+  iconAnchor: [48, 16],
 });
-function TrainPhoto() {
+// The station the train stopped at: a ring of light that pulses out.
+const BURST = L.divIcon({ className: "rj-burst", html: "<i></i><i></i><b></b>", iconSize: [130, 130], iconAnchor: [65, 65] });
+// The card shows the real train photo if added, else the train drawing.
+function TrainPhoto({ small }) {
   const [i, setI] = useState(0);
-  if (i >= PHOTO_EXTS.length) return null;
+  const src = i < PHOTO_EXTS.length ? `/lesson-media/sites/high-speed-rail.${PHOTO_EXTS[i]}` : i === PHOTO_EXTS.length ? MARKER_SRC : null;
+  if (!src) return null;
   return (
     <img
-      className="rj-photo"
-      src={`/lesson-media/sites/high-speed-rail.${PHOTO_EXTS[i]}`}
+      className={`rj-photo ${src === MARKER_SRC ? "is-drawing" : ""} ${small ? "is-small" : ""}`}
+      src={src}
       alt="القطار الكهربائي السريع"
       onError={() => setI(i + 1)}
     />
@@ -51,6 +55,8 @@ export default function RailJourney({ map }) {
   const layers = useRef(null);
   const train = useRef(null);
   const stationDots = useRef([]);
+  const burst = useRef(null);
+  const strip = useRef(null);
   const run = useRef({ d: 0, frame: 0, last: 0 });
 
   // Distances along the path, so the train moves at an even speed.
@@ -60,10 +66,14 @@ export default function RailJourney({ map }) {
     for (let i = 1; i < line.path.length; i++) cum.push(cum[i - 1] + map.distance(line.path[i - 1], line.path[i]));
     return { cum, total: cum[cum.length - 1] };
   }, [line, map]);
+  const segment = (d) => {
+    let i = 1;
+    while (i < geo.cum.length - 1 && geo.cum[i] < d) i++;
+    return i;
+  };
   const at = (d) => {
     const { cum } = geo;
-    let i = 1;
-    while (i < cum.length - 1 && cum[i] < d) i++;
+    const i = segment(d);
     const t = cum[i] === cum[i - 1] ? 0 : (d - cum[i - 1]) / (cum[i] - cum[i - 1]);
     const [a, b] = [line.path[i - 1], line.path[i]];
     return [a[0] + (b[0] - a[0]) * Math.min(Math.max(t, 0), 1), a[1] + (b[1] - a[1]) * Math.min(Math.max(t, 0), 1)];
@@ -75,15 +85,19 @@ export default function RailJourney({ map }) {
     if (!map.getPane("rail-journey")) {
       map.createPane("rail-journey");
       map.getPane("rail-journey").style.zIndex = "640";
+      // The light of a stopped station shines over the names too.
+      map.createPane("rail-burst");
+      map.getPane("rail-burst").style.zIndex = "660";
+      map.getPane("rail-burst").style.pointerEvents = "none";
     }
     const group = L.layerGroup().addTo(map);
     // Light along the whole line: a wide soft halo, the bright line, and a
     // light that runs along it (still under reduced motion).
     const glow = line.glow || line.color;
     L.polyline(line.path, { pane: "rail-journey", color: glow, weight: 26, opacity: 0.5, interactive: false, className: "rj-halo" }).addTo(group);
-    L.polyline(line.path, { pane: "rail-journey", color: "#0b2a5b", weight: 10, opacity: 0.55, interactive: false }).addTo(group);
-    L.polyline(line.path, { pane: "rail-journey", color: glow, weight: 6, opacity: 1, interactive: false, className: "rj-line" }).addTo(group);
-    L.polyline(line.path, { pane: "rail-journey", color: "#ffffff", weight: 2.5, opacity: 0.9, dashArray: "2 22", interactive: false, className: "rj-flow" }).addTo(group);
+    L.polyline(line.path, { pane: "rail-journey", color: glow, weight: 9, opacity: 1, interactive: false, className: "rj-line" }).addTo(group);
+    L.polyline(line.path, { pane: "rail-journey", color: "#ffffff", weight: 3, opacity: 0.95, interactive: false }).addTo(group);
+    L.polyline(line.path, { pane: "rail-journey", color: "#ffffff", weight: 5, opacity: 0.9, dashArray: "1 26", lineCap: "round", interactive: false, className: "rj-flow" }).addTo(group);
     // Labels alternate sides (left/right on a north–south line, above/below on
     // an east–west one), so close stations stay readable.
     const lats = line.path.map((p) => p[0]),
@@ -115,8 +129,13 @@ export default function RailJourney({ map }) {
     train.current.getElement()?.style.setProperty("--line", line.color);
     // A realistic train for the marker, if the teacher added one.
     const probe = new Image();
-    probe.onload = () => train.current?.setIcon(photoIcon);
+    probe.onload = () => {
+      train.current?.setIcon(photoIcon);
+      face(run.current.d);
+    };
     probe.src = MARKER_SRC;
+    burst.current = L.marker(line.path[0], { icon: BURST, pane: "rail-burst", interactive: false, keyboard: false, zIndexOffset: 1100, opacity: 0 }).addTo(group);
+    burst.current.getElement()?.style.setProperty("--line", "#ffd23f");
     layers.current = group;
     frame(line);
     return () => {
@@ -125,14 +144,26 @@ export default function RailJourney({ map }) {
     };
   }, [line, map]);
 
-  // The current station glows; the others stay plain.
+  // The station where the train stopped lights up with a pulsing ring; the
+  // stations already passed stay white, the ones ahead keep the line colour.
   useEffect(() => {
     if (!line) return;
+    const lit = phase === "station" || phase === "done";
     stationDots.current.forEach((dot, i) => {
-      const lit = (phase === "station" || phase === "done") && i === stop;
-      dot.setStyle({ radius: lit ? 12 : 8, fillColor: lit ? "#ffd23f" : line.glow || line.color });
-      dot.getElement()?.classList.toggle("is-current", lit);
+      const here = lit && i === stop;
+      dot.setStyle({
+        radius: here ? 13 : 8,
+        fillColor: here ? "#ffd23f" : i < stop ? "#ffffff" : line.glow || line.color,
+        color: "#ffffff",
+        weight: here ? 4 : 3,
+      });
+      dot.getElement()?.classList.toggle("is-current", here);
+      dot.getTooltip()?.getElement()?.classList.toggle("is-current", here);
     });
+    if (burst.current) {
+      burst.current.setLatLng(line.path[line.stations[stop].at]);
+      burst.current.setOpacity(lit ? 1 : 0);
+    }
   }, [phase, stop, line]);
 
   // Move the train toward the next station while the trip runs.
@@ -143,6 +174,7 @@ export default function RailJourney({ map }) {
     const arrive = () => {
       run.current.d = target;
       train.current?.setLatLng(at(target));
+      progress();
       setStop((s) => s + 1);
       const last = stop + 1 === line.stations.length - 1;
       setPhase(last ? "done" : "station");
@@ -163,6 +195,8 @@ export default function RailJourney({ map }) {
       run.current.d = Math.min(run.current.d + speed * dt, target);
       const pos = at(run.current.d);
       train.current?.setLatLng(pos);
+      face(run.current.d);
+      progress();
       // The map follows calmly: it pans only when the train nears the edge.
       if (!panning && !map.getBounds().pad(-0.22).contains(pos)) {
         panning = true;
@@ -178,6 +212,21 @@ export default function RailJourney({ map }) {
     };
   }, [phase, stop, geo]);
 
+  // The train drawing points along the line (its nose leads; mirrored when
+  // the line runs leftward on screen).
+  function face(d) {
+    const img = train.current?.getElement()?.querySelector("img");
+    if (!img) return;
+    const i = segment(d);
+    const a = map.latLngToLayerPoint(line.path[i - 1]),
+      b = map.latLngToLayerPoint(line.path[i]);
+    const deg = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
+    img.style.transform = b.x >= a.x ? `rotate(${deg}deg)` : `rotate(${deg + 180}deg) scaleX(-1)`;
+  }
+  // The strip under the map: the train between the stations.
+  function progress() {
+    if (strip.current) strip.current.style.setProperty("--done", `${(run.current.d / geo.total) * 100}%`);
+  }
   // The whole line in view, clear of the side card and the line buttons.
   function frame(l) {
     const narrow = window.innerWidth <= 850;
@@ -202,6 +251,8 @@ export default function RailJourney({ map }) {
     run.current.d = 0;
     setStop(0);
     train.current?.setLatLng(line.path[0]);
+    face(0);
+    progress();
     map.panTo(line.path[0], { animate: !reducedMotion() });
     setPhase("running");
   }
@@ -245,7 +296,7 @@ export default function RailJourney({ map }) {
               </small>
             </span>
           </header>
-          {phase !== "station" && <TrainPhoto />}
+          <TrainPhoto small={phase === "station"} />
           {phase === "route" && (
             <>
               <p>شاهد المسار ومحطاته على الخريطة، ثم ابدأ الرحلة.</p>
@@ -284,6 +335,17 @@ export default function RailJourney({ map }) {
 
       {(phase === "running" || phase === "paused" || phase === "station") && (
         <div className="rj-controls">
+          <div
+            ref={strip}
+            className="rj-strip"
+            style={{ "--line": line.glow || line.color, "--done": `${(run.current.d / geo.total) * 100}%` }}
+            aria-hidden="true"
+          >
+            {line.stations.map((s, i) => (
+              <i key={s.name} className={i <= stop ? "is-passed" : ""} style={{ insetInlineStart: `${(geo.cum[s.at] / geo.total) * 100}%` }} />
+            ))}
+            <img src={MARKER_SRC} alt="" />
+          </div>
           {phase !== "station" && (
             <button type="button" onClick={() => setPhase(phase === "running" ? "paused" : "running")}>
               {phase === "running" ? <Pause size={20} weight="fill" aria-hidden="true" /> : <Play size={20} weight="fill" aria-hidden="true" />}

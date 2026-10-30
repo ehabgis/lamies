@@ -56,6 +56,7 @@ import RobotGuide from "../components/Map/RobotGuide";
 import BrandMark from "./BrandMark";
 import ExplorerChip from "./ExplorerChip";
 import RailJourney from "./RailJourney";
+import MapTeacher, { MeasureLine } from "./MapTeacher";
 import { CapitalApproach, CapitalCard, CAPITAL_ID, CAPITAL_QUESTION } from "./CapitalTour";
 import LessonMontage from "./LessonMontage";
 import { buildScenes, SECTIONS } from "./montageScenes";
@@ -213,6 +214,9 @@ export default function LessonPage({ demo = false }) {
     [view3d, setView3d] = useState(null),
     // Lesson 3's New Capital: { site, zoom } while the map flies there, then the scene.
     [capital, setCapital] = useState(null),
+    // «المعلم الذكي» beside the map, and the distance it measured (drawn on the map).
+    [teacher, setTeacher] = useState(false),
+    [measured, setMeasured] = useState(null),
     [montage, setMontage] = useState(null),
     [spotlight, setSpotlight] = useState(null),
     open3dTimer = useRef(null),
@@ -395,7 +399,8 @@ export default function LessonPage({ demo = false }) {
     setLegendOpen(false);
     // The card opens straight from the key, as in lesson 2; its site list
     // lets the child move to each place.
-    setInfoOpen(!watch && !(demo && id === "lesson-3" && ["high-speed-rail", CAPITAL_ID].includes(r.id)));
+    // With «المعلم الذكي» open, its panel explains instead of the info card.
+    setInfoOpen(!watch && !teacher && !(demo && id === "lesson-3" && ["high-speed-rail", CAPITAL_ID].includes(r.id)));
     if (watch) cardTimer.current = setTimeout(() => setInfoOpen(true), EFFECT_MS - 1500);
     setVideoOpen(false);
     setResource(r);
@@ -981,19 +986,19 @@ export default function LessonPage({ demo = false }) {
             waterLesson={demo && id === "lesson-2"}
             railLesson={demo && id === "lesson-3"}
             hideRail={railTrip || Boolean(capital)}
-            overlay={
-              railTrip
-                ? (map) => <RailJourney map={map} />
-                : capital?.phase === "approach"
-                  ? (map) => (
-                      <CapitalApproach
-                        map={map}
-                        site={capital.site}
-                        onArrive={(zoom) => setCapital((c) => c && { ...c, phase: "scene", zoom })}
-                      />
-                    )
-                  : undefined
-            }
+            overlay={(map) => (
+              <>
+                {railTrip && <RailJourney map={map} />}
+                {capital?.phase === "approach" && (
+                  <CapitalApproach
+                    map={map}
+                    site={capital.site}
+                    onArrive={(zoom) => setCapital((c) => c && { ...c, phase: "scene", zoom })}
+                  />
+                )}
+                {teacher && measured && <MeasureLine map={map} {...measured} />}
+              </>
+            )}
             spotlight={montage ? spotlight : null}
             onReset={showAll}
             onToolOpen={() => { setLegendOpen(false); setInfoOpen(false); setPanel(null); }}
@@ -1022,7 +1027,7 @@ export default function LessonPage({ demo = false }) {
               setVideoOpen(true);
             }}
           />
-          {hello && !resource && !montage && !modal && !infoOpen && !videoOpen && (
+          {hello && !resource && !montage && !modal && !infoOpen && !videoOpen && !teacher && (
             <div className="map-teacher-hint" role="status">
               <RobotGuide />
               <p>
@@ -1064,6 +1069,30 @@ export default function LessonPage({ demo = false }) {
                 }}
               />
             </Suspense>
+          )}
+          {teacher && (
+            <MapTeacher
+              name={(user?.name || loadGuest().name || "مستكشف").trim().split(/\s+/)[0]}
+              lessonId={id}
+              lessonTitle={content.title}
+              demo={demo}
+              resources={resources}
+              resource={resource}
+              location={location}
+              kindName={kindName}
+              keyOpen={legendOpen}
+              onFocusSite={(site) => {
+                setResource(site.resource);
+                setLocation(site);
+                setFocusRequest({ siteId: site.id, nonce: Date.now() });
+              }}
+              onOpenKey={() => setLegendOpen(true)}
+              onMeasure={setMeasured}
+              onClose={() => {
+                setTeacher(false);
+                setMeasured(null);
+              }}
+            />
           )}
           {capital?.phase === "scene" && (
             <>
@@ -1191,9 +1220,13 @@ export default function LessonPage({ demo = false }) {
           </button>
           <button
             className="p-button"
-            aria-controls="lesson-learning-drawer"
-            aria-expanded={modal === "ai"}
-            onClick={() => ai("explain", "")}
+            aria-pressed={teacher}
+            onClick={() => {
+              play("open");
+              setModal(null);
+              setInfoOpen(false);
+              setTeacher((v) => !v);
+            }}
           >
             <RobotGuide style={{ width: 38, height: 42 }} />
             <span>

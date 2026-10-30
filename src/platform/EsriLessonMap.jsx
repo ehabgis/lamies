@@ -62,6 +62,8 @@ export default function EsriLessonMap({
   onReset,
   onToolOpen,
   onToggleNames,
+  hideRail = false,
+  overlay,
 }) {
   const host = useRef(null),
     mapRef = useRef(null),
@@ -177,7 +179,7 @@ export default function EsriLessonMap({
     return () => controller.abort();
   }, [railLesson]);
   useEffect(() => {
-    if (!ready || !railLesson || !showRail || !rail) return;
+    if (!ready || !railLesson || !showRail || !rail || hideRail) return;
     const map = mapRef.current;
     if (!map.getPane("rail-route")) {
       map.createPane("rail-route");
@@ -233,7 +235,7 @@ export default function EsriLessonMap({
     }
     requestAnimationFrame(() => prepareNileDraw(map.getPane("rail-route"), "path.rail-draw"));
     return () => map.removeLayer(group);
-  }, [ready, railLesson, showRail, rail]);
+  }, [ready, railLesson, showRail, rail, hideRail]);
   useEffect(() => {
     if (!ready || !waterLesson || !waterHighlights) return;
     const map = mapRef.current;
@@ -770,7 +772,8 @@ export default function EsriLessonMap({
           <ArrowCounterClockwise size={18} weight="bold" aria-hidden="true" /> إعادة المشاهدة
         </button>
       )}
-      {railLesson && rail && (
+      {ready && overlay?.(mapRef.current)}
+      {railLesson && rail && !hideRail && (
         <div className="water-source-key rail-route-key">
           <label>
             <input

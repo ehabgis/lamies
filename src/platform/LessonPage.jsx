@@ -45,7 +45,8 @@ import "./rich-activities.css";
 import ActivityPicker, { ActivitySteps, activityMeta } from "./ActivityPicker";
 import MapVideoPanel from "./MapVideoPanel";
 const Site3DView = lazy(() => import("./Site3DView"));
-const has3D = (r) => r?.kind === "project";
+// The train has its own journey on the map instead of a 3D view.
+const has3D = (r) => r?.kind === "project" && r.id !== "high-speed-rail";
 import Question from "./Question";
 import AIAssistant from "./AIAssistant";
 import { LessonSymbol } from "../components/Map/WaterSymbol";
@@ -54,6 +55,7 @@ import { iconFamily } from "../components/Map/lessonIcons";
 import RobotGuide from "../components/Map/RobotGuide";
 import BrandMark from "./BrandMark";
 import ExplorerChip from "./ExplorerChip";
+import RailJourney from "./RailJourney";
 import LessonMontage from "./LessonMontage";
 import { buildScenes, SECTIONS } from "./montageScenes";
 import { loadGuest } from "./guestProfile";
@@ -390,13 +392,16 @@ export default function LessonPage({ demo = false }) {
     setLegendOpen(false);
     // The card opens straight from the key, as in lesson 2; its site list
     // lets the child move to each place.
-    setInfoOpen(!watch);
+    setInfoOpen(!watch && !(demo && id === "lesson-3" && r.id === "high-speed-rail"));
     if (watch) cardTimer.current = setTimeout(() => setInfoOpen(true), EFFECT_MS - 1500);
     setVideoOpen(false);
     setResource(r);
     clearTimeout(open3dTimer.current);
     setView3d(null);
-    if (singleSite) {
+    // The train's trip draws its own lines and stations; no single place to open.
+    if (demo && id === "lesson-3" && r.id === "high-speed-rail") {
+      setLocation(null);
+    } else if (singleSite) {
       const site = { ...r.locations[0], resource: r };
       setLocation(site);
       setFocusRequest({ siteId: site.id, nonce: Date.now() });
@@ -483,6 +488,8 @@ export default function LessonPage({ demo = false }) {
       : discovery
         ? "اختر موردًا من مفتاح الخريطة؛ ستظهر مواقعه فقط."
         : GREETING;
+  // Lesson 3: the high-speed train opens «رحلة القطار السريع» on the map itself.
+  const railTrip = demo && id === "lesson-3" && resource?.id === "high-speed-rail";
   const resourceDetails = resource && (
       <section className="classroom-resource site-card" aria-labelledby="site-card-title">
         <header className="site-card-head">
@@ -964,6 +971,8 @@ export default function LessonPage({ demo = false }) {
             focusRequest={focusRequest}
             waterLesson={demo && id === "lesson-2"}
             railLesson={demo && id === "lesson-3"}
+            hideRail={railTrip}
+            overlay={railTrip ? (map) => <RailJourney map={map} /> : undefined}
             spotlight={montage ? spotlight : null}
             onReset={showAll}
             onToolOpen={() => { setLegendOpen(false); setInfoOpen(false); setPanel(null); }}

@@ -1,0 +1,331 @@
+/* «رحلة القطار السريع» on the lesson-3 map (2026-10-30). The map stays usable:
+   only the panels catch clicks. */
+.rj {
+  position: absolute;
+  inset: 0;
+  z-index: 1200;
+  pointer-events: none;
+  font-family: Cairo, system-ui, sans-serif;
+  color: #0b2a5b;
+}
+.rj > * {
+  pointer-events: auto;
+}
+.rj-lines {
+  position: absolute;
+  top: 62px;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px 10px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgb(11 47 87 / 0.18);
+}
+.rj-lines b {
+  font-size: 15px;
+  font-weight: 900;
+}
+.rj-lines div {
+  display: flex;
+  gap: 8px;
+}
+.rj-lines button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 4px 16px;
+  border: 2px solid #d6e3f0;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0b2a5b;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.rj-lines button i {
+  width: 16px;
+  height: 16px;
+  border: 3px solid var(--line);
+  border-radius: 50%;
+}
+.rj-lines button[aria-checked="true"] {
+  border-color: var(--line);
+  background: var(--line);
+  color: #ffffff;
+}
+.rj-lines button[aria-checked="true"] i {
+  border-color: #ffffff;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 3px var(--line);
+}
+
+.rj-card {
+  position: absolute;
+  top: 124px;
+  right: 14px;
+  width: min(320px, calc(100% - 28px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-top: 5px solid var(--line);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgb(11 47 87 / 0.2);
+}
+.rj-card header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rj-card header span:last-child {
+  display: flex;
+  flex-direction: column;
+}
+.rj-card header b {
+  color: var(--line);
+  font-size: 22px;
+  font-weight: 900;
+}
+.rj-card header small {
+  color: #36506b;
+  font-weight: 800;
+}
+.rj-card-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--line);
+  color: #ffffff;
+}
+.rj-card-icon svg {
+  width: 26px;
+  height: 26px;
+}
+.rj-card p {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.7;
+}
+.rj-card h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+}
+.rj-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--line);
+  font-weight: 900 !important;
+}
+.rj-main {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  border: 0;
+  border-radius: 14px;
+  background: #0a62d6;
+  color: #ffffff;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.rj-main:hover {
+  background: #084db0;
+}
+.rj-note {
+  display: flex;
+  gap: 4px;
+  color: #6b8299;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.rj-note svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.rj-controls {
+  position: absolute;
+  bottom: 74px;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgb(11 47 87 / 0.2);
+}
+.rj-controls button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 4px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #eef5ff;
+  color: #0b2a5b;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.rj-controls button:last-child {
+  color: #c0262d;
+}
+
+.rj-done {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: min(360px, calc(100% - 28px));
+  padding: 22px 20px 18px;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgb(11 47 87 / 0.28);
+  text-align: center;
+}
+.rj-done > svg {
+  color: #1f9d55;
+}
+.rj-done h3 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 900;
+}
+.rj-done p {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 800;
+}
+.rj-done p b {
+  color: var(--line);
+}
+.rj-done div {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+.rj-done button {
+  flex: 1;
+  min-height: 48px;
+  border: 2px solid #c9dbee;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #0b2a5b;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+.rj-done .rj-main {
+  border-color: #0a62d6;
+  background: #0a62d6;
+  color: #ffffff;
+}
+
+/* On the map */
+.rj-train {
+  display: grid !important;
+  place-items: center;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  background: var(--line, #1a5fd0);
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgb(255 255 255 / 0.45), 0 4px 10px rgb(8 30 60 / 0.4);
+}
+.rj-train svg {
+  width: 24px;
+  height: 24px;
+}
+.rj-station-label {
+  padding: 2px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: #0b2a5b;
+  color: #ffffff;
+  font-family: Cairo, system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgb(8 30 60 / 0.35);
+}
+.rj-station-label::before {
+  border-top-color: #0b2a5b !important;
+}
+path.rj-station.is-current {
+  filter: drop-shadow(0 0 8px #ffd23f);
+  animation: rj-glow 1.4s ease-in-out infinite;
+}
+@keyframes rj-glow {
+  50% {
+    filter: drop-shadow(0 0 14px #ffd23f);
+  }
+}
+
+@media (max-width: 850px) {
+  .rj-lines {
+    top: 56px;
+    width: calc(100% - 24px);
+  }
+  .rj-lines div {
+    width: 100%;
+  }
+  .rj-lines button {
+    flex: 1;
+    justify-content: center;
+    padding: 4px 6px;
+    font-size: 13px;
+  }
+  .rj-card {
+    top: auto;
+    bottom: 128px;
+    right: 12px;
+    gap: 4px;
+    padding: 10px 12px;
+  }
+  .rj-card header b {
+    font-size: 18px;
+  }
+  .rj-card h3 {
+    font-size: 19px;
+  }
+  .rj-main {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .rj-note {
+    display: none;
+  }
+  .rj:has(.rj-card) .rj-controls {
+    bottom: auto;
+    top: 56px;
+  }
+  .rj-card p {
+    font-size: 14px;
+  }
+  .rj-controls {
+    bottom: 76px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  path.rj-station.is-current {
+    animation: none;
+  }
+}

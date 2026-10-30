@@ -41,7 +41,9 @@ function route(text) {
   return "ask";
 }
 
-export default function MapTeacher({ name, lessonId, lessonTitle, demo, resources, resource, location, kindName, keyOpen, onFocusSite, onOpenKey, onMeasure, onClose }) {
+// `seeing`: ready questions about what is on the map now (e.g. Toshka's
+// fields), each with its answer and an optional map action.
+export default function MapTeacher({ name, lessonId, lessonTitle, demo, resources, resource, location, kindName, keyOpen, seeing = [], onSeeing, onFocusSite, onOpenKey, onMeasure, onClose }) {
   const [view, setView] = useState("menu");
   const [said, setSaid] = useState([]);
   const [waiting, setWaiting] = useState(null); // help waiting for a symbol from the key
@@ -77,6 +79,13 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, resource
     setWaiting(null);
   }, [resource?.id]);
 
+  function answerSeeing(h) {
+    play("select");
+    setView("seeing");
+    setSaid([`«${h.q}»`, h.a]);
+    onMeasure(null);
+    onSeeing?.(h);
+  }
   function start(id, text = "") {
     play("select");
     setView(id);
@@ -139,6 +148,20 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, resource
               <b>أهلًا يا {name}!</b>
               محتاج مساعدة في إيه؟
             </p>
+            {seeing.length > 0 && (
+              <>
+                <b className="mt-seeing-title">أسئلة عن اللي شايفه:</b>
+                <ul className="mt-seeing">
+                  {seeing.map((h) => (
+                    <li key={h.q}>
+                      <button type="button" onClick={() => answerSeeing(h)}>
+                        {h.q}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
             <ul className="mt-helps">
               {HELPS.map(([id, label, Icon]) => (
                 <li key={id}>
@@ -157,7 +180,7 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, resource
             </button>
             <div className="mt-chat" aria-live="polite">
               {said.map((t, i) => (
-                <p key={i} className="mt-say">
+                <p key={i} className={`mt-say ${view === "seeing" && i === 0 ? "is-me" : ""}`}>
                   {t}
                 </p>
               ))}
@@ -249,7 +272,10 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, resource
             const text = typed.trim();
             if (!text) return;
             setTyped("");
-            start(route(text), text);
+            // A question about what is on the map now gets its ready answer.
+            const ready = seeing.find((h) => h.match?.test(text));
+            if (ready) answerSeeing(ready);
+            else start(route(text), text);
           }}
         >
           <label className="sr-only" htmlFor="mt-question">

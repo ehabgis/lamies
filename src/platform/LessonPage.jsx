@@ -57,6 +57,7 @@ import BrandMark from "./BrandMark";
 import ExplorerChip from "./ExplorerChip";
 import RailJourney from "./RailJourney";
 import MapTeacher, { MeasureLine } from "./MapTeacher";
+import { ToshkaView, ToshkaCard, TOSHKA_ID, TOSHKA_HELPS } from "./ToshkaTour";
 import { CapitalApproach, CapitalCard, CAPITAL_ID, CAPITAL_QUESTION } from "./CapitalTour";
 import LessonMontage from "./LessonMontage";
 import { buildScenes, SECTIONS } from "./montageScenes";
@@ -216,6 +217,8 @@ export default function LessonPage({ demo = false }) {
     [capital, setCapital] = useState(null),
     // «المعلم الذكي» beside the map, and the distance it measured (drawn on the map).
     [teacher, setTeacher] = useState(false),
+    // Lesson 3's Toshka: { mode: "area" | "fields", nonce, hint } while exploring it.
+    [toshka, setToshka] = useState(null),
     [measured, setMeasured] = useState(null),
     [montage, setMontage] = useState(null),
     [spotlight, setSpotlight] = useState(null),
@@ -400,16 +403,21 @@ export default function LessonPage({ demo = false }) {
     // The card opens straight from the key, as in lesson 2; its site list
     // lets the child move to each place.
     // With «المعلم الذكي» open, its panel explains instead of the info card.
-    setInfoOpen(!watch && !teacher && !(demo && id === "lesson-3" && ["high-speed-rail", CAPITAL_ID].includes(r.id)));
+    setInfoOpen(!watch && !teacher && !(demo && id === "lesson-3" && ["high-speed-rail", CAPITAL_ID, TOSHKA_ID].includes(r.id)));
     if (watch) cardTimer.current = setTimeout(() => setInfoOpen(true), EFFECT_MS - 1500);
     setVideoOpen(false);
     setResource(r);
     clearTimeout(open3dTimer.current);
     setView3d(null);
     setCapital(null);
+    setToshka(null);
     // The train's trip draws its own lines and stations; no single place to open.
     if (demo && id === "lesson-3" && r.id === "high-speed-rail") {
       setLocation(null);
+    } else if (demo && id === "lesson-3" && r.id === TOSHKA_ID) {
+      // Toshka: the map flies over the project area; its card offers the fields.
+      setLocation(null);
+      setToshka({ mode: "area", nonce: Date.now(), hint: false });
     } else if (demo && id === "lesson-3" && r.id === CAPITAL_ID && r.locations?.length) {
       // The capital: fly there on this map, then tilt into its scene.
       const site = { ...r.locations[0], resource: r };
@@ -985,7 +993,7 @@ export default function LessonPage({ demo = false }) {
             focusRequest={focusRequest}
             waterLesson={demo && id === "lesson-2"}
             railLesson={demo && id === "lesson-3"}
-            hideRail={railTrip || Boolean(capital)}
+            hideRail={railTrip || Boolean(capital) || Boolean(toshka)}
             overlay={(map) => (
               <>
                 {railTrip && <RailJourney map={map} />}
@@ -997,13 +1005,14 @@ export default function LessonPage({ demo = false }) {
                   />
                 )}
                 {teacher && measured && <MeasureLine map={map} {...measured} />}
+                {toshka && <ToshkaView map={map} view={toshka} />}
               </>
             )}
             spotlight={montage ? spotlight : null}
             onReset={showAll}
             onToolOpen={() => { setLegendOpen(false); setInfoOpen(false); setPanel(null); }}
             onSelect={(site) => {
-              if (demo && id === "lesson-3" && site.resource.id === CAPITAL_ID) return pick(site.resource);
+              if (demo && id === "lesson-3" && [CAPITAL_ID, TOSHKA_ID].includes(site.resource.id)) return pick(site.resource);
               play(resourceSound(site.resource));
               clearTimeout(open3dTimer.current);
               setView3d(null);
@@ -1087,11 +1096,22 @@ export default function LessonPage({ demo = false }) {
                 setFocusRequest({ siteId: site.id, nonce: Date.now() });
               }}
               onOpenKey={() => setLegendOpen(true)}
+              seeing={toshka ? TOSHKA_HELPS : []}
+              onSeeing={(h) => h.fields && setToshka((t) => t && { ...t, mode: "fields", nonce: Date.now(), hint: false })}
               onMeasure={setMeasured}
               onClose={() => {
                 setTeacher(false);
                 setMeasured(null);
               }}
+            />
+          )}
+          {toshka && !teacher && resource && (
+            <ToshkaCard
+              resource={resource}
+              view={toshka}
+              onFields={() => (play("open"), setToshka({ mode: "fields", nonce: Date.now(), hint: true }))}
+              onArea={() => (play("select"), setToshka({ mode: "area", nonce: Date.now(), hint: false }))}
+              onCloseHint={() => setToshka((t) => ({ ...t, hint: false }))}
             />
           )}
           {capital?.phase === "scene" && (

@@ -1,0 +1,156 @@
+/* «استكشف مشروع توشكى» (2026-10-30): a small card on the map's right and a
+   short teacher bubble over the fields. */
+.map-shell .tk-card {
+  position: absolute;
+  z-index: 1150;
+  top: 124px;
+  right: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(280px, calc(100% - 28px));
+  padding: 16px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgb(11 47 87 / 0.22);
+  font-family: Cairo, system-ui, sans-serif;
+  color: #0b2a5b;
+  text-align: center;
+}
+.tk-icon {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #e3f6ea;
+  color: #1f9d55;
+}
+.tk-card h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 900;
+}
+.tk-card p {
+  margin: 0;
+  color: #36506b;
+  font-weight: 700;
+  line-height: 1.7;
+}
+.tk-card button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+.tk-main {
+  border: 0;
+  background: #0a62d6;
+  color: #ffffff;
+}
+.tk-main.is-on {
+  background: #084db0;
+}
+.tk-soft {
+  border: 2px solid #0a62d6;
+  background: #ffffff;
+  color: #0a4fb0;
+}
+.tk-card small {
+  display: flex;
+  gap: 4px;
+  color: #6b8299;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: start;
+}
+.tk-card small svg {
+  flex: none;
+  margin-top: 2px;
+}
+.map-shell .tk-hint {
+  position: absolute;
+  z-index: 1140;
+  bottom: 84px;
+  right: 310px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  font-family: Cairo, system-ui, sans-serif;
+}
+.tk-hint p {
+  position: relative;
+  margin: 0;
+  padding: 12px 34px 12px 16px;
+  max-width: 260px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgb(11 47 87 / 0.2);
+  color: #0b2a5b;
+  font-weight: 800;
+  line-height: 1.7;
+}
+.tk-hint p button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #eef4fa;
+  color: #0b2a5b;
+  cursor: pointer;
+}
+.tk-hint > span {
+  width: 64px;
+}
+.tk-hint > span svg {
+  width: 100%;
+  height: auto;
+}
+@media (max-width: 850px) {
+  .map-shell .tk-card {
+    top: auto;
+    bottom: 118px;
+    right: 12px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: calc(100% - 24px);
+    padding: 10px 12px;
+    text-align: start;
+  }
+  .tk-icon {
+    width: 40px;
+    height: 40px;
+  }
+  .tk-card h2 {
+    flex: 1;
+    font-size: 17px;
+  }
+  .tk-card p,
+  .tk-card small {
+    display: none;
+  }
+  .tk-card button {
+    flex: 1;
+    min-height: 42px;
+    font-size: 14px;
+  }
+  .map-shell .tk-hint {
+    top: 120px;
+    bottom: auto;
+    right: 12px;
+  }
+}

@@ -1,0 +1,62 @@
+/* «خزان أسوان»: the video takes the map's place, fading in (2026-11-01). */
+.map-shell .rv {
+  position: absolute;
+  inset: 0;
+  z-index: 1400;
+  overflow: hidden;
+  border-radius: inherit;
+  background: transparent;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 1.6s ease, visibility 0s linear 1.6s;
+}
+.map-shell .rv.is-on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 1.6s ease;
+}
+.map-shell .rv video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #0b2a5b;
+}
+.rv-tools {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  gap: 8px;
+}
+.rv-tools button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 4px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.94);
+  color: #0b2a5b;
+  font: inherit;
+  font-family: Cairo, system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 900;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.3);
+  cursor: pointer;
+}
+.rv-tools .rv-sound {
+  padding: 0;
+}
+.rv-back.is-ended {
+  background: #0a62d6;
+  color: #ffffff;
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-shell .rv,
+  .map-shell .rv.is-on {
+    transition: none;
+  }
+}

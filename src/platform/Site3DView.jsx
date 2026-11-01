@@ -61,13 +61,16 @@ const PHOTO_AFTER_MS = 9000;
 
 // `inline`: the scene takes the map's own place (the New Capital in lesson 3),
 // starting from the 2D map's zoom so the change reads as the map tilting.
-export default function Site3DView({ site, photo, onClose, inline = false, startZoom }) {
+// `camera` (inline only) sets where the fly-in ends and turns the orbit off;
+// `onArrive` runs once the camera is there (the Aswan reservoir hands over to
+// its video at that moment).
+export default function Site3DView({ site, photo, onClose, inline = false, startZoom, camera, onArrive }) {
   const host = useRef(null);
   const mapRef = useRef(null);
   const closeRef = useRef(null);
   const touched = useRef(false);
   const [failed, setFailed] = useState(false);
-  const [orbiting, setOrbiting] = useState(!reducedMotion());
+  const [orbiting, setOrbiting] = useState(!reducedMotion() && !camera);
   const [showPhoto, setShowPhoto] = useState(false);
 
   useEffect(() => {
@@ -95,10 +98,16 @@ export default function Site3DView({ site, photo, onClose, inline = false, start
       host.current
         ?.querySelector(".maplibregl-ctrl-attrib")
         ?.classList.remove("maplibregl-compact-show");
-      new maplibregl.Marker({ color: site.resource?.color || "#d61f26" })
-        .setLngLat([site.lng, site.lat])
-        .addTo(map);
-      if (!reducedMotion())
+      if (!camera)
+        new maplibregl.Marker({ color: site.resource?.color || "#d61f26" })
+          .setLngLat([site.lng, site.lat])
+          .addTo(map);
+      if (camera) {
+        const end = { zoom: camera.zoom, pitch: camera.pitch, bearing: camera.bearing, center: camera.center || [site.lng, site.lat] };
+        if (reducedMotion()) map.jumpTo(end);
+        else map.flyTo({ ...end, duration: camera.duration ?? 4200, curve: 1.1, essential: false });
+        map.once("idle", () => onArrive?.());
+      } else if (!reducedMotion())
         map.flyTo({ zoom: 14.6, pitch: 62, bearing: -25, duration: 3200, essential: false });
     });
     const stop = () => {
@@ -130,6 +139,11 @@ export default function Site3DView({ site, photo, onClose, inline = false, start
     };
   }, [orbiting]);
 
+  // No WebGL: skip the tilt and go straight on.
+  useEffect(() => {
+    if (failed && camera) onArrive?.();
+  }, [failed]);
+
   useEffect(() => {
     if (!photo || showPhoto) return undefined;
     const t = setTimeout(() => !touched.current && setShowPhoto(true), failed ? 0 : reducedMotion() ? 5000 : PHOTO_AFTER_MS);
@@ -158,7 +172,7 @@ export default function Site3DView({ site, photo, onClose, inline = false, start
         ) : (
           <div ref={host} className="site-3d-map" />
         )}
-        {!failed && (
+        {!failed && !camera && (
           <button
             type="button"
             className="site-3d-hint"

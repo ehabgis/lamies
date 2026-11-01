@@ -58,6 +58,7 @@ import ExplorerChip from "./ExplorerChip";
 import RailJourney from "./RailJourney";
 import MapTeacher, { MeasureLine } from "./MapTeacher";
 import { ToshkaView, ToshkaCard, TOSHKA_ID, TOSHKA_HELPS } from "./ToshkaTour";
+import { ReservoirApproach, ReservoirVideo, RESERVOIR_ID, RESERVOIR_CAMERA } from "./ReservoirTour";
 import { CapitalApproach, CapitalCard, CAPITAL_ID, CAPITAL_QUESTION } from "./CapitalTour";
 import LessonMontage from "./LessonMontage";
 import { buildScenes, SECTIONS } from "./montageScenes";
@@ -219,6 +220,8 @@ export default function LessonPage({ demo = false }) {
     [teacher, setTeacher] = useState(false),
     // Lesson 3's Toshka: { mode: "area" | "fields", nonce, hint } while exploring it.
     [toshka, setToshka] = useState(null),
+    // Aswan reservoir: { site, phase: "approach" | "tilt" | "video", zoom }.
+    [reservoir, setReservoir] = useState(null),
     [measured, setMeasured] = useState(null),
     [montage, setMontage] = useState(null),
     [spotlight, setSpotlight] = useState(null),
@@ -283,6 +286,14 @@ export default function LessonPage({ demo = false }) {
   useEffect(() => {
     if (stateReady && wanted) pickById.current?.(wanted);
   }, [stateReady, wanted]);
+  // Choosing the Aswan reservoir (marker or site chip) starts its camera
+  // journey, when its video is there (sites/hydro-aswan-reservoir.mp4).
+  useEffect(() => {
+    if (demo && location?.id === RESERVOIR_ID && location.media?.video) {
+      setInfoOpen(false);
+      setReservoir({ site: location, phase: "approach" });
+    } else setReservoir(null);
+  }, [location]);
   useEffect(() => {
     if (!pulse) return;
     const t = setTimeout(() => setPulse(false), 2600);
@@ -411,6 +422,7 @@ export default function LessonPage({ demo = false }) {
     setView3d(null);
     setCapital(null);
     setToshka(null);
+    setReservoir(null);
     // The train's trip draws its own lines and stations; no single place to open.
     if (demo && id === "lesson-3" && r.id === "high-speed-rail") {
       setLocation(null);
@@ -1006,6 +1018,13 @@ export default function LessonPage({ demo = false }) {
                 )}
                 {teacher && measured && <MeasureLine map={map} {...measured} />}
                 {toshka && <ToshkaView map={map} view={toshka} />}
+                {reservoir?.phase === "approach" && (
+                  <ReservoirApproach
+                    map={map}
+                    site={reservoir.site}
+                    onArrive={(zoom) => setReservoir((r) => r && { ...r, phase: "tilt", zoom })}
+                  />
+                )}
               </>
             )}
             spotlight={montage ? spotlight : null}
@@ -1112,6 +1131,31 @@ export default function LessonPage({ demo = false }) {
               onFields={() => (play("open"), setToshka({ mode: "fields", nonce: Date.now(), hint: true }))}
               onArea={() => (play("select"), setToshka({ mode: "area", nonce: Date.now(), hint: false }))}
               onCloseHint={() => setToshka((t) => ({ ...t, hint: false }))}
+            />
+          )}
+          {reservoir && reservoir.phase !== "approach" && (
+            <Suspense fallback={null}>
+              <Site3DView
+                inline
+                site={reservoir.site}
+                startZoom={reservoir.zoom - 1}
+                camera={RESERVOIR_CAMERA}
+                onArrive={() => setReservoir((r) => r && { ...r, phase: "video" })}
+                onClose={() => setReservoir(null)}
+              />
+            </Suspense>
+          )}
+          {reservoir && (
+            <ReservoirVideo
+              src={reservoir.site.media.video}
+              name={reservoir.site.name}
+              show={reservoir.phase === "video"}
+              onBack={() => {
+                const site = reservoir.site;
+                setReservoir(null);
+                setInfoOpen(true);
+                setFocusRequest({ siteId: site.id, nonce: Date.now() });
+              }}
             />
           )}
           {capital?.phase === "scene" && (

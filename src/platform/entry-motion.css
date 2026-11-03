@@ -174,3 +174,76 @@
     flex-direction: row;
   }
 }
+
+/* Layered picture (when the separate drawings are in public/welcome/). The
+   positions match the stand drawing: the ball's window sits in its ring. */
+.entry-hero.is-layered > * {
+  position: absolute;
+}
+.entry-layer-stand {
+  left: 26%;
+  top: 2%;
+  width: 62%;
+  height: auto;
+}
+.entry-layer-globe {
+  left: 30.6%;
+  top: 11.2%;
+  width: 49.6%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow:
+    inset -18px -14px 36px rgb(0 20 60 / 0.55),
+    inset 10px 8px 24px rgb(255 255 255 / 0.35);
+}
+.entry-layer-globe i {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-size: auto 100%;
+  background-repeat: repeat-x;
+  animation: entry-globe-spin 60s linear infinite;
+}
+/* One full turn = one map width (the map is 2 : 1, the window 1 : 1). */
+@keyframes entry-globe-spin {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+.entry-hero.is-resting .entry-layer-globe i {
+  animation-play-state: paused;
+}
+.entry-layer-boy {
+  left: 0;
+  bottom: 0;
+  height: 96%;
+  width: auto;
+}
+.entry-layer-robot {
+  right: 0;
+  bottom: 2%;
+  height: 52%;
+  width: auto;
+  transform-origin: 50% 100%;
+}
+.entry-hero.is-greeting .entry-layer-robot {
+  animation: entry-robot-wave 1.4s ease-in-out infinite;
+}
+@keyframes entry-robot-wave {
+  25% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(3deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entry-layer-globe i,
+  .entry-hero.is-greeting .entry-layer-robot {
+    animation: none;
+  }
+}

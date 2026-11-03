@@ -23,6 +23,7 @@ import BrandMark from "./BrandMark";
 import { play } from "./sfx";
 import * as narrator from "./narrator";
 import { loadGuest, saveGuest, savedProgress } from "./guestProfile";
+import WelcomeArt from "./WelcomeArt";
 export default function EntryPage() {
   const { setUser, user } = useSession(),
     navigate = useNavigate();
@@ -137,17 +138,7 @@ export default function EntryPage() {
             <h2>مغامرتك تبدأ من هنا.</h2>
             <p>اكتشف مصر… موردًا، ومكانًا، وحكاية.</p>
           </div>
-          {/* One painting: a light turns across the globe until a name is
-              typed, and a glow greets beside the robot while it speaks. A real
-              turn of the globe needs the globe body as its own picture. */}
-          <div className={`entry-hero ${typed ? "is-resting" : ""} ${greeting ? "is-greeting" : ""}`}>
-            <img
-              src="/welcome/hero.webp"
-              alt="طفل مستكشف وروبوت المرشد يشيران إلى مصر على كرة أرضية"
-            />
-            <span className="entry-globe-light" aria-hidden="true" />
-            <span className="entry-robot-glow" aria-hidden="true" />
-          </div>
+          <WelcomeArt resting={typed} greeting={greeting} />
           <div className="entry-robot-companion is-bubble-only">
             <div className={`entry-robot-say ${greeting ? "is-greeting" : ""}`}>
               <p>{welcome}</p>

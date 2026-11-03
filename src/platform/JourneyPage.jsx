@@ -6,7 +6,6 @@ import {
   ArrowRight,
   BookOpen,
   CheckCircle,
-  Compass,
   Info,
   MapTrifold,
   Star,
@@ -18,8 +17,11 @@ import { useSession } from "./Session";
 import "./journey-workspace.css";
 import "./platform-polish.css";
 import "./journey-tiles.css";
+import "./journey-v3.css";
 
 const steps = ["الصف والفصل الدراسي", "الوحدة والدروس"];
+// «الصف الخامس الابتدائي» → «الصف الخامس», «الفصل الدراسي الأول» → «الفصل الأول».
+const short = (t) => String(t).replace(/ الابتدائي$/, "").replace(/^الفصل الدراسي /, "الفصل ").split(":")[0];
 const emptyProgress = { lessons: [], xp: 0, stars: 0 };
 
 // The guide-with-map artwork; until the file is added the robot stands in.
@@ -157,7 +159,14 @@ export default function JourneyPage({ demo = false }) {
     });
     setError("");
   }
-  const ready = step === 0 ? selection.gradeId && year && subject : selection.unitId;
+  // Grades, terms and units with at least one lesson that can be opened; the
+  // others show «قريبًا» and cannot be chosen.
+  const withContent = new Set();
+  const byId = new Map(nodes.map((n) => [n.id, n]));
+  for (const n of nodes)
+    if (n.kind === "lesson" && n.available !== false)
+      for (let p = byId.get(n.parentId); p; p = byId.get(p.parentId)) withContent.add(p.id);
+  const ready = step === 0 ? selection.gradeId && selection.termId && year && subject : selection.unitId;
   const name = (id) => nodes.find((n) => n.id === id)?.title;
   async function openLesson(lesson) {
     if (saving || lesson.available === false) return;
@@ -199,20 +208,24 @@ export default function JourneyPage({ demo = false }) {
           <div role="radiogroup" aria-label={label}>
             {items.map((o, i) => {
               const parts = o.title.split(":");
+              const soon = ["gradeId", "termId", "unitId"].includes(key) && !withContent.has(o.id);
               return (
                 <button
                   type="button"
                   key={o.id}
                   role="radio"
                   aria-checked={selection[key] === o.id}
-                  className={`journey-tile tile-tone-${i % 4}`}
+                  aria-disabled={soon || undefined}
+                  disabled={soon}
+                  className={`journey-tile tile-tone-${i % 4} ${soon ? "is-soon" : ""}`}
                   onClick={() => {
                     play("select");
                     choose(key, o.id);
                   }}
                 >
-                  <b>{parts[0].replace(/ الابتدائي$/, "")}</b>
+                  <b>{parts[0].replace(/ الابتدائي$/, "").replace(/^الفصل الدراسي /, "الفصل ")}</b>
                   {parts[1] && <small>{parts[1].trim()}</small>}
+                  {soon && <em className="journey-soon">قريبًا</em>}
                   {selection[key] === o.id && (
                     <CheckCircle className="journey-tile-check" weight="fill" aria-hidden="true" />
                   )}
@@ -229,22 +242,18 @@ export default function JourneyPage({ demo = false }) {
     <Shell journeyPage>
       <div className="journey-heading">
         <div>
-          <h1>اختر رحلتك الدراسية</h1>
+          <h1>{step === 0 ? "اختر صفك وفصلك الدراسي" : "اختر الوحدة والدرس"}</h1>
           <p>
-            {demo
-              ? "جرّب الاستكشاف دون حساب. يمكنك الرجوع لتغيير اختياراتك."
-              : `أهلًا ${user?.name || user?.username}، إلى أين نذهب اليوم؟`}
+            {step === 0
+              ? "حدّد صفك وفصلك، ثم انتقل لاختيار الدرس."
+              : [name(selection.gradeId), name(selection.termId)].filter(Boolean).map(short).join(" • ")}
           </p>
         </div>
-        <span className="journey-mode">
-          {sample ? (
-            "تجربة غير معتمدة"
-          ) : (
-            <>
-              <Star weight="fill" /> {progress.xp || 0} نقطة
-            </>
-          )}
-        </span>
+        {!sample && (
+          <span className="journey-mode">
+            <Star weight="fill" /> {progress.xp || 0} نقطة
+          </span>
+        )}
       </div>
       <nav className="journey-stepper" aria-label="خطوات اختيار الدرس">
         {steps.map((title, i) => (
@@ -270,8 +279,9 @@ export default function JourneyPage({ demo = false }) {
           aria-labelledby="journey-step-title"
           aria-busy={loading || saving}
         >
-          <h2 id="journey-step-title" ref={heading} tabIndex={-1}>
-            {step === 0 ? "اختر صفّك وفصلك الدراسي" : "اختر الوحدة وطريقة التعلم"}
+          {/* The page title already says it; this one is for screen readers. */}
+          <h2 id="journey-step-title" ref={heading} tabIndex={-1} className="sr-only">
+            {step === 0 ? "اختر صفك وفصلك الدراسي" : "اختر الوحدة والدرس"}
           </h2>
           {loading ? (
             <p role="status">جارٍ تحميل الخيارات…</p>
@@ -295,16 +305,6 @@ export default function JourneyPage({ demo = false }) {
                       disabled: !selection.gradeId,
                       prerequisite: "اختر صفّك أولًا، ثم الفصل الدراسي.",
                     })}
-                    <p className="journey-fixed-subject">
-                      <BookOpen size={20} />
-                      المادة: الدراسات الاجتماعية
-                      {years.length === 1 && stages.length === 1 && (
-                        <small>
-                          {" "}
-                          · العام {selection.yearTitle} · {stages[0].title}
-                        </small>
-                      )}
-                    </p>
                   </>
                 )}
                 {step === 1 && tiles("unitId", "الوحدة", units, { wide: true })}
@@ -328,14 +328,14 @@ export default function JourneyPage({ demo = false }) {
                       )}
                     </div>
                   ) : (
-                    lessons.map((lesson) => {
+                    lessons.map((lesson, li) => {
                       const p = progress.lessons.find(
                         (x) => x.lessonId === lesson.id,
                       );
                       const [head, tail] = lesson.title.split(/\s*\((.+)\)\s*$/);
                       const unavailable = saving || lesson.available === false;
                       return (
-                        <article className="journey-lesson" key={lesson.id}>
+                        <article className="journey-lesson" key={lesson.id} style={{ "--i": li }}>
                           <span className="journey-lesson-icon">
                             <BookOpen size={30} weight="duotone" />
                           </span>
@@ -432,54 +432,41 @@ export default function JourneyPage({ demo = false }) {
                   setStep(step + 1);
                 }}
               >
-                التالي: {steps[step + 1]}
+                التالي
                 <ArrowLeft size={19} />
               </button>
             )}
           </div>
         </section>
         <aside className="journey-companion" aria-label="دليل الرحلة">
-          <div className="journey-companion-message">
-            <RobotGuide />
-            <p>
-              {step === 0
-                ? "أهلًا يا مستكشف! اختر صفّك، ثم الفصل الدراسي."
-                : "اختر درسك، ثم ذاكره أو استكشف خريطته."}
-            </p>
-          </div>
+          <p className="journey-bubble" aria-live="polite">
+            {step === 1
+              ? "اختر درسك، ثم ذاكر الدرس أو استكشف خريطته."
+              : !selection.gradeId
+                ? "أهلًا يا مستكشف! اختر صفك الدراسي"
+                : !selection.termId
+                  ? "جميل! دلوقتي اختَر الفصل الدراسي"
+                  : "رائع! اضغط التالي لاختيار الوحدة والدرس"}
+          </p>
           <GuideArt />
-          <div className="journey-selection-summary">
-            <Compass size={24} />
-            <div>
-              <strong>وجهتك المختارة</strong>
+          {selection.gradeId && (
+            <div className="journey-choices">
+              <strong>اختياراتك</strong>
               <p>
-                {[
-                  selection.yearTitle,
-                  name(selection.gradeId),
-                  name(selection.termId),
-                  subject?.title,
-                  name(selection.unitId),
-                ]
+                {[name(selection.gradeId), name(selection.termId), step === 1 && name(selection.unitId)]
                   .filter(Boolean)
-                  .join(" · ") || "اختياراتك ستظهر هنا خطوة بخطوة."}
+                  .map(short)
+                  .join(" • ")}
               </p>
             </div>
-          </div>
-          {sample ? (
-            <small>
-              الصفوف والوحدات هيكل تجريبي للتنقل. المحتوى المتاح للصف الخامس
-              فقط، ويُعرض للفصلين كتجربة دون اعتماد منهجي.
-            </small>
-          ) : (
+          )}
+          {!sample && (
             <div className="journey-account-shortcuts">
               {progress.lastLessonId && (
                 <Link to={`/classroom/${progress.lastLessonId}`}>
                   تابع آخر درس <ArrowLeft size={16} />
                 </Link>
               )}
-              <Link to="/explore">
-                أو جرّب درسًا دون نتائج رسمية <ArrowLeft size={16} />
-              </Link>
             </div>
           )}
         </aside>

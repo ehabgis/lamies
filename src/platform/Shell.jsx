@@ -30,14 +30,6 @@ export default function Shell({
       <main id="platform-main" tabIndex={-1}>
         {children}
       </main>
-      <footer className="platform-footer">
-        تعلّم بهدوء، وحاول مرة أخرى دائمًا.
-        <span>
-          {user
-            ? "نتائج الحساب منفصلة عن التجربة · لا نطلب اسمك الحقيقي"
-            : "تجربة دون حساب · لا تُحفظ نتائج رسمية"}
-        </span>
-      </footer>
     </div>
   );
 }

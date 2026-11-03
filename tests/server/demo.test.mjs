@@ -38,7 +38,8 @@ test("guest demo grades all eight types without publishing, answer leakage or du
     const available = catalog.data.nodes.filter(
       (n) => n.kind === "lesson" && n.available,
     );
-    assert.equal(available.length, 6);
+    assert.equal(available.length, 3, "only the Grade 5, Term 1 unit has lessons");
+    assert(available.every((n) => n.id.startsWith("demo-grade-5-term-1-")));
     assert.deepEqual(
       [...new Set(available.map((n) => n.demoLessonId))].sort(),
       ["lesson-1", "lesson-2", "lesson-3"],

@@ -212,8 +212,9 @@ export function demoCatalog() {
           add(`${unit}-lesson-${i + 1}`, unit, "lesson", title, {
             demo: true,
             status: "draft",
-            available: g === 5 && u === 3,
-            ...(g === 5 && u === 3 ? { demoLessonId: `lesson-${i + 1}` } : {}),
+            // Unit 3 «كنوز مصر» is in the Grade 5, Term 1 book only.
+            available: g === 5 && t === 1 && u === 3,
+            ...(g === 5 && t === 1 && u === 3 ? { demoLessonId: `lesson-${i + 1}` } : {}),
           }),
         );
       }

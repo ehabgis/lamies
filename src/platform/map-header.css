@@ -1072,3 +1072,65 @@
     transition: none;
   }
 }
+
+/* Map tools, stacked top-right (2026-11-03): equal white buttons with a thin
+   light-blue edge; on = light-blue with ✓; a small gap before the gallery. */
+.map-shell .esri-map-toolbar.is-stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 168px;
+}
+.map-shell .esri-map-toolbar.is-stacked .map-tool {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 4px 12px;
+  border: 1.5px solid #b9d8f2;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0b2a5b;
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: 0 3px 10px rgb(11 47 87 / 0.12);
+}
+.map-shell .esri-map-toolbar.is-stacked .map-tool svg,
+.map-shell .esri-map-toolbar.is-stacked .map-label-icon {
+  flex: none;
+  color: #0b2a5b;
+}
+.map-shell .esri-map-toolbar.is-stacked .map-tool-text {
+  flex: 1;
+  text-align: start;
+}
+.map-shell .esri-map-toolbar.is-stacked .map-tool[aria-pressed="true"],
+.map-shell .esri-map-toolbar.is-stacked .map-tool[aria-expanded="true"] {
+  border-color: #6fb3ea;
+  background: #e1f1fd;
+}
+.map-shell .esri-map-toolbar.is-stacked .map-tool-check {
+  color: #0a62d6 !important;
+}
+.map-shell .esri-map-toolbar.is-stacked .is-gallery {
+  margin-top: 6px;
+}
+@media (max-width: 850px) {
+  .map-shell .esri-map-toolbar.is-stacked {
+    width: 136px;
+  }
+  .map-shell .esri-map-toolbar.is-stacked .map-tool {
+    min-height: 40px;
+    font-size: 13px;
+    padding: 2px 8px;
+  }
+}
+.map-shell .esri-map-toolbar.is-stacked .map-tool-text {
+  white-space: nowrap;
+}
+.map-shell .esri-map-toolbar.is-stacked .ux-long,
+.map-shell .esri-map-toolbar.is-stacked .ux-short {
+  display: none;
+}

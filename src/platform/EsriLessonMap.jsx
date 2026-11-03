@@ -15,6 +15,7 @@ import {
   Stack,
   CornersOut,
   ArrowCounterClockwise,
+  Check,
 } from "phosphor-react";
 import { LessonSymbol, hasWaterSymbol, WATER_SYMBOLS } from "../components/Map/WaterSymbol";
 import { playWaterEffect, hasWaterEffect, EFFECT_VIEW } from "./waterEffects";
@@ -706,35 +707,41 @@ export default function EsriLessonMap({
         className="esri-leaflet-host"
         aria-label="خريطة مصر؛ استخدم أزرار التكبير أو اسحب الخريطة"
       />
-      <div className="esri-map-toolbar">
+      {/* Stacked: أسماء المعالم, المحافظات, then (a little apart) معرض الخرائط.
+          The first two switch on and off and show ✓ while on. */}
+      <div className="esri-map-toolbar is-stacked">
         {onToggleNames && (
           <button
+            className="map-tool"
             aria-pressed={showNames}
-            aria-label={showNames ? "إخفاء أسماء المعالم" : "إظهار أسماء المعالم"}
             title="إظهار أو إخفاء أسماء المعالم على الخريطة"
             onClick={onToggleNames}
           >
             <span className="map-label-icon" aria-hidden="true">أ</span>
-            <span className="ux-long">أسماء المعالم</span><span className="ux-short" aria-hidden="true">المعالم</span>
+            <span className="map-tool-text">أسماء المعالم</span>
+            {showNames && <Check className="map-tool-check" size={16} weight="bold" aria-hidden="true" />}
           </button>
         )}
         <button
-          ref={galleryButton}
-          aria-expanded={gallery}
-          aria-controls="basemap-gallery"
-          onClick={() => { if (!gallery) { setGovernorates(false); onToolOpen?.(); } setGallery((v) => !v); }}
-        >
-          <SquaresFour size={21} />
-          <span className="ux-long">معرض الخرائط</span><span className="ux-short" aria-hidden="true">الخرائط</span>
-        </button>
-        <button
           ref={governorateButton}
+          className="map-tool"
           aria-pressed={governorates}
           aria-controls="governorate-tools"
           onClick={() => { if (!governorates) { setGallery(false); onToolOpen?.(); } setGovernorates((v) => !v); setGovernorateQuery(""); }}
         >
-          <Stack size={20} />
-          المحافظات
+          <Stack size={20} aria-hidden="true" />
+          <span className="map-tool-text">المحافظات</span>
+          {governorates && <Check className="map-tool-check" size={16} weight="bold" aria-hidden="true" />}
+        </button>
+        <button
+          ref={galleryButton}
+          className="map-tool is-gallery"
+          aria-expanded={gallery}
+          aria-controls="basemap-gallery"
+          onClick={() => { if (!gallery) { setGovernorates(false); onToolOpen?.(); } setGallery((v) => !v); }}
+        >
+          <SquaresFour size={21} aria-hidden="true" />
+          <span className="map-tool-text">معرض الخرائط</span>
         </button>
       </div>
       <div className="esri-map-zoom" aria-label="أدوات الخريطة">

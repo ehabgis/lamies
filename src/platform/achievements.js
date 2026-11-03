@@ -18,9 +18,9 @@ const MINERALS = ["iron", "manganese", "phosphate", "gold"];
 const ENERGY = ["oil", "coal", "gas", "wind", "solar"];
 
 export const JOURNEYS = [
-  { id: "lesson-1", title: "رحلة كنوز مصر", lesson: "الدرس الأول", lessonTitle: "الثروة المعدنية ومصادر الطاقة في مصر", name: "كنوز مصر", text: "اكتشف المعادن ومصادر الطاقة في مصر.", href: "/demo/lesson-1/expedition" },
-  { id: "lesson-2", title: "رحلة المياه", lesson: "الدرس الثاني", lessonTitle: "موارد المياه في مصر", name: "المياه في مصر", text: "تعرّف على نهر النيل وموارد المياه.", href: "/demo/lesson-2/expedition" },
-  { id: "lesson-3", title: "نكتشف مشروعات مصر", lesson: "الدرس الثالث", lessonTitle: "المشروعات القومية", name: "مشروعات مصر", text: "اكتشف المشروعات التي تبني مستقبل مصر.", href: "/demo/lesson-3/expedition" },
+  { id: "lesson-1", title: "رحلة كنوز مصر", lesson: "الدرس الأول", lessonTitle: "الثروة المعدنية ومصادر الطاقة", name: "كنوز مصر", text: "اكتشف المعادن ومصادر الطاقة في مصر.", href: "/demo/lesson-1/expedition" },
+  { id: "lesson-2", title: "رحلة المياه", lesson: "الدرس الثاني", lessonTitle: "موارد المياه", name: "المياه في مصر", text: "تعرّف على نهر النيل وموارد المياه.", href: "/demo/lesson-2/expedition" },
+  { id: "lesson-3", title: "نكتشف مشروعات مصر", lesson: "الدرس الثالث", lessonTitle: "المشروعات القومية (رؤية مصر للمستقبل)", name: "مشروعات مصر", text: "اكتشف المشروعات التي تبني مستقبل مصر.", href: "/demo/lesson-3/expedition" },
 ];
 const MAPS = [
   { id: "lesson-1", title: "ابنِ خريطتك: الثروة المعدنية", href: "/demo/lesson-1/build-map" },

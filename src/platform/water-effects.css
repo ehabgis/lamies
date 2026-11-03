@@ -351,3 +351,114 @@ path.wfx-sea-waves {
     animation: none;
   }
 }
+
+/* Map greeting (2026-11-03): a robot about 25% bigger at the bottom right,
+   above the bottom bar, with a small rounded bubble on its left. */
+.map-teacher-hint {
+  right: 20px;
+  bottom: 84px;
+  align-items: flex-end;
+  max-width: calc(100% - 40px);
+}
+.map-teacher-hint > svg,
+.map-teacher-hint > span:first-child {
+  width: 80px;
+  transform-origin: 50% 100%;
+}
+.map-teacher-hint.is-talking > svg,
+.map-teacher-hint.is-talking > span:first-child {
+  animation: map-robot-wave 1.4s ease-in-out infinite;
+}
+@keyframes map-robot-wave {
+  25% {
+    transform: rotate(-4deg);
+  }
+  75% {
+    transform: rotate(4deg);
+  }
+}
+.map-hint-bubble {
+  position: relative;
+  width: clamp(240px, 22vw, 310px);
+  margin-bottom: 26px;
+  padding: 8px 16px 14px;
+  border: 1.5px solid #9cc8ee;
+  border-radius: 18px;
+  background: #f5faff;
+  box-shadow: 0 8px 20px rgb(18 48 94 / 0.18);
+  pointer-events: auto;
+}
+/* The tail points right, at the robot. */
+.map-hint-bubble::after {
+  content: "";
+  position: absolute;
+  right: -11px;
+  bottom: 18px;
+  width: 18px;
+  height: 18px;
+  border-top: 1.5px solid #9cc8ee;
+  border-right: 1.5px solid #9cc8ee;
+  background: #f5faff;
+  transform: rotate(45deg);
+}
+.map-hint-tools {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+.map-teacher-hint .map-hint-tools button {
+  position: static;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #d3e4f4;
+  background: #ffffff;
+  color: #0b2f57;
+}
+.map-teacher-hint .map-hint-bubble p {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: #0b2a5b;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.7;
+  text-align: right;
+  white-space: pre-line;
+}
+/* The map key's title glows twice to show where to start. */
+.classroom-legend h2.is-glowing {
+  border-radius: 12px;
+  animation: map-key-glow 1.3s ease-in-out 2;
+}
+@keyframes map-key-glow {
+  50% {
+    box-shadow: 0 0 0 3px #9cd0ff, 0 0 16px 4px rgb(80 170 255 / 0.55);
+    background: #eaf5ff;
+  }
+}
+@media (max-width: 850px) {
+  .map-teacher-hint {
+    right: 10px;
+    bottom: 96px;
+  }
+  .map-teacher-hint > svg,
+  .map-teacher-hint > span:first-child {
+    width: 60px;
+  }
+  .map-hint-bubble {
+    width: min(260px, calc(100vw - 100px));
+  }
+  .map-teacher-hint .map-hint-bubble p {
+    font-size: 14.5px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-teacher-hint.is-talking > svg,
+  .map-teacher-hint.is-talking > span:first-child,
+  .classroom-legend h2.is-glowing {
+    animation: none;
+  }
+}

@@ -242,7 +242,7 @@ export default function JourneyPage({ demo = false }) {
     <Shell journeyPage>
       <div className="journey-heading">
         <div>
-          <h1>{step === 0 ? "اختر صفك وفصلك الدراسي" : "اختر الوحدة والدرس"}</h1>
+          <h1>{step === 0 ? "اختر صفك وفصلك الدراسي" : "اختر وحدتك ودرسك"}</h1>
           <p>
             {step === 0
               ? "حدّد صفك وفصلك، ثم انتقل لاختيار الدرس."
@@ -281,7 +281,7 @@ export default function JourneyPage({ demo = false }) {
         >
           {/* The page title already says it; this one is for screen readers. */}
           <h2 id="journey-step-title" ref={heading} tabIndex={-1} className="sr-only">
-            {step === 0 ? "اختر صفك وفصلك الدراسي" : "اختر الوحدة والدرس"}
+            {step === 0 ? "اختر صفك وفصلك الدراسي" : "اختر وحدتك ودرسك"}
           </h2>
           {loading ? (
             <p role="status">جارٍ تحميل الخيارات…</p>
@@ -332,7 +332,9 @@ export default function JourneyPage({ demo = false }) {
                       const p = progress.lessons.find(
                         (x) => x.lessonId === lesson.id,
                       );
-                      const [head, tail] = lesson.title.split(/\s*\((.+)\)\s*$/);
+                      // The full book title, as everywhere else in the app.
+                      const head = lesson.title;
+                      const tail = "";
                       const unavailable = saving || lesson.available === false;
                       return (
                         <article className="journey-lesson" key={lesson.id} style={{ "--i": li }}>

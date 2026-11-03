@@ -135,6 +135,8 @@ export default function LessonPage({ demo = false }) {
   const [legendOpen, setLegendOpen] = useState(() => window.innerWidth > 850);
   const [infoOpen, setInfoOpen] = useState(false);
   const [hello, setHello] = useState(true);
+  const [helloTalking, setHelloTalking] = useState(false);
+  const [keyGlow, setKeyGlow] = useState(false);
   const cardTimer = useRef(null);
   useEffect(() => () => clearTimeout(cardTimer.current), []);
   const [showLocationNames, setShowLocationNames] = useState(false);
@@ -289,6 +291,38 @@ export default function LessonPage({ demo = false }) {
   useEffect(() => {
     if (stateReady && wanted) pickById.current?.(wanted);
   }, [stateReady, wanted]);
+  // The guide greets once when the map is ready: it says its line (at once if
+  // the browser allows speech, else at the first tap; never when muted), waves
+  // while speaking, and the map key's title glows twice to show where to look.
+  useEffect(() => {
+    if (!stateReady || !hello) return undefined;
+    let alive = true;
+    const off = narrator.subscribe((s) => alive && setHelloTalking(s.state === "speaking"));
+    const say = () => narrator.speak(GREETING);
+    const t = setTimeout(() => {
+      setKeyGlow(true);
+      say();
+      setTimeout(() => {
+        if (alive && narrator.getSettings().state === "idle" && !narrator.getSettings().muted)
+          window.addEventListener("pointerdown", say, { once: true });
+      }, 1200);
+    }, 900);
+    const g = setTimeout(() => setKeyGlow(false), 900 + 2 * 1300);
+    return () => {
+      alive = false;
+      off();
+      clearTimeout(t);
+      clearTimeout(g);
+      window.removeEventListener("pointerdown", say);
+    };
+  }, [stateReady]);
+  // Choosing a resource closes the greeting to make room for its card.
+  useEffect(() => {
+    if (resource && hello) {
+      setHello(false);
+      if (narrator.getSettings().state !== "idle") narrator.stop();
+    }
+  }, [resource?.id]);
   // Choosing the Aswan reservoir (marker or site chip) starts its camera
   // journey, when its video is there (sites/hydro-aswan-reservoir.mp4).
   useEffect(() => {
@@ -968,7 +1002,7 @@ export default function LessonPage({ demo = false }) {
         <aside
           id="lesson-legend"
           hidden={!legendOpen}
-          className={`classroom-legend ${pulse ? "legend-focus" : ""} ${legendOpen ? "mobile-open" : ""}`}
+          className={`classroom-legend ${resources.length > 11 ? "is-long" : ""} ${pulse ? "legend-focus" : ""} ${legendOpen ? "mobile-open" : ""}`}
           aria-label="مفتاح الخريطة"
         >
           <button
@@ -981,7 +1015,7 @@ export default function LessonPage({ demo = false }) {
           >
             <X size={20} weight="bold" aria-hidden="true" />
           </button>
-          <h2>
+          <h2 className={keyGlow ? "is-glowing" : ""}>
             <BookOpen />
             مفتاح الخريطة
           </h2>
@@ -1075,14 +1109,27 @@ export default function LessonPage({ demo = false }) {
             }}
           />
           {hello && !resource && !montage && !modal && !infoOpen && !videoOpen && !teacher && (
-            <div className="map-teacher-hint" role="status">
+            <div className={`map-teacher-hint ${helloTalking ? "is-talking" : ""}`} role="status">
               <RobotGuide />
-              <p>
-                {GREETING}
-                <button type="button" aria-label="إخفاء رسالة المعلم" onClick={() => setHello(false)}>
-                  <X size={16} weight="bold" aria-hidden="true" />
-                </button>
-              </p>
+              <div className="map-hint-bubble">
+                <div className="map-hint-tools">
+                  <button type="button" aria-label="أعد الاستماع" title="أعد الاستماع" onClick={() => narrator.speak(GREETING)}>
+                    <SpeakerHigh size={16} weight="bold" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="إخفاء رسالة المعلم"
+                    title="إغلاق"
+                    onClick={() => {
+                      narrator.stop();
+                      setHello(false);
+                    }}
+                  >
+                    <X size={16} weight="bold" aria-hidden="true" />
+                  </button>
+                </div>
+                <p>{GREETING}</p>
+              </div>
             </div>
           )}
           {montage && (
@@ -1523,7 +1570,7 @@ export default function LessonPage({ demo = false }) {
   );
 }
 
-const GREETING = "مرحبًا يا مستكشف! اختر عنصرًا من مفتاح الخريطة لتكتشف أماكن وجوده في مصر.";
+const GREETING = "أهلًا يا مستكشف!\nاختر موردًا من المفتاح لنكتشف مكانه.";
 
 // «عذبة أم مالحة؟» on a water card; lakes and oases name the chosen place.
 const WATER_KIND = {

@@ -196,7 +196,7 @@ const MISSIONS = [
     subtitle: "اكتشف الموارد الأربعة",
     image: null,
     resources: ["iron", "manganese", "phosphate", "gold"],
-    intro: "هيا نكتشف الخامات المعدنية ومصادر الطاقة في مصر!",
+    intro: "هيا نكتشف الثروة المعدنية ومصادر الطاقة في مصر!",
   },
   {
     id: "energy",
@@ -277,7 +277,7 @@ export function expeditionPublic(lessonId) {
     id: "kunuz-misr",
     title: "رحلة كنوز مصر",
     subtitle: "اكتشف المعادن ومصادر الطاقة",
-    lessonTitle: "الخامات المعدنية ومصادر الطاقة في مصر",
+    lessonTitle: "الثروة المعدنية ومصادر الطاقة",
     approxNote: APPROX,
     missions: MISSIONS.map((m) => ({
       ...m,

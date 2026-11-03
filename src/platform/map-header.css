@@ -1134,3 +1134,45 @@
 .map-shell .esri-map-toolbar.is-stacked .ux-short {
   display: none;
 }
+/* Every key row fits without cutting the last one (2026-11-03). */
+@media (min-width: 851px) {
+  .map-shell .classroom-legend > button:not(.mobile-panel-close) {
+    min-height: 40px !important;
+    padding-block: 1px !important;
+  }
+  .map-shell .classroom-legend > button:not(.mobile-panel-close) .resource-pin,
+  .map-shell .classroom-legend > button:not(.mobile-panel-close) .water-symbol {
+    width: 27px !important;
+    height: 34px !important;
+  }
+  .map-shell .classroom-legend > h2 {
+    margin-bottom: 2px;
+  }
+}
+/* Lesson 3 has thirteen projects: two columns of rows when the list is long. */
+@media (min-width: 851px) {
+  .map-shell .classroom-legend.is-long {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    align-content: start;
+    column-gap: 4px;
+    width: 440px !important;
+    max-width: 440px !important;
+  }
+  .map-shell .classroom-legend.is-long > :not(button),
+  .map-shell .classroom-legend.is-long > .mobile-panel-close {
+    grid-column: 1 / -1;
+  }
+  .map-shell .classroom-legend.is-long > button:not(.mobile-panel-close) .key-radio {
+    display: none;
+  }
+}
+/* The train key sits under the stacked tools (lesson 3). */
+@media (min-width: 851px) {
+  .map-shell .water-source-key.rail-route-key {
+    top: 232px !important;
+    right: 16px !important;
+    left: auto !important;
+    width: 240px;
+  }
+}

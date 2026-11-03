@@ -14,17 +14,17 @@ const QUESTIONS_NEEDED = 5;
 // journey), finish its main activity, and answer short questions.
 export const REQUIREMENTS = {
   "lesson-1": {
-    title: "الخامات المعدنية ومصادر الطاقة في مصر",
+    title: "الثروة المعدنية ومصادر الطاقة",
     journey: { title: "رحلة كنوز مصر", items: ["final"] },
     activity: { id: "book-l1-drag-energy", title: "تصنيف مصادر الطاقة" },
   },
   "lesson-2": {
-    title: "موارد المياه في مصر",
+    title: "موارد المياه",
     journey: { title: "رحلة المياه", items: ["farm", "oasis", "coast"] },
     activity: { id: "book-l2-drag-water", title: "تصنيف موارد المياه" },
   },
   "lesson-3": {
-    title: "المشروعات القومية",
+    title: "المشروعات القومية (رؤية مصر للمستقبل)",
     journey: { title: "نكتشف مشروعات مصر", items: ["new-delta", "birket-ghalioun", "benban-solar"] },
     activity: { id: "book-l3-match-goals", title: "صِل كل مشروع بهدفه" },
   },

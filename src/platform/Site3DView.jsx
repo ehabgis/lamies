@@ -72,6 +72,7 @@ export default function Site3DView({ site, photo, onClose, inline = false, start
   const [failed, setFailed] = useState(false);
   const [orbiting, setOrbiting] = useState(!reducedMotion() && !camera);
   const [showPhoto, setShowPhoto] = useState(false);
+  const [drawn, setDrawn] = useState(false);
 
   useEffect(() => {
     let map;
@@ -93,7 +94,19 @@ export default function Site3DView({ site, photo, onClose, inline = false, start
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-left");
     map.on("error", () => {});
-    map.once("load", () => {
+    // The scene shows (and the camera starts moving) once its first view has
+    // its tiles, so the 2D map never gives way to an empty frame.
+    const whenDrawn = (then) => {
+      const check = () => {
+        if (!map.areTilesLoaded()) return;
+        map.off("render", check);
+        setDrawn(true);
+        then();
+      };
+      map.on("render", check);
+      check();
+    };
+    map.once("load", () => whenDrawn(() => {
       // Keep the credits collapsed to the (i) button so they don't cover the scene.
       host.current
         ?.querySelector(".maplibregl-ctrl-attrib")
@@ -103,13 +116,29 @@ export default function Site3DView({ site, photo, onClose, inline = false, start
           .setLngLat([site.lng, site.lat])
           .addTo(map);
       if (camera) {
-        const end = { zoom: camera.zoom, pitch: camera.pitch, bearing: camera.bearing, center: camera.center || [site.lng, site.lat] };
-        if (reducedMotion()) map.jumpTo(end);
-        else map.flyTo({ ...end, duration: camera.duration ?? 4200, curve: 1.1, essential: false });
-        map.once("idle", () => onArrive?.());
+        // One end view, or a `path` of views flown one after another (the
+        // Galala climb from the coast to the plateau).
+        const steps = (camera.path || [camera]).map((c) => ({
+          zoom: c.zoom,
+          pitch: c.pitch,
+          bearing: c.bearing,
+          center: c.center || [site.lng, site.lat],
+          duration: c.duration ?? 4200,
+        }));
+        const fly = (i) => {
+          if (i >= steps.length) return map.once("idle", () => onArrive?.());
+          const { duration, ...view } = steps[i];
+          map.easeTo({ ...view, duration, easing: (t) => t * (2 - t), essential: false });
+          map.once("moveend", () => fly(i + 1));
+        };
+        if (reducedMotion()) {
+          const { duration, ...last } = steps[steps.length - 1];
+          map.jumpTo(last);
+          map.once("idle", () => onArrive?.());
+        } else fly(0);
       } else if (!reducedMotion())
         map.flyTo({ zoom: 14.6, pitch: 62, bearing: -25, duration: 3200, essential: false });
-    });
+    }));
     const stop = () => {
       touched.current = true;
       setOrbiting(false);
@@ -166,7 +195,7 @@ export default function Site3DView({ site, photo, onClose, inline = false, start
 
   if (inline)
     return (
-      <section className="site-3d-inline" aria-label={`مشهد ثلاثي الأبعاد: ${site.resource?.label}`}>
+      <section className={`site-3d-inline ${drawn || failed ? "is-drawn" : ""}`} aria-label={`مشهد ثلاثي الأبعاد: ${site.resource?.label}`}>
         {failed ? (
           <p className="site-3d-fallback">لا يدعم هذا الجهاز العرض ثلاثي الأبعاد. يمكنك متابعة الموقع على الخريطة.</p>
         ) : (

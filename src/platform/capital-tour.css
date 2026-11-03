@@ -18,6 +18,16 @@
   position: absolute;
   inset: 0;
 }
+/* The 2D map stays in view until the 3D scene has drawn its first frame. */
+.map-shell .site-3d-inline:not(.is-drawn) {
+  background: transparent;
+}
+.map-shell .site-3d-inline:not(.is-drawn) .site-3d-map {
+  opacity: 0;
+}
+.map-shell .site-3d-inline .site-3d-map {
+  transition: opacity 600ms ease;
+}
 .map-shell .site-3d-inline .maplibregl-ctrl-top-left {
   top: 60px;
 }

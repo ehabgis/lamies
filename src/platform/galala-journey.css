@@ -1,0 +1,230 @@
+/* «رحلة إلى مدينة الجلالة» (2026-11-03): everything inside the map's space. */
+.gj {
+  position: absolute;
+  inset: 0;
+  z-index: 1100;
+  pointer-events: none;
+  font-family: Cairo, system-ui, sans-serif;
+  color: #0b2a5b;
+}
+.gj > * {
+  pointer-events: auto;
+}
+.gj > .site-3d-inline {
+  z-index: 1;
+}
+.gj-video {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  border-radius: inherit;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 1s ease, visibility 0s linear 1s;
+}
+.gj-video.is-on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 1s ease;
+}
+.gj-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.gj-start {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 6px 28px;
+  border: 0;
+  border-radius: 999px;
+  background: #0a62d6;
+  color: #ffffff;
+  font: inherit;
+  font-size: 20px;
+  font-weight: 900;
+  box-shadow: 0 10px 26px rgb(0 0 0 / 0.35);
+  cursor: pointer;
+}
+.gj-tools {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  gap: 8px;
+}
+.gj-tools button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 46px;
+  min-height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.94);
+  color: #0b2a5b;
+  font: inherit;
+  font-weight: 900;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.28);
+  cursor: pointer;
+}
+.gj-tools .gj-back {
+  padding: 0 18px;
+  font-size: 16px;
+}
+.gj-name {
+  position: absolute;
+  z-index: 4;
+  bottom: 84px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 10px;
+  background: rgb(11 42 91 / 0.82);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 900;
+  pointer-events: none;
+}
+.gj-hello {
+  position: absolute;
+  z-index: 5;
+  top: 120px;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: gj-pop 400ms ease-out;
+}
+.gj-hello p {
+  margin: 0;
+  padding: 12px 18px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgb(11 47 87 / 0.25);
+  font-size: 17px;
+  font-weight: 900;
+}
+.gj-hello span {
+  width: 64px;
+}
+.gj-hello span svg {
+  width: 100%;
+  height: auto;
+}
+@keyframes gj-pop {
+  from {
+    opacity: 0;
+    translate: -50% 8px;
+  }
+}
+.gj-card {
+  position: absolute;
+  z-index: 5;
+  top: 124px;
+  right: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(300px, calc(100% - 28px));
+  padding: 16px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgb(11 47 87 / 0.22);
+}
+.gj-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 21px;
+  font-weight: 900;
+}
+.gj-card h2 svg {
+  color: #0a62d6;
+}
+.gj-card p {
+  margin: 0;
+  color: #36506b;
+  font-weight: 700;
+  line-height: 1.7;
+}
+.gj-card button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  border: 1.5px solid #c9dbee;
+  border-radius: 12px;
+  background: #eef5ff;
+  color: #0a4fb0;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+.gj-card .gj-main {
+  border-color: #0a62d6;
+  background: #0a62d6;
+  color: #ffffff;
+}
+.gj-card .gj-link {
+  min-height: 36px;
+  border: 0;
+  background: none;
+  color: #4a6178;
+  text-decoration: underline;
+}
+.gj-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #b42318 !important;
+}
+@media (max-width: 850px) {
+  .gj-card {
+    top: auto;
+    bottom: 118px;
+    right: 12px;
+    width: calc(100% - 24px);
+    padding: 12px;
+  }
+  .gj-card p {
+    font-size: 14px;
+  }
+  .gj-hello {
+    top: 60px;
+    width: calc(100% - 24px);
+  }
+  .gj-hello p {
+    font-size: 15px;
+  }
+  .gj-tools {
+    top: 60px;
+  }
+  .gj-name {
+    bottom: auto;
+    top: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gj-video,
+  .gj-video.is-on {
+    transition: none;
+  }
+  .gj-hello {
+    animation: none;
+  }
+}

@@ -429,7 +429,12 @@ const LESSON_3 = {
       importance: "يزيد المساحة المزروعة وإنتاج الغذاء.",
     },
     "toshka-kheir": { locationNote: NOT_IN_BOOK },
-    "galala-city": { locationNote: NOT_IN_BOOK },
+    // Moved from the older pin (29.42, 32.48, on the coastal slope) to the city
+    // on the plateau, read off Esri World Imagery on 2026-11-03.
+    "galala-city": {
+      locations: [loc("galala-city", "مدينة الجلالة", 29.434, 32.402)],
+      locationNote: NOT_IN_BOOK + " " + APPROX,
+    },
   },
   newResources: [
     {

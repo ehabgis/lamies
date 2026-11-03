@@ -25,13 +25,15 @@ function siteFiles(id, index) {
 function attachSiteMedia(content) {
   if (!content) return content;
   const index = mediaIndex("sites");
-  if (!index.size) return content;
+  // New location objects each time: some come from shared constants (the
+  // book layer), and a removed file must not stay attached to them.
   for (const r of content.resources || [])
-    for (const l of r.locations || []) {
-      if (!/^[a-z0-9-]+$/i.test(l.id || "")) continue;
+    r.locations = (r.locations || []).map((l) => {
+      if (!/^[a-z0-9-]+$/i.test(l.id || "")) return l;
+      const { media: _old, ...place } = l;
       const media = siteFiles(l.id.toLowerCase(), index);
-      if (media.images.length || media.video) l.media = media;
-    }
+      return media.images.length || media.video ? { ...place, media } : place;
+    });
   return content;
 }
 function assembledContent(id) {

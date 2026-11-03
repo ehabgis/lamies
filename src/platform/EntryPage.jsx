@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   BookOpen,
@@ -7,18 +7,21 @@ import {
   User,
   Lock,
   Play,
-  Pause,
   Sparkle,
+  SpeakerHigh,
+  SpeakerSlash,
+  ArrowCounterClockwise,
   Users,
 } from "phosphor-react";
 import "./entry-experience.css";
 import "./platform-polish.css";
 import "./entry-v2.css";
+import "./entry-motion.css";
 import { api } from "./api";
 import { useSession } from "./Session";
 import BrandMark from "./BrandMark";
 import { play } from "./sfx";
-import NarrationControls from "./NarrationControls";
+import * as narrator from "./narrator";
 import { loadGuest, saveGuest, savedProgress } from "./guestProfile";
 export default function EntryPage() {
   const { setUser, user } = useSession(),
@@ -26,14 +29,67 @@ export default function EntryPage() {
   const [mode, setMode] = useState("login"),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
-  const [motion, setMotion] = useState(true);
   const [guest, setGuest] = useState(loadGuest);
   const [accountOpen, setAccountOpen] = useState(false);
   const [asParent, setAsParent] = useState(false);
   const resume = savedProgress();
-  const welcome = "أهلًا يا مستكشف! اكتب اسمك ثم اضغط ابدأ المغامرة، وبعدها تختار صفك وفصلك الدراسي.";
+  const welcome = "أهلًا يا مستكشف! اكتب اسمك، ثم اضغط ابدأ المغامرة.";
+  const [voice, setVoice] = useState(narrator.getSettings());
+  const [greeting, setGreeting] = useState(true); // the robot's welcome glow
+  const [typed, setTyped] = useState(Boolean(loadGuest().name)); // the globe rests once a name is typed
+  const [pulse, setPulse] = useState(0);
+  const [nameError, setNameError] = useState("");
+  const said = useRef(false);
+  useEffect(() => narrator.subscribe(setVoice), []);
+  // The robot says its line once: at once if the browser allows speech, else
+  // at the first tap on the page. Its greeting stops when the line ends.
+  useEffect(() => {
+    const sayOnce = () => {
+      if (said.current) return;
+      said.current = true;
+      narrator.speak(welcome);
+    };
+    const s = narrator.getSettings();
+    if (!s.available || s.muted) {
+      const t = setTimeout(() => setGreeting(false), 4000);
+      return () => clearTimeout(t);
+    }
+    sayOnce();
+    // Browsers that block speech before a tap leave it unsaid; try again then.
+    const retry = () => {
+      if (narrator.getSettings().state !== "idle") return;
+      said.current = false;
+      sayOnce();
+    };
+    const timer = setTimeout(() => {
+      if (narrator.getSettings().state === "idle") {
+        said.current = false;
+        window.addEventListener("pointerdown", retry, { once: true });
+      }
+    }, 1200);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("pointerdown", retry);
+      narrator.stop();
+    };
+  }, []);
+  const wasSpeaking = useRef(false);
+  useEffect(() => {
+    if (voice.state === "speaking") wasSpeaking.current = true;
+    else if (wasSpeaking.current) setGreeting(false);
+  }, [voice.state]);
+  useEffect(() => {
+    if (!greeting) return undefined;
+    const t = setTimeout(() => setGreeting(false), 12000);
+    return () => clearTimeout(t);
+  }, []);
   // Grade and term are chosen on the next page (/explore).
   function startAdventure() {
+    if (!user && !String(guest.name || "").trim()) {
+      setNameError("اكتب اسمك أولًا يا مستكشف");
+      return;
+    }
+    narrator.stop();
     saveGuest(guest);
     play("project");
     navigate("/explore");
@@ -65,20 +121,12 @@ export default function EntryPage() {
   }
   return (
     <div
-      className={`lamis-platform entry-platform entry-experience ${motion ? "" : "entry-still"}`}
+      className="lamis-platform entry-platform entry-experience"
       dir="rtl"
     >
       <header className="entry-platform-brand">
         <BrandMark size={52} />
         <div>الخرائط التعليمية الذكية</div>
-        <button
-          className="entry-motion-control"
-          aria-pressed={!motion}
-          onClick={() => setMotion(!motion)}
-        >
-          {motion ? <Pause size={18} /> : <Play size={18} />}
-          {motion ? "إيقاف الحركة" : "تشغيل الحركة"}
-        </button>
       </header>
       <main className="entry-platform-grid">
         <section
@@ -89,18 +137,45 @@ export default function EntryPage() {
             <h2>مغامرتك تبدأ من هنا.</h2>
             <p>اكتشف مصر… موردًا، ومكانًا، وحكاية.</p>
           </div>
-          <img
-            src="/welcome/hero.webp"
-            alt="طفل مستكشف وروبوت المرشد يشيران إلى مصر على كرة أرضية"
-          />
-          {/* The artwork already has the guide robot, so the bubble stands alone. */}
+          {/* One painting: a light turns across the globe until a name is
+              typed, and a glow greets beside the robot while it speaks. A real
+              turn of the globe needs the globe body as its own picture. */}
+          <div className={`entry-hero ${typed ? "is-resting" : ""} ${greeting ? "is-greeting" : ""}`}>
+            <img
+              src="/welcome/hero.webp"
+              alt="طفل مستكشف وروبوت المرشد يشيران إلى مصر على كرة أرضية"
+            />
+            <span className="entry-globe-light" aria-hidden="true" />
+            <span className="entry-robot-glow" aria-hidden="true" />
+          </div>
           <div className="entry-robot-companion is-bubble-only">
-            <div className="entry-robot-say">
+            <div className={`entry-robot-say ${greeting ? "is-greeting" : ""}`}>
               <p>{welcome}</p>
-              <NarrationControls text={welcome} compact />
+              {voice.available && (
+                <div className="entry-voice" role="group" aria-label="صوت الروبوت">
+                  <button
+                    type="button"
+                    disabled={voice.muted}
+                    aria-label="أعد الاستماع"
+                    title="أعد الاستماع"
+                    onClick={() => narrator.speak(welcome)}
+                  >
+                    <ArrowCounterClockwise size={18} weight="bold" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={voice.muted}
+                    aria-label={voice.muted ? "تشغيل الصوت" : "كتم الصوت"}
+                    title={voice.muted ? "تشغيل الصوت" : "كتم الصوت"}
+                    onClick={() => narrator.update({ muted: !voice.muted })}
+                  >
+                    {voice.muted ? <SpeakerSlash size={18} weight="bold" /> : <SpeakerHigh size={18} weight="bold" />}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
-          <div className="entry-journey-steps" aria-label="مراحل الرحلة">
+          <div className="entry-journey-steps is-sequence" aria-label="مراحل الرحلة">
             <span className="step-blue">
               <Compass size={23} /> استكشف الخريطة
             </span>
@@ -126,12 +201,31 @@ export default function EntryPage() {
                   maxLength={30}
                   autoComplete="nickname"
                   placeholder="اسمك أو اسم مستعار"
-                  onChange={(e) => setGuest({ ...guest, name: e.target.value })}
+                  aria-invalid={Boolean(nameError)}
+                  aria-describedby={nameError ? "entry-name-error" : undefined}
+                  onChange={(e) => {
+                    setGuest({ ...guest, name: e.target.value });
+                    setNameError("");
+                    if (!typed && e.target.value.trim()) {
+                      setTyped(true);
+                      setPulse((n) => n + 1);
+                    }
+                  }}
                 />
               </label>
             </div>
           )}
-          <button type="button" className="p-button demo-entry-link" onClick={startAdventure}>
+          {nameError && (
+            <p id="entry-name-error" className="entry-name-error" role="alert">
+              {nameError}
+            </p>
+          )}
+          <button
+            type="button"
+            key={pulse}
+            className={`p-button demo-entry-link ${pulse ? "is-pulse" : ""}`}
+            onClick={startAdventure}
+          >
             <Play size={23} weight="fill" /> ابدأ المغامرة
           </button>
           {resume && (

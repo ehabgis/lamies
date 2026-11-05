@@ -2,7 +2,8 @@ import { useId } from "react";
 
 // Program logo: a globe with Egypt's map pin and a small compass sparkle.
 // Colourful but flat enough to read at 28px.
-export default function BrandMark({ size = 44, className = "" }) {
+// `round`: the logo in a circle instead of the rounded square (start page).
+export default function BrandMark({ size = 44, className = "", round = false }) {
   const id = useId().replaceAll(":", "");
   return (
     <svg
@@ -23,7 +24,11 @@ export default function BrandMark({ size = 44, className = "" }) {
           <stop offset="1" stopColor="#1576d6" />
         </radialGradient>
       </defs>
-      <rect x="2" y="2" width="60" height="60" rx="18" fill={`url(#${id}-bg)`} />
+      {round ? (
+        <circle cx="32" cy="32" r="30" fill={`url(#${id}-bg)`} />
+      ) : (
+        <rect x="2" y="2" width="60" height="60" rx="18" fill={`url(#${id}-bg)`} />
+      )}
       <circle cx="31" cy="34" r="19" fill={`url(#${id}-sea)`} stroke="#ffffff" strokeWidth="2.5" />
       <path
         d="M20 27c4-3 8-2 10 1 2-2 6-2 7 1 3 0 5 3 4 6l-5 2-2 6-4 3-3-5-5-1-2-5Z"

@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { installMediaGuard, stopAllMedia } from "./platform/mediaGuard";
 import MagicalNavbar from "./components/MagicalNavbar";
 import ScrollToTop from "./components/ScrollToTop";
 import GlobalVoiceToggleButton from "./components/GlobalVoiceToggleButton";
@@ -84,6 +85,14 @@ function AppContent() {
   useEffect(() => {
     setRoutePathname(location.pathname);
   }, [location.pathname, setRoutePathname]);
+
+  // One sound at a time; a new page starts silent.
+  useEffect(() => installMediaGuard(), []);
+  const shownPath = useRef(location.pathname);
+  useEffect(() => {
+    if (shownPath.current !== location.pathname) stopAllMedia();
+    shownPath.current = location.pathname;
+  }, [location.pathname]);
 
   useEffect(() => {
     document.body.classList.toggle("quiet-fullscreen-route", isQuietRoute);

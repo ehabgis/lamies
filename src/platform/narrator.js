@@ -61,9 +61,17 @@ export function stop() {
   emit();
 }
 
+// Called when the robot starts a line (mediaGuard pauses videos then).
+const speakHooks = new Set();
+export function onSpeak(fn) {
+  speakHooks.add(fn);
+  return () => speakHooks.delete(fn);
+}
+
 // `text` is shown on screen; `spoken` may carry diacritics for clearer names.
 export function speak(text, spoken = text) {
   if (!available() || settings.muted || !text) return;
+  speakHooks.forEach((fn) => fn());
   window.speechSynthesis.cancel();
   // Speak sentence by sentence: short units are clearer and pause cleanly.
   const parts = String(spoken).split(/(?<=[.!؟?،:])\s+/).filter(Boolean);

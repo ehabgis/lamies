@@ -34,56 +34,63 @@ export default function EntryPage() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [asParent, setAsParent] = useState(false);
   const resume = savedProgress();
-  const welcome = "أهلًا يا مستكشف! اكتب اسمك، ثم اضغط ابدأ المغامرة.";
+  const welcome = "أهلًا يا مستكشف، اكتب اسمك ثم اضغط ابدأ المغامرة.";
   const [voice, setVoice] = useState(narrator.getSettings());
-  const [greeting, setGreeting] = useState(true); // the robot's welcome glow
+  // The robot's welcome: its bubble shows while it speaks, then fades; the
+  // three stages follow one by one. If the browser blocks speech, the bubble
+  // offers a clear play button and the stages go on anyway.
+  const [greeting, setGreeting] = useState(true);
+  const [blocked, setBlocked] = useState(false);
+  const [stagesGo, setStagesGo] = useState(false);
   const [typed, setTyped] = useState(Boolean(loadGuest().name)); // the globe rests once a name is typed
   const [pulse, setPulse] = useState(0);
   const [nameError, setNameError] = useState("");
-  const said = useRef(false);
+  const spoke = useRef(false);
   useEffect(() => narrator.subscribe(setVoice), []);
-  // The robot says its line once: at once if the browser allows speech, else
-  // at the first tap on the page. Its greeting stops when the line ends.
   useEffect(() => {
-    const sayOnce = () => {
-      if (said.current) return;
-      said.current = true;
-      narrator.speak(welcome);
-    };
     const s = narrator.getSettings();
     if (!s.available || s.muted) {
-      const t = setTimeout(() => setGreeting(false), 4000);
+      setStagesGo(true);
+      const t = setTimeout(() => setGreeting(false), 5000);
       return () => clearTimeout(t);
     }
-    sayOnce();
-    // Browsers that block speech before a tap leave it unsaid; try again then.
-    const retry = () => {
-      if (narrator.getSettings().state !== "idle") return;
-      said.current = false;
-      sayOnce();
-    };
-    const timer = setTimeout(() => {
-      if (narrator.getSettings().state === "idle") {
-        said.current = false;
-        window.addEventListener("pointerdown", retry, { once: true });
+    narrator.speak(welcome);
+    const check = setTimeout(() => {
+      if (!spoke.current) {
+        setBlocked(true);
+        setStagesGo(true);
       }
-    }, 1200);
+    }, 1500);
     return () => {
-      clearTimeout(timer);
-      window.removeEventListener("pointerdown", retry);
+      clearTimeout(check);
       narrator.stop();
     };
   }, []);
-  const wasSpeaking = useRef(false);
   useEffect(() => {
-    if (voice.state === "speaking") wasSpeaking.current = true;
-    else if (wasSpeaking.current) setGreeting(false);
+    if (voice.state === "speaking") {
+      spoke.current = true;
+      setBlocked(false);
+    } else if (spoke.current && voice.state === "idle") {
+      // A short pause between lines is not the end of the welcome.
+      const t = setTimeout(() => {
+        if (narrator.getSettings().state !== "idle") return;
+        setGreeting(false);
+        setStagesGo(true);
+      }, 500);
+      return () => clearTimeout(t);
+    }
+    return undefined;
   }, [voice.state]);
   useEffect(() => {
-    if (!greeting) return undefined;
-    const t = setTimeout(() => setGreeting(false), 12000);
+    if (!blocked) return undefined;
+    const t = setTimeout(() => setGreeting(false), 9000);
     return () => clearTimeout(t);
-  }, []);
+  }, [blocked]);
+  const replay = () => {
+    setBlocked(false);
+    setGreeting(true);
+    narrator.speak(welcome);
+  };
   // Grade and term are chosen on the next page (/explore).
   function startAdventure() {
     if (!user && !String(guest.name || "").trim()) {
@@ -126,7 +133,7 @@ export default function EntryPage() {
       dir="rtl"
     >
       <header className="entry-platform-brand">
-        <BrandMark size={52} />
+        <BrandMark size={40} round />
         <div>الخرائط التعليمية الذكية</div>
       </header>
       <main className="entry-platform-grid">
@@ -138,35 +145,34 @@ export default function EntryPage() {
             <h2>مغامرتك تبدأ من هنا.</h2>
             <p>اكتشف مصر… موردًا، ومكانًا، وحكاية.</p>
           </div>
-          <WelcomeArt resting={typed} greeting={greeting} />
-          <div className="entry-robot-companion is-bubble-only">
-            <div className={`entry-robot-say ${greeting ? "is-greeting" : ""}`}>
+          <div className="entry-hero-wrap">
+            <WelcomeArt resting={typed} greeting={greeting && !blocked} />
+            <div className={`entry-robot-say ${greeting ? "is-on" : ""}`} role="status" aria-live="polite">
               <p>{welcome}</p>
-              {voice.available && (
-                <div className="entry-voice" role="group" aria-label="صوت الروبوت">
-                  <button
-                    type="button"
-                    disabled={voice.muted}
-                    aria-label="أعد الاستماع"
-                    title="أعد الاستماع"
-                    onClick={() => narrator.speak(welcome)}
-                  >
-                    <ArrowCounterClockwise size={18} weight="bold" />
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={voice.muted}
-                    aria-label={voice.muted ? "تشغيل الصوت" : "كتم الصوت"}
-                    title={voice.muted ? "تشغيل الصوت" : "كتم الصوت"}
-                    onClick={() => narrator.update({ muted: !voice.muted })}
-                  >
-                    {voice.muted ? <SpeakerSlash size={18} weight="bold" /> : <SpeakerHigh size={18} weight="bold" />}
-                  </button>
-                </div>
+              {blocked && voice.available && !voice.muted && (
+                <button type="button" className="entry-say-play" onClick={replay}>
+                  <Play size={18} weight="fill" aria-hidden="true" /> استمع للترحيب
+                </button>
               )}
             </div>
+            {voice.available && (
+              <div className="entry-voice" role="group" aria-label="صوت الروبوت">
+                <button type="button" disabled={voice.muted} aria-label="أعد الاستماع" title="أعد الاستماع" onClick={replay}>
+                  <ArrowCounterClockwise size={18} weight="bold" />
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={voice.muted}
+                  aria-label={voice.muted ? "تشغيل الصوت" : "كتم الصوت"}
+                  title={voice.muted ? "تشغيل الصوت" : "كتم الصوت"}
+                  onClick={() => narrator.update({ muted: !voice.muted })}
+                >
+                  {voice.muted ? <SpeakerSlash size={18} weight="bold" /> : <SpeakerHigh size={18} weight="bold" />}
+                </button>
+              </div>
+            )}
           </div>
-          <div className="entry-journey-steps is-sequence" aria-label="مراحل الرحلة">
+          <div className={`entry-journey-steps is-sequence ${stagesGo ? "is-go" : ""}`} aria-label="مراحل الرحلة">
             <span className="step-blue">
               <Compass size={23} /> استكشف الخريطة
             </span>

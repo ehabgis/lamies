@@ -5,7 +5,7 @@
 // not an engineering or survey route, and it needs teacher review.
 // Coordinates are [lat, lng]; `side` places a station name where it does not
 // collide with its neighbours.
-export const RAIL_NOTE = "مسار تعليمي تقريبي عن خريطة الكتاب المدرسي؛ ليس مسارًا هندسيًا رسميًا.";
+export const RAIL_NOTE = "المسار مرسوم عن خريطة الكتاب المدرسي.";
 
 export const RAIL_LINES = [
   {

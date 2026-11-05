@@ -4,6 +4,7 @@ import { projectQuestPublic, checkProjectQuest } from "./projectQuest.mjs";
 import { traceMapPublic, checkTraceMap } from "./traceMap.mjs";
 import { buildMapPublic, checkBuildMap } from "./buildMap.mjs";
 import { DEMO_IDS, demoLesson, demoAnswer, demoCatalog, gradedHint } from "./demo.mjs";
+import { forStudents } from "./studentText.mjs";
 import http from "node:http";
 import {
   randomBytes,
@@ -361,9 +362,13 @@ export function createApp({
       "X-Content-Type-Options": "nosniff",
       "Referrer-Policy": "same-origin",
     };
+    // Students and the open demo do not see the teacher's review notes
+    // (see studentText.mjs); staff accounts still do.
+    let viewer = null;
     const send = (data, code = 200) => {
+      const forStudent = req.method === "GET" && (!viewer || viewer.role === "student");
       res.writeHead(code, headers);
-      res.end(JSON.stringify(data));
+      res.end(JSON.stringify(forStudent ? forStudents(data) : data));
     };
     try {
       const url = new URL(req.url, "http://localhost");
@@ -393,6 +398,7 @@ export function createApp({
             .prepare("SELECT * FROM users WHERE id=? AND disabled=0")
             .get(session.user_id)
         : null;
+      viewer = user;
       if (
         writable &&
         ![

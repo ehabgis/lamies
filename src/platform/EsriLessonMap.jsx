@@ -212,7 +212,7 @@ export default function EsriLessonMap({
       pane: "rail-route",
       interactive: false,
       style: draw({ color: "#d61f26", weight: 4, opacity: 1, lineCap: "round" }),
-      attribution: "مسار القطار: رسم تعليمي تقريبي",
+      attribution: "مسار القطار: عن خريطة الكتاب",
     }).addTo(group);
     // Short wide dashes read as railway sleepers.
     L.geoJSON(lines, {
@@ -848,7 +848,7 @@ export default function EsriLessonMap({
                 <i className="rail-station-swatch" />
                 محطة رئيسية
               </span>
-              <small>من العلمين الجديدة إلى العين السخنة والغردقة وأبو سمبل. مسار تعليمي تقريبي عن خريطة الكتاب.</small>
+              <small>من العلمين الجديدة إلى العين السخنة والغردقة وأبو سمبل. المسار مرسوم عن خريطة الكتاب.</small>
             </div>
           )}
         </div>

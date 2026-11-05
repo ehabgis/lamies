@@ -705,7 +705,7 @@ export default function LessonPage({ demo = false }) {
           <summary>تفاصيل إضافية للمعلم</summary>
           {location && (
             <p>
-              الإحداثيات التعليمية التقريبية: {Number(location.lat).toFixed(2)}° ش ·{" "}
+              الإحداثيات: {Number(location.lat).toFixed(2)}° ش ·{" "}
               {Number(location.lng).toFixed(2)}° ق
             </p>
           )}
@@ -729,7 +729,6 @@ export default function LessonPage({ demo = false }) {
           </small>
           {resource.legacyDetails && (
             <>
-              <p className="legacy-content-notice">بيانات منقولة من النسخة القديمة تحتاج مراجعة المعلم</p>
               {resource.legacyDetails.governorate && <p>المحافظة: {resource.legacyDetails.governorate}</p>}
               {Object.values(resource.legacyDetails.description || {}).map((text, i) => (
                 <p key={`d${i}`}>{text}</p>
@@ -893,11 +892,6 @@ export default function LessonPage({ demo = false }) {
             >
               <X size={20} weight="bold" aria-hidden="true" />
             </button>
-            {(demo || preview) && (
-              <p className="legacy-content-notice">
-                محتوى تجريبي يحتاج مراجعة المعلم
-              </p>
-            )}
             {panel === "objectives" ? (
               <>
                 <h2>أهداف الدرس</h2>
@@ -946,9 +940,6 @@ export default function LessonPage({ demo = false }) {
                 <p>{content.summary}</p>
                 {content.legacyExtras && (
                   <div className="legacy-lesson-information">
-                    <p className="legacy-content-notice">
-                      بيانات من النسخة القديمة · تحتاج مراجعة المعلم
-                    </p>
                     <h3>أهم النقاط</h3>
                     <ul>
                       {content.legacyExtras.keyPoints.map((t, i) => (

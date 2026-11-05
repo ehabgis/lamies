@@ -1246,3 +1246,18 @@
     white-space: nowrap;
   }
 }
+/* Lesson 3 key narrower (2026-11-05 review): a long name or the title may
+   take two lines so the key covers less of the map. */
+.map-shell .studio-workspace > .classroom-legend.is-long,
+.map-shell .studio-workspace > .classroom-legend.is-long.mobile-open {
+  width: min(236px, calc(100% - 20px)) !important;
+  max-width: min(236px, calc(100% - 20px)) !important;
+}
+.map-shell .classroom-legend.is-long > button:not(.mobile-panel-close) > span {
+  white-space: normal !important;
+  line-height: 1.35;
+}
+.map-shell .classroom-legend.is-long > h2 {
+  white-space: normal;
+  line-height: 1.3;
+}

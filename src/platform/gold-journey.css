@@ -357,3 +357,145 @@
     display: none;
   }
 }
+
+/* ---- The gold video in a window over the map (2026-11-05 review). It sits
+   on the map's left so the Sukari mine stays visible between it and the card. */
+.gold-window {
+  position: absolute;
+  z-index: 7;
+  top: 14px;
+  left: 76px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(620px, calc(100% - 380px - 150px));
+  padding: 10px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgb(6 22 44 / 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity 0.4s ease, transform 0.4s ease, visibility 0s linear 0.4s;
+}
+.gold-window.is-on {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.gold-window > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.gold-window h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 19px;
+  font-weight: 900;
+}
+.gold-window h2 svg {
+  color: #d99a00;
+}
+.gold-skip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 2px 16px;
+  border: 1.5px solid #c9dbee;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0b2a5b;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+.gold-window .gold-player {
+  overflow: hidden;
+  border-radius: 14px;
+}
+.gold-window .gold-player video {
+  max-height: calc(100vh - 300px);
+}
+.gold-window .gold-missing {
+  border-radius: 14px;
+}
+.gold-done.is-playing {
+  position: relative;
+}
+.gold-done.is-playing svg {
+  opacity: 0.45;
+}
+.gold-done.is-playing p {
+  position: absolute;
+  inset: auto 8px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgb(11 42 91 / 0.85);
+  color: #ffffff !important;
+  font-size: 13px;
+}
+/* Narrow laptops and tablets: the window takes the space left of the card. */
+@media (max-width: 1150px) and (min-width: 851px) {
+  .gold-window {
+    left: 70px;
+    width: calc(100% - 360px - 70px - 170px);
+  }
+}
+/* Phones: the video takes the map's width; the card waits until it ends. */
+@media (max-width: 850px) {
+  .gold-window {
+    top: 60px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    padding: 8px;
+  }
+  .gold.is-video .gold-card {
+    display: none;
+  }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  .gold-window {
+    top: 8px;
+    left: 8px;
+    right: auto;
+    width: calc(50% - 24px);
+  }
+  .gold-window .gold-player video {
+    max-height: calc(100vh - 120px);
+  }
+  .gold.is-video .gold-card {
+    display: flex;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gold-window,
+  .gold-window.is-on {
+    transition: none;
+  }
+}
+/* Below the map's top buttons; the card's small play icon keeps its size. */
+@media (min-width: 851px) {
+  .gold-window {
+    top: 70px;
+  }
+  .gold-window .gold-player video {
+    max-height: calc(100vh - 380px);
+  }
+}
+.gold-done.is-playing p svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  opacity: 1;
+}

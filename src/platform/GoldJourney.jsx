@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
-import { ArrowCounterClockwise, CheckCircle, Play, SpeakerHigh, Sparkle, Warning, XCircle } from "phosphor-react";
+import { ArrowLeft, ArrowCounterClockwise, CheckCircle, Play, SpeakerHigh, Sparkle, Warning, XCircle } from "phosphor-react";
 import RobotGuide from "../components/Map/RobotGuide";
 import * as narrator from "./narrator";
 import { play } from "./sfx";
@@ -32,6 +32,7 @@ export default function GoldJourney({ map, resource, video, onLeave, onToolsHidd
   const [answer, setAnswer] = useState(null);
   const [speaking, setSpeaking] = useState(false);
   const clip = useRef(null);
+  const win = useRef(null);
   const timers = useRef([]);
   const alive = useRef(true);
   const later = (fn, ms) => timers.current.push(setTimeout(() => alive.current && fn(), ms));
@@ -98,7 +99,25 @@ export default function GoldJourney({ map, resource, video, onLeave, onToolsHidd
   useEffect(() => {
     if (phase === "video" && !failed) startVideo();
     if (phase !== "video") clip.current?.pause();
+    if (phase === "video") keepMineInView();
   }, [phase]);
+  // The mine moves into the gap between the video window and the card.
+  function keepMineInView() {
+    if (!site) return;
+    const box = map.getContainer().getBoundingClientRect();
+    const w = win.current?.getBoundingClientRect();
+    const card = win.current?.parentElement.querySelector(".gold-card")?.getBoundingClientRect();
+    if (!w) return;
+    const at = map.latLngToContainerPoint([site.lat, site.lng]);
+    let goal;
+    if (card?.width && card.left - w.right >= 60)
+      goal = L.point((w.right + card.left) / 2 - box.left, Math.min(Math.max(at.y, 120), box.height - 140));
+    // Phones: the card waits, so the mine goes into the map below the video.
+    else if (!card?.width && box.bottom - w.bottom > 150)
+      goal = L.point(box.width / 2, (w.bottom - box.top + box.height - 110) / 2);
+    else return;
+    map.panBy(at.subtract(goal), { animate: !reducedMotion(), duration: 0.6 });
+  }
   function toInfo() {
     clip.current?.pause();
     setPhase("info");
@@ -117,7 +136,53 @@ export default function GoldJourney({ map, resource, video, onLeave, onToolsHidd
   const info = [resource.description, resource.importance].filter(Boolean);
 
   return (
-    <div className="gold" dir="rtl">
+    <div className={`gold ${phase === "video" ? "is-video" : ""}`} dir="rtl">
+      {/* The gold video in a clear window over the map (2026-11-05 review),
+          beside the card so the Sukari mine stays in view between them. */}
+      <section
+        ref={win}
+        className={`gold-window ${phase === "video" ? "is-on" : ""}`}
+        role="dialog"
+        aria-label="فيديو رحلة الذهب"
+        aria-hidden={phase !== "video"}
+      >
+        <header>
+          <h2>
+            <Sparkle size={20} weight="fill" aria-hidden="true" /> رحلة الذهب
+          </h2>
+          <button type="button" className="gold-skip" onClick={toInfo}>
+            {failed ? "متابعة" : "تخطَّ"} <ArrowLeft size={18} aria-hidden="true" />
+          </button>
+        </header>
+        {failed && (
+          <div className="gold-missing" role="alert">
+            <Warning size={28} weight="fill" aria-hidden="true" />
+            <p>{video ? "تعذّر تحميل فيديو رحلة الذهب." : "فيديو رحلة الذهب غير مضاف بعد."}</p>
+            {!video && <small>اسم الملف المنتظر: lesson-media/sites/gold-sukari.mp4</small>}
+          </div>
+        )}
+        {video && (
+          <div className="gold-player" hidden={failed}>
+            <video
+              ref={clip}
+              src={video}
+              preload="metadata"
+              playsInline
+              controls
+              controlsList="nodownload"
+              aria-label="فيديو رحلة الذهب"
+              onEnded={() => later(toInfo, 800)}
+              onError={() => phase === "video" && setFailed(true)}
+            />
+            {phase === "video" && blocked && (
+              <button type="button" className="gold-start" onClick={startVideo}>
+                <Play size={28} weight="fill" aria-hidden="true" /> ابدأ المشاهدة
+              </button>
+            )}
+          </div>
+        )}
+      </section>
+
       {ask && (
         <div className="gold-ask" role="status">
           <p>{ASK}</p>
@@ -136,35 +201,12 @@ export default function GoldJourney({ map, resource, video, onLeave, onToolsHidd
           {(phase === "focusing" || phase === "exploring") && (
             <RockLens key={run} onFound={() => setFound(true)} />
           )}
-          {phase === "video" &&
-            (failed ? (
-              <div className="gold-missing" role="alert">
-                <Warning size={28} weight="fill" aria-hidden="true" />
-                <p>{video ? "تعذّر تحميل فيديو رحلة الذهب." : "فيديو رحلة الذهب غير مضاف بعد."}</p>
-                {!video && <small>اسم الملف المنتظر: lesson-media/sites/gold-sukari.mp4</small>}
-                <button type="button" onClick={toInfo}>
-                  متابعة
-                </button>
-              </div>
-            ) : null)}
-          {video && (
-            <div className="gold-player" hidden={phase !== "video" || failed}>
-              <video
-                ref={clip}
-                src={video}
-                preload="metadata"
-                playsInline
-                controls
-                controlsList="nodownload"
-                aria-label="فيديو رحلة الذهب"
-                onEnded={() => later(toInfo, 800)}
-                onError={() => phase === "video" && setFailed(true)}
-              />
-              {phase === "video" && blocked && (
-                <button type="button" className="gold-start" onClick={startVideo}>
-                  <Play size={28} weight="fill" aria-hidden="true" /> ابدأ المشاهدة
-                </button>
-              )}
+          {phase === "video" && (
+            <div className="gold-done is-playing" role="status">
+              <GoldGrains />
+              <p>
+                <Play size={18} weight="fill" aria-hidden="true" /> رحلة الذهب تُعرض الآن على الخريطة
+              </p>
             </div>
           )}
           {phase === "info" && (
@@ -182,11 +224,7 @@ export default function GoldJourney({ map, resource, video, onLeave, onToolsHidd
             </button>
           </div>
         )}
-        {phase === "video" && !failed && (
-          <button type="button" className="gold-link" onClick={toInfo}>
-            تخطَّ الفيديو
-          </button>
-        )}
+
 
         {phase === "info" && (
           <div className="gold-info">

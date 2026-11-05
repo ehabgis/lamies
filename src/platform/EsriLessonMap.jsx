@@ -69,6 +69,7 @@ export default function EsriLessonMap({
   onToolOpen,
   onToggleNames,
   hideRail = false,
+  railKey = false,
   hideTools = false,
   overlay,
 }) {
@@ -439,6 +440,7 @@ export default function EsriLessonMap({
     if (!ready) return;
     const map = mapRef.current;
     const group = L.layerGroup().addTo(map);
+    const placed = [];
     let glowIndex = 0;
     for (const site of sites) {
       if (!Number.isFinite(site.lat) || !Number.isFinite(site.lng)) continue;
@@ -482,6 +484,7 @@ export default function EsriLessonMap({
       });
       marker.addTo(group);
       const element = marker.getElement();
+      placed.push({ site, element, fixed: highlighted || selectedLocationId === site.id, base: [parseFloat(element.style.marginLeft) || 0, parseFloat(element.style.marginTop) || 0] });
       element.setAttribute("role", "button");
       element.setAttribute(
         "aria-label",
@@ -520,7 +523,40 @@ export default function EsriLessonMap({
         element.appendChild(button);
       }
     }
-    return () => map.removeLayer(group);
+    // Markers closer than about 30px at this zoom are spread on a small ring
+    // around their shared spot so each stays visible and tappable; a
+    // highlighted or chosen marker stays exactly on its place.
+    const declutter = () => {
+      const pts = placed.map((p) => ({ ...p, at: map.latLngToContainerPoint([p.site.lat, p.site.lng]) }));
+      const done = new Set();
+      for (const p of pts) {
+        p.element.style.marginLeft = `${p.base[0]}px`;
+        p.element.style.marginTop = `${p.base[1]}px`;
+      }
+      for (const p of pts) {
+        if (done.has(p)) continue;
+        const near = pts.filter((q) => !done.has(q) && q.at.distanceTo(p.at) < 30);
+        near.forEach((q) => done.add(q));
+        if (near.length < 2) continue;
+        const centre = near.find((q) => q.fixed)?.at ||
+          L.point(near.reduce((a, q) => a + q.at.x, 0) / near.length, near.reduce((a, q) => a + q.at.y, 0) / near.length);
+        const moving = near.filter((q) => !(q.fixed && q.at === centre));
+        const r = 18 + moving.length * 3;
+        moving.forEach((q, i) => {
+          const a = -Math.PI / 2 + (i * 2 * Math.PI) / moving.length;
+          const dx = centre.x + Math.cos(a) * r - q.at.x;
+          const dy = centre.y + Math.sin(a) * r - q.at.y;
+          q.element.style.marginLeft = `${q.base[0] + dx}px`;
+          q.element.style.marginTop = `${q.base[1] + dy}px`;
+        });
+      }
+    };
+    declutter();
+    map.on("zoomend", declutter);
+    return () => {
+      map.off("zoomend", declutter);
+      map.removeLayer(group);
+    };
   }, [ready, sites, activeResourceId, selectedLocationId, showNames, waterLesson]);
   useEffect(() => {
     if (!gallery) return;
@@ -828,7 +864,9 @@ export default function EsriLessonMap({
         </button>
       )}
       {ready && overlay?.(mapRef.current)}
-      {railLesson && rail && !hideRail && (
+      {/* The train's key waits until the train is chosen (its journey then
+          shows its own); the line itself stays on the lesson map. */}
+      {railKey && railLesson && rail && !hideRail && (
         <div className="water-source-key rail-route-key">
           <label>
             <input
@@ -983,9 +1021,9 @@ export default function EsriLessonMap({
             {!filteredGovernorates.length && <option disabled>لا توجد نتائج مطابقة</option>}
           </SelectField>
           <p id="governorate-search-status" className="governorate-search-status" role="status">
-            {!features ? "جارٍ تحميل المحافظات…" : governorateQuery ? filteredGovernorates.length ? `${filteredGovernorates.length} نتيجة للبحث · الاختيار الحالي محفوظ حتى تختار محافظة أخرى.` : "لا توجد نتائج. جرّب اسمًا آخر أو امسح البحث." : `${governorateOptions.length} محافظة · اختيار المحافظة يقرّب حدودها على الخريطة.`}
+            {/* Short words for children: only loading and search results. */}
+            {!features ? "جارٍ تحميل المحافظات…" : governorateQuery ? filteredGovernorates.length ? `${filteredGovernorates.length} نتيجة` : "لا توجد نتائج. جرّب اسمًا آخر." : ""}
           </p>
-          <small>حدود Natural Earth التعليمية المعمّمة.</small>
           <button
             type="button"
             className="governorate-all"

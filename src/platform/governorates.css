@@ -168,3 +168,9 @@
     display: none;
   }
 }
+
+/* While satellite tiles load, the map shows a warm desert colour
+   instead of empty grey squares (2026-11-05 review). */
+.map-shell .esri-map-surface .leaflet-container {
+  background: #cfb88c;
+}

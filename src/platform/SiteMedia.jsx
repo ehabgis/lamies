@@ -13,13 +13,8 @@ export default function SiteMedia({ images, video, label }) {
   const hasVideo = !!video;
   const photo = shown[Math.min(current, shown.length - 1)];
 
-  if (!shown.length && !hasVideo)
-    return (
-      <div className="site-media is-empty">
-        <ImageSquare size={34} aria-hidden="true" />
-        <p>لم تُضف صورة أو فيديو لهذا الموقع بعد.</p>
-      </div>
-    );
+  // Nothing added for this place yet: the card simply starts with its text.
+  if (!shown.length && !hasVideo) return null;
   return (
     <div className="site-media">
       {shown.length > 0 && hasVideo && (

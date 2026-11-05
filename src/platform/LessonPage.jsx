@@ -662,45 +662,50 @@ export default function LessonPage({ demo = false }) {
             </div>
           </section>
         )}
-        <div className="site-card-actions">
-          <button
-            className="p-secondary"
-            onClick={() =>
-              narrator.speak(
-                [resource.label, location?.name, resource.description, resource.importance]
-                  .filter(Boolean)
-                  .join(". "),
-              )
-            }
-          >
-            <SpeakerHigh size={20} aria-hidden="true" /> استمع
-          </button>
-          <button className="p-secondary" onClick={() => setVideoOpen(true)}>
-            <VideoCamera size={20} aria-hidden="true" /> الفيديو
-          </button>
-          {location && has3D(resource) && (
-            <button className="p-secondary" onClick={() => setView3d({ ...location, resource })}>
-              <Cube size={20} weight="duotone" aria-hidden="true" /> ثلاثي الأبعاد
+        {/* The buttons stay in view at the foot of the card while it scrolls. */}
+        <div className="site-card-footer">
+          <div className="site-card-actions">
+            <button
+              className="p-secondary"
+              onClick={() =>
+                narrator.speak(
+                  [resource.label, location?.name, resource.description, resource.importance]
+                    .filter(Boolean)
+                    .join(". "),
+                )
+              }
+            >
+              <SpeakerHigh size={20} aria-hidden="true" /> استمع
             </button>
-          )}
+            <button className="p-secondary" onClick={() => setVideoOpen(true)}>
+              <VideoCamera size={20} aria-hidden="true" /> الفيديو
+            </button>
+            {location && has3D(resource) && (
+              <button className="p-secondary" onClick={() => setView3d({ ...location, resource })}>
+                <Cube size={20} weight="duotone" aria-hidden="true" /> ثلاثي الأبعاد
+              </button>
+            )}
+            <button
+              className="p-secondary"
+              onClick={() => ai("explain", `اشرح لي ببساطة معلومة عن ${resource.label}`)}
+            >
+              <ChatCircle size={20} aria-hidden="true" /> اشرح لي ببساطة
+            </button>
+          </div>
           <button
-            className="p-secondary"
-            onClick={() => ai("explain", `اشرح لي ببساطة معلومة عن ${resource.label}`)}
+            className="p-button site-card-quiz"
+            onClick={() => {
+              // Open on the first question about this resource.
+              const quiz = questions.filter((q) => ["choice", "boolean"].includes(q.type) && !q.kind);
+              setIndex(Math.max(0, quiz.findIndex((q) => q.resourceId === resource.id)));
+              openLearning("questions");
+            }}
           >
-            <ChatCircle size={20} aria-hidden="true" /> اشرح لي ببساطة
+            اختبر معلوماتك
           </button>
         </div>
-        <button
-          className="p-button site-card-quiz"
-          onClick={() => {
-            // Open on the first question about this resource.
-            const quiz = questions.filter((q) => ["choice", "boolean"].includes(q.type) && !q.kind);
-            setIndex(Math.max(0, quiz.findIndex((q) => q.resourceId === resource.id)));
-            openLearning("questions");
-          }}
-        >
-          اختبر معلوماتك
-        </button>
+        {/* Coordinates and the preview photo are for staff, not for students. */}
+        {user && user.role !== "student" && (
         <details className="site-card-more">
           <summary>تفاصيل إضافية للمعلم</summary>
           {location && (
@@ -749,6 +754,7 @@ export default function LessonPage({ demo = false }) {
             سؤال إضافي من المعلم الذكي
           </button>
         </details>
+        )}
         <button className="p-text-link" onClick={showAll}>
           العودة إلى جميع الموارد
         </button>

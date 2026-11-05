@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { ArrowRight, ArrowCounterClockwise, Pause, Play, SpeakerHigh, MapPin, Warning } from "phosphor-react";
+import { ArrowLeft, ArrowCounterClockwise, Play, SpeakerHigh, MapPin, Warning } from "phosphor-react";
 import RobotGuide from "../components/Map/RobotGuide";
 import * as narrator from "./narrator";
 import { play } from "./sfx";
@@ -35,81 +35,83 @@ const START = { lat: 29.48, lng: 32.5 };
 const HOLD_END_MS = 1200;
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export default function GalalaJourney({ map, resource, video, onLeave }) {
-  // hello+approach → climb → video → end; or error when the video fails.
-  const [phase, setPhase] = useState("approach");
+// States, in this order only: ascending (map to the coast, then the 3D climb)
+// → video (a window over the map) → info (the card) → closed (onLeave).
+// A video that is missing or fails gives a clear message with «تخطَّ».
+export default function GalalaJourney({ map, resource, video, onLeave, onToolsHidden }) {
+  const [phase, setPhase] = useState("ascending");
+  const [climbing, setClimbing] = useState(false);
   const [run, setRun] = useState(0);
   const [hello, setHello] = useState(true);
-  const [ready, setReady] = useState(false);
   const [blocked, setBlocked] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const [leaving, setLeaving] = useState(false);
+  const [failed, setFailed] = useState(!video);
   const [zoom, setZoom] = useState(10);
   const clip = useRef(null);
   const timers = useRef([]);
-  const later = (fn, ms) => timers.current.push(setTimeout(fn, ms));
+  const alive = useRef(true);
+  const later = (fn, ms) => timers.current.push(setTimeout(() => alive.current && fn(), ms));
   const clear = () => {
     timers.current.forEach(clearTimeout);
     timers.current = [];
   };
 
-  // Steps 2–3: other sounds stop, the teacher speaks in a bubble, and the map
-  // travels to the coast and the mountain.
+  // Map tools stay hidden while the video and the card are shown.
   useEffect(() => {
+    onToolsHidden?.(phase === "video" || phase === "info");
+  }, [phase]);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+      clear();
+      narrator.stop();
+      clip.current?.pause();
+      onToolsHidden?.(false);
+    };
+  }, []);
+
+  // Ascending: other sounds stop, the line shows, the map goes to the coast,
+  // then the camera climbs to the plateau.
+  useEffect(() => {
+    clear();
     narrator.stop();
-    document.querySelectorAll("video").forEach((v) => v !== clip.current && v.pause());
-    setPhase("approach");
-    setHello(true);
-    setLeaving(false);
-    setBlocked(false);
     clip.current?.pause();
-    if (clip.current) clip.current.currentTime = 0;
+    setPhase("ascending");
+    setClimbing(false);
+    setHello(true);
+    setBlocked(false);
     const animate = !reducedMotion();
     map.stop();
     map.flyToBounds(COAST_VIEW, { padding: [40, 40], animate, duration: 2.8 });
-    later(() => setHello(false), reducedMotion() ? 2500 : 3200);
+    later(() => setHello(false), reducedMotion() ? 2500 : 4200);
     later(() => {
       setZoom(map.getZoom());
-      setPhase("climb");
+      setClimbing(true);
     }, animate ? 3100 : 300);
     return clear;
   }, [run]);
-  useEffect(() => () => {
-    clear();
-    narrator.stop();
-  }, []);
 
-  // Step 6: start the video over the last view of the climb.
+  // Video: it starts as soon as the climb ends; a blocked start shows a big
+  // play button, a missing or broken file a message with «تخطَّ».
   function startVideo() {
     const v = clip.current;
-    if (!v) return setPhase("end");
+    if (!v) return;
+    setBlocked(false);
     v.currentTime = 0;
-    v.play()
-      .then(() => setPaused(false))
-      .catch(() => setBlocked(true));
+    v.play().catch(() => setBlocked(true));
   }
   useEffect(() => {
-    if (phase === "video" && ready) startVideo();
-  }, [phase, ready]);
-
-  // Step 8: no loop; hold the last frame, then fade to the map on the city.
-  function ended() {
-    map.setView(CITY, 14, { animate: false });
-    later(() => setLeaving(true), HOLD_END_MS);
-    later(() => setPhase("end"), HOLD_END_MS + 900);
-  }
-  function backToMap() {
-    clear();
+    if (phase === "video" && !failed) startVideo();
+  }, [phase]);
+  function toInfo() {
     clip.current?.pause();
     map.setView(CITY, 14, { animate: false });
-    setLeaving(false);
-    setPhase("end");
+    setPhase("info");
   }
-  const showVideo = phase === "video";
 
   return (
     <div className="gj" dir="rtl">
-      {(phase === "climb" || phase === "video") && (
+      {climbing && phase !== "info" && (
         <Suspense fallback={null}>
           <Site3DView
             key={run}
@@ -117,83 +119,93 @@ export default function GalalaJourney({ map, resource, video, onLeave }) {
             site={{ ...START, name: resource.label, resource }}
             startZoom={zoom - 1}
             camera={{ path: GALALA_CLIMB }}
-            onArrive={() => setPhase((p) => (p === "climb" ? (video ? "video" : "end") : p))}
+            onArrive={() => setPhase((p) => (p === "ascending" ? "video" : p))}
           />
         </Suspense>
       )}
 
-      {video && (
-        <section className={`gj-video ${showVideo && ready && !leaving ? "is-on" : ""}`} aria-hidden={!showVideo}>
-          <video
-            ref={clip}
-            src={video}
-            preload="auto"
-            muted
-            playsInline
-            onCanPlay={() => setReady(true)}
-            onEnded={ended}
-            onError={() => setPhase((p) => (p === "end" ? p : "error"))}
-            aria-label={`فيديو ${resource.label}`}
-          />
-          {showVideo && blocked && (
-            <button type="button" className="gj-start" onClick={() => (setBlocked(false), startVideo())}>
-              <Play size={26} weight="fill" aria-hidden="true" /> ابدأ المشاهدة
-            </button>
-          )}
-          {showVideo && (
-            <div className="gj-tools">
-              <button
-                type="button"
-                aria-label={paused ? "تشغيل" : "إيقاف مؤقت"}
-                onClick={() => {
-                  const v = clip.current;
-                  if (v.paused) v.play().then(() => setPaused(false)).catch(() => {});
-                  else {
-                    v.pause();
-                    setPaused(true);
-                  }
-                }}
-              >
-                {paused ? <Play size={22} weight="fill" /> : <Pause size={22} weight="fill" />}
-              </button>
-              <button type="button" aria-label="إعادة المشاهدة" onClick={() => (setLeaving(false), startVideo())}>
-                <ArrowCounterClockwise size={22} weight="bold" />
-              </button>
-              <button type="button" className="gj-back" onClick={backToMap}>
-                <ArrowRight size={20} weight="bold" aria-hidden="true" /> العودة للخريطة
-              </button>
-            </div>
-          )}
-        </section>
-      )}
-
-      {phase !== "end" && phase !== "error" && (
+      {phase === "ascending" && (
         <span className="gj-name">
           <MapPin size={18} weight="fill" aria-hidden="true" /> {resource.label}
         </span>
       )}
 
-      {hello && (phase === "approach" || phase === "climb") && (
+      {hello && phase === "ascending" && (
         <div className="gj-hello" role="status">
-          <p>هيا نصعد من ساحل البحر الأحمر لاكتشاف مدينة الجلالة!</p>
+          <p>نصعد من ساحل البحر الأحمر لنكتشف مدينة الجلالة</p>
           <span aria-hidden="true">
             <RobotGuide />
           </span>
         </div>
       )}
 
-      {(phase === "end" || phase === "error") && (
+      {/* The video window is in the page from the start so the file loads
+          during the climb; it shows once the climb ends. */}
+      <section
+        className={`gj-window ${phase === "video" ? "is-on" : ""}`}
+        role="dialog"
+        aria-label={`فيديو ${resource.label}`}
+        aria-hidden={phase !== "video"}
+      >
+        <header>
+          <h2>
+            <MapPin size={20} weight="fill" aria-hidden="true" /> {resource.label}
+          </h2>
+          <button type="button" className="gj-skip" onClick={toInfo}>
+            تخطَّ <ArrowLeft size={18} aria-hidden="true" />
+          </button>
+        </header>
+        {failed ? (
+          <div className="gj-missing" role="alert">
+            <Warning size={30} weight="fill" aria-hidden="true" />
+            <p>
+              {video ? "تعذّر تحميل فيديو مدينة الجلالة." : "فيديو مدينة الجلالة غير مضاف بعد."}
+            </p>
+            {video && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFailed(false);
+                  clip.current?.load();
+                  later(startVideo, 300);
+                }}
+              >
+                <ArrowCounterClockwise size={18} weight="bold" aria-hidden="true" /> إعادة المحاولة
+              </button>
+            )}
+          </div>
+        ) : null}
+        {video && (
+          <div className="gj-player" hidden={failed}>
+            <video
+              ref={clip}
+              src={video}
+              preload="auto"
+              playsInline
+              controls
+              controlsList="nodownload"
+              onEnded={() => later(toInfo, HOLD_END_MS)}
+              onError={() => setFailed(true)}
+            />
+            {phase === "video" && blocked && (
+              <button type="button" className="gj-start" onClick={startVideo}>
+                <Play size={30} weight="fill" aria-hidden="true" /> ابدأ المشاهدة
+              </button>
+            )}
+          </div>
+        )}
+      </section>
+
+      {phase === "info" && (
         <aside className="gj-card" aria-label={resource.label}>
           <h2>
             <MapPin size={24} weight="fill" aria-hidden="true" /> {resource.label}
           </h2>
-          <p>{resource.description}</p>
-          {phase === "error" && (
-            <p className="gj-error" role="alert">
-              <Warning size={18} weight="fill" aria-hidden="true" /> تعذّر تحميل الفيديو.
-            </p>
-          )}
-          <button type="button" onClick={() => narrator.speak(`${resource.label}. ${resource.description}`)}>
+          <div className="gj-card-text">
+            <p>{resource.description}</p>
+            {resource.importance && <p>{resource.importance}</p>}
+          </div>
+          <button type="button" onClick={() => narrator.speak([resource.label, resource.description, resource.importance].filter(Boolean).join(". "))}>
             <SpeakerHigh size={20} aria-hidden="true" /> استمع للمعلومة
           </button>
           <button
@@ -201,17 +213,20 @@ export default function GalalaJourney({ map, resource, video, onLeave }) {
             className="gj-main"
             onClick={() => {
               play("open");
-              if (phase === "error") {
-                setReady(false);
-                clip.current?.load();
-              }
+              setFailed(!video);
               setRun((n) => n + 1);
             }}
           >
-            <ArrowCounterClockwise size={20} weight="bold" aria-hidden="true" />
-            {phase === "error" ? "إعادة المحاولة" : "أعد الرحلة"}
+            <ArrowCounterClockwise size={20} weight="bold" aria-hidden="true" /> أعد الرحلة
           </button>
-          <button type="button" className="gj-link" onClick={onLeave}>
+          <button
+            type="button"
+            className="gj-link"
+            onClick={() => {
+              narrator.stop();
+              onLeave();
+            }}
+          >
             إغلاق
           </button>
         </aside>

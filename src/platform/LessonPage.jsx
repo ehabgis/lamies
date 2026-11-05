@@ -227,6 +227,8 @@ export default function LessonPage({ demo = false }) {
     [reservoir, setReservoir] = useState(null),
     // Lesson 3: «رحلة إلى مدينة الجلالة» while it runs (a nonce per start).
     [galala, setGalala] = useState(null),
+    // A journey (Galala, gold) hides the map tools while its video or card shows.
+    [toolsHidden, setToolsHidden] = useState(false),
     [measured, setMeasured] = useState(null),
     [montage, setMontage] = useState(null),
     [spotlight, setSpotlight] = useState(null),
@@ -435,7 +437,10 @@ export default function LessonPage({ demo = false }) {
   const answered = (id) => setSolved((s) => (s.includes(id) ? s : [...s, id]));
   function pick(r) {
     // A second tap on Galala while its journey runs does not start another one.
-    if (galala && r.id === GALALA_ID) return;
+    if (galala && r.id === GALALA_ID) {
+      setLegendOpen(false);
+      return;
+    }
     play(resourceSound(r));
     const singleSite =
       ["water", "project"].includes(r.kind) && r.locations?.length === 1;
@@ -1049,6 +1054,7 @@ export default function LessonPage({ demo = false }) {
             focusRequest={focusRequest}
             waterLesson={demo && id === "lesson-2"}
             railLesson={demo && id === "lesson-3"}
+            hideTools={toolsHidden}
             hideRail={railTrip || Boolean(capital) || Boolean(toshka) || Boolean(galala)}
             overlay={(map) => (
               <>
@@ -1069,6 +1075,7 @@ export default function LessonPage({ demo = false }) {
                     resource={resource}
                     video={resource.locations?.[0]?.media?.video || null}
                     onLeave={() => setGalala(null)}
+                    onToolsHidden={setToolsHidden}
                   />
                 )}
                 {reservoir?.phase === "approach" && (

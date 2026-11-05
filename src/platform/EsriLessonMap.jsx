@@ -64,6 +64,7 @@ export default function EsriLessonMap({
   onToolOpen,
   onToggleNames,
   hideRail = false,
+  hideTools = false,
   overlay,
 }) {
   const host = useRef(null),
@@ -709,7 +710,7 @@ export default function EsriLessonMap({
       />
       {/* Stacked: أسماء المعالم, المحافظات, then (a little apart) معرض الخرائط.
           The first two switch on and off and show ✓ while on. */}
-      <div className="esri-map-toolbar is-stacked">
+      <div className="esri-map-toolbar is-stacked" hidden={hideTools}>
         {onToggleNames && (
           <button
             className="map-tool"

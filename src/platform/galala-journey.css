@@ -13,73 +13,103 @@
 .gj > .site-3d-inline {
   z-index: 1;
 }
-.gj-video {
+.gj-window {
   position: absolute;
-  inset: 0;
-  z-index: 3;
-  overflow: hidden;
-  border-radius: inherit;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 1s ease, visibility 0s linear 1s;
-}
-.gj-video.is-on {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 1s ease;
-}
-.gj-video video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.gj-start {
-  position: absolute;
+  z-index: 6;
   top: 50%;
   left: 50%;
-  translate: -50% -50%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(760px, calc(100% - 40px));
+  padding: 12px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgb(6 22 44 / 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -46%);
+  transition: opacity 0.6s ease, transform 0.6s ease, visibility 0s linear 0.6s;
+}
+.gj-window.is-on {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.gj-window > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.gj-window h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+}
+.gj-window h2 svg {
+  color: #0a62d6;
+}
+.gj-skip {
   display: inline-flex;
   align-items: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 2px 16px;
+  border: 1.5px solid #c9dbee;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0b2a5b;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+.gj-player {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #0b2a5b;
+}
+.gj-player video {
+  display: block;
+  width: 100%;
+  max-height: calc(100vh - 300px);
+  aspect-ratio: 16 / 9;
+  background: #0b2a5b;
+}
+.gj-missing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 10px;
-  min-height: 60px;
-  padding: 6px 28px;
+  padding: 34px 16px;
+  border-radius: 14px;
+  background: #fff6e0;
+  color: #6b4a00;
+  text-align: center;
+  font-weight: 800;
+}
+.gj-missing p {
+  margin: 0;
+  font-size: 17px;
+}
+.gj-missing button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 2px 16px;
   border: 0;
   border-radius: 999px;
   background: #0a62d6;
   color: #ffffff;
   font: inherit;
-  font-size: 20px;
   font-weight: 900;
-  box-shadow: 0 10px 26px rgb(0 0 0 / 0.35);
   cursor: pointer;
-}
-.gj-tools {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  display: flex;
-  gap: 8px;
-}
-.gj-tools button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-width: 46px;
-  min-height: 46px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: rgb(255 255 255 / 0.94);
-  color: #0b2a5b;
-  font: inherit;
-  font-weight: 900;
-  box-shadow: 0 6px 16px rgb(0 0 0 / 0.28);
-  cursor: pointer;
-}
-.gj-tools .gj-back {
-  padding: 0 18px;
-  font-size: 16px;
 }
 .gj-name {
   position: absolute;
@@ -133,12 +163,13 @@
 .gj-card {
   position: absolute;
   z-index: 5;
-  top: 124px;
+  top: 14px;
   right: 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: min(300px, calc(100% - 28px));
+  width: min(340px, calc(100% - 28px));
+  max-height: calc(100% - 110px);
   padding: 16px;
   border-radius: 20px;
   background: #ffffff;
@@ -211,20 +242,49 @@
   .gj-hello p {
     font-size: 15px;
   }
-  .gj-tools {
-    top: 60px;
-  }
   .gj-name {
     bottom: auto;
     top: 12px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .gj-video,
-  .gj-video.is-on {
+  .gj-window,
+  .gj-window.is-on {
     transition: none;
   }
   .gj-hello {
     animation: none;
   }
+}
+
+.gj-card-text {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.gj-card-text p + p {
+  margin-top: 6px;
+}
+@media (max-width: 850px) {
+  .gj-window {
+    width: calc(100% - 20px);
+    padding: 8px;
+  }
+  .gj-window h2 {
+    font-size: 16px;
+  }
+  .gj-card {
+    top: auto;
+    bottom: 118px;
+    max-height: 55%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gj-window,
+  .gj-window.is-on {
+    transition: none;
+  }
+}
+.map-shell .gj > .site-3d-inline {
+  z-index: 1;
 }

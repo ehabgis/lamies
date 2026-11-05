@@ -14,13 +14,19 @@ function fullContent(id) {
 // Photos and short videos for one place: put files named after the place id
 // in public/lesson-media/sites/ (e.g. iron-bahariya.jpg, iron-bahariya-2.jpg,
 // iron-bahariya.mp4). Only files that exist are listed.
+// Other names a teacher may have given the same video.
+const VIDEO_ALIASES = {
+  "galala-city": ["galala", "el-galala", "al-galala"],
+  "gold-sukari": ["gold", "sukari", "gold-journey"],
+};
 function siteFiles(id, index) {
   const images = [];
   for (const n of ["", "-2", "-3", "-4", "-5", "-6"]) {
     const f = findMedia("sites", index, id + n, IMAGE_EXT);
     if (f) images.push(f);
   }
-  return { images, video: findMedia("sites", index, id, VIDEO_EXT) };
+  const video = [id, ...(VIDEO_ALIASES[id] || [])].map((n) => findMedia("sites", index, n, VIDEO_EXT)).find(Boolean) || null;
+  return { images, video };
 }
 function attachSiteMedia(content) {
   if (!content) return content;

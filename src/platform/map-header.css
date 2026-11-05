@@ -1234,3 +1234,15 @@
     padding-bottom: 10px;
   }
 }
+.map-shell .esri-map-toolbar[hidden] {
+  display: none !important;
+}
+@media (min-width: 851px) {
+  .map-shell .studio-workspace > .classroom-legend.is-long {
+    width: 330px !important;
+    max-width: 330px !important;
+  }
+  .map-shell .classroom-legend.is-long > button:not(.mobile-panel-close) > span {
+    white-space: nowrap;
+  }
+}

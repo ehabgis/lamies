@@ -288,3 +288,18 @@
 .map-shell .gj > .site-3d-inline {
   z-index: 1;
 }
+@media (max-height: 520px) and (orientation: landscape) {
+  .gj-card {
+    top: 8px;
+    bottom: 8px;
+    right: 8px;
+    width: min(380px, 50%);
+    max-height: none;
+  }
+  .gj-window {
+    width: min(560px, calc(100% - 20px));
+  }
+  .gj-player video {
+    max-height: calc(100vh - 200px);
+  }
+}

@@ -11,6 +11,7 @@ import {
   Star,
   Trophy
 } from 'phosphor-react';
+import BrandMark from "../platform/BrandMark";
 import { useGameStore } from '../store/gameStore';
 
 const TALK_TO_MAP_URL = 'https://talk-with-map.vercel.app/';
@@ -129,10 +130,7 @@ export default function HomePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55 }}
         >
-          <div className="smart-home-brand-mark" aria-hidden="true">
-            <MapPin size={30} weight="fill" />
-            <Books size={27} weight="duotone" />
-          </div>
+          <BrandMark size={76} className="smart-home-logo" />
           <div className="smart-home-heading">
             <span className="smart-home-kicker"><Sparkle size={16} weight="fill" /> تعلّم واكتشف</span>
             <h1>الخرائط التعليمية الذكية</h1>

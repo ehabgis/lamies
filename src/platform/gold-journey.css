@@ -1,0 +1,326 @@
+/* «من الصخر إلى الذهب» (lesson 1, 2026-11-05): all inside the map's space. */
+.gold {
+  position: absolute;
+  inset: 0;
+  z-index: 1100;
+  pointer-events: none;
+  font-family: Cairo, system-ui, sans-serif;
+  color: #0b2a5b;
+}
+.gold > * {
+  pointer-events: auto;
+}
+.gold-halo {
+  animation: gold-halo 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px #ffd34d);
+}
+@keyframes gold-halo {
+  50% {
+    stroke-opacity: 0.45;
+    fill-opacity: 0.12;
+  }
+}
+.gold-ask {
+  position: absolute;
+  z-index: 5;
+  top: 18px;
+  left: 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: min(440px, calc(100% - 400px));
+  animation: gold-pop 400ms ease-out;
+}
+.gold-ask p {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgb(11 47 87 / 0.25);
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.6;
+}
+.gold-ask span {
+  flex: 0 0 64px;
+}
+.gold-ask span svg {
+  width: 100%;
+  height: auto;
+}
+@keyframes gold-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.gold-card {
+  position: absolute;
+  z-index: 6;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(360px, calc(100% - 28px));
+  max-height: calc(100% - 110px);
+  padding: 14px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgb(11 47 87 / 0.22);
+}
+.gold-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+}
+.gold-card h2 svg {
+  color: #d99a00;
+}
+.gold-card h2 small {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #fff1c2;
+  color: #7a5200;
+  font-size: 14px;
+  font-weight: 800;
+}
+.gold-card p {
+  margin: 0;
+  color: #36506b;
+  font-weight: 700;
+  line-height: 1.7;
+}
+.gold-media {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #f4ecd8;
+}
+.gold-rock {
+  position: relative;
+}
+.gold-rock svg,
+.gold-done svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+.gold-rock svg:active {
+  cursor: grabbing;
+}
+.gold-card .gold-lens-key {
+  position: absolute;
+  min-height: 0;
+  padding: 0;
+  width: 25%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  pointer-events: none;
+}
+.gold-card .gold-lens-key:focus-visible {
+  outline: 4px solid #0a62d6;
+  outline-offset: 2px;
+}
+.gold-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgb(11 42 91 / 0.8);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  pointer-events: none;
+}
+.gold-tip {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.9);
+  color: #0b2a5b !important;
+  font-size: 13px;
+  pointer-events: none;
+}
+.gold-player {
+  position: relative;
+  background: #0b2a5b;
+}
+.gold-player video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #0b2a5b;
+}
+.gold-start {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  height: fit-content;
+  padding: 12px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: #ffc21a;
+  color: #3b2a00;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgb(0 0 0 / 0.35);
+}
+.gold-missing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 14px;
+  background: #fff6e0;
+  color: #6b4a00;
+  text-align: center;
+  font-weight: 800;
+}
+.gold-missing p {
+  color: #6b4a00 !important;
+}
+.gold-missing small {
+  direction: ltr;
+  font-size: 12px;
+}
+.gold-card button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 2px 14px;
+  border: 1.5px solid #c9dbee;
+  border-radius: 12px;
+  background: #eef5ff;
+  color: #0a4fb0;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+.gold-card .gold-cta {
+  width: 100%;
+  border-color: #e0a800;
+  background: #ffc21a;
+  color: #3b2a00;
+  font-size: 17px;
+}
+.gold-found {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: gold-pop 400ms ease-out;
+}
+.gold-found p {
+  color: #0b2a5b;
+  font-weight: 900;
+}
+.gold-card .gold-link,
+.gold-card .gold-close {
+  min-height: 36px;
+  border: 0;
+  background: none;
+  color: #4a6178;
+  text-decoration: underline;
+}
+.gold-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.gold-quiz {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #fff8e1;
+}
+.gold-quiz h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 900;
+}
+.gold-quiz > div {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.gold-quiz > div button {
+  flex: 1;
+  background: #ffffff;
+}
+.gold-quiz > div button[aria-pressed="true"] {
+  border-color: #0a62d6;
+}
+.gold-verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px !important;
+}
+.gold-verdict svg {
+  flex: none;
+  margin-top: 4px;
+}
+.gold-verdict.is-right {
+  color: #11703a !important;
+}
+.gold-verdict.is-wrong {
+  color: #a3330f !important;
+}
+.gold-card footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+@media (max-width: 850px) {
+  .gold-card {
+    top: auto;
+    bottom: 104px;
+    right: 10px;
+    width: calc(100% - 20px);
+    max-height: 62%;
+    padding: 10px;
+  }
+  .gold-card h2 {
+    font-size: 19px;
+  }
+  .gold-card p {
+    font-size: 14px;
+  }
+  .gold-ask {
+    top: 10px;
+    left: 10px;
+    max-width: calc(100% - 20px);
+  }
+  .gold-ask p {
+    font-size: 15px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gold-halo,
+  .gold-ask,
+  .gold-found {
+    animation: none;
+  }
+}

@@ -60,6 +60,7 @@ import MapTeacher, { MeasureLine } from "./MapTeacher";
 import { ToshkaView, ToshkaCard, TOSHKA_ID, TOSHKA_HELPS } from "./ToshkaTour";
 import { ReservoirApproach, ReservoirVideo, RESERVOIR_ID, RESERVOIR_CAMERA } from "./ReservoirTour";
 import GalalaJourney, { GALALA_ID } from "./GalalaJourney";
+import GoldJourney, { GOLD_ID } from "./GoldJourney";
 import { CapitalApproach, CapitalCard, CAPITAL_ID, CAPITAL_QUESTION } from "./CapitalTour";
 import LessonMontage from "./LessonMontage";
 import { buildScenes, SECTIONS } from "./montageScenes";
@@ -227,6 +228,8 @@ export default function LessonPage({ demo = false }) {
     [reservoir, setReservoir] = useState(null),
     // Lesson 3: «رحلة إلى مدينة الجلالة» while it runs (a nonce per start).
     [galala, setGalala] = useState(null),
+    // Lesson 1: «من الصخر إلى الذهب» while it runs (a nonce per start).
+    [gold, setGold] = useState(null),
     // A journey (Galala, gold) hides the map tools while its video or card shows.
     [toolsHidden, setToolsHidden] = useState(false),
     [measured, setMeasured] = useState(null),
@@ -437,7 +440,7 @@ export default function LessonPage({ demo = false }) {
   const answered = (id) => setSolved((s) => (s.includes(id) ? s : [...s, id]));
   function pick(r) {
     // A second tap on Galala while its journey runs does not start another one.
-    if (galala && r.id === GALALA_ID) {
+    if ((galala && r.id === GALALA_ID) || (gold && r.id === GOLD_ID)) {
       setLegendOpen(false);
       return;
     }
@@ -458,7 +461,7 @@ export default function LessonPage({ demo = false }) {
     // The card opens straight from the key, as in lesson 2; its site list
     // lets the child move to each place.
     // With «المعلم الذكي» open, its panel explains instead of the info card.
-    setInfoOpen(!watch && !teacher && !(demo && id === "lesson-3" && ["high-speed-rail", CAPITAL_ID, TOSHKA_ID, GALALA_ID].includes(r.id)));
+    setInfoOpen(!watch && !teacher && !(demo && id === "lesson-3" && ["high-speed-rail", CAPITAL_ID, TOSHKA_ID, GALALA_ID].includes(r.id)) && !(demo && id === "lesson-1" && r.id === GOLD_ID));
     if (watch) cardTimer.current = setTimeout(() => setInfoOpen(true), EFFECT_MS - 1500);
     setVideoOpen(false);
     setResource(r);
@@ -468,6 +471,7 @@ export default function LessonPage({ demo = false }) {
     setToshka(null);
     setReservoir(null);
     setGalala(null);
+    setGold(null);
     // The train's trip draws its own lines and stations; no single place to open.
     if (demo && id === "lesson-3" && r.id === "high-speed-rail") {
       setLocation(null);
@@ -475,6 +479,11 @@ export default function LessonPage({ demo = false }) {
       setLocation(null);
       narrator.stop();
       setGalala(Date.now());
+    } else if (demo && id === "lesson-1" && r.id === GOLD_ID && r.locations?.length) {
+      // «من الصخر إلى الذهب»: the mine glows, then the rock and the lens.
+      setLocation({ ...r.locations[0], resource: r });
+      narrator.stop();
+      setGold(Date.now());
     } else if (demo && id === "lesson-3" && r.id === TOSHKA_ID) {
       // Toshka: the map flies over the project area; its card offers the fields.
       setLocation(null);
@@ -1078,6 +1087,19 @@ export default function LessonPage({ demo = false }) {
                     onToolsHidden={setToolsHidden}
                   />
                 )}
+                {gold && resource?.id === GOLD_ID && (
+                  <GoldJourney
+                    key={gold}
+                    map={map}
+                    resource={resource}
+                    video={resource.locations?.[0]?.media?.video || null}
+                    onLeave={() => {
+                      setGold(null);
+                      setLocation(null);
+                    }}
+                    onToolsHidden={setToolsHidden}
+                  />
+                )}
                 {reservoir?.phase === "approach" && (
                   <ReservoirApproach
                     map={map}
@@ -1092,6 +1114,7 @@ export default function LessonPage({ demo = false }) {
             onToolOpen={() => { setLegendOpen(false); setInfoOpen(false); setPanel(null); }}
             onSelect={(site) => {
               if (demo && id === "lesson-3" && [CAPITAL_ID, TOSHKA_ID, GALALA_ID].includes(site.resource.id)) return pick(site.resource);
+              if (demo && id === "lesson-1" && site.resource.id === GOLD_ID) return pick(site.resource);
               play(resourceSound(site.resource));
               clearTimeout(open3dTimer.current);
               setView3d(null);

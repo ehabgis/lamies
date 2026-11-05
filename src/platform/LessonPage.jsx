@@ -1299,13 +1299,11 @@ export default function LessonPage({ demo = false }) {
           >
             <X size={20} weight="bold" aria-hidden="true" />
           </button>
-          <span className={`studio-status ${location ? "is-quiet" : ""}`}>
-            {demo
-              ? "تجربة · دون نقاط رسمية"
-              : preview
-                ? "معاينة تحريرية"
-                : `${solved.length} / ${questions.length} سؤال متقن`}
-          </span>
+          {!demo && (
+            <span className={`studio-status ${location ? "is-quiet" : ""}`}>
+              {preview ? "معاينة تحريرية" : `${solved.length} / ${questions.length} سؤال متقن`}
+            </span>
+          )}
           {!resource ? (
             <section className="guide-speech">
               <RobotGuide />

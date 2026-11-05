@@ -160,7 +160,7 @@ export default function JourneyPage({ demo = false }) {
     setError("");
   }
   // Grades, terms and units with at least one lesson that can be opened; the
-  // others show «قريبًا» and cannot be chosen.
+  // others stay in place, dimmed, and cannot be chosen.
   const withContent = new Set();
   const byId = new Map(nodes.map((n) => [n.id, n]));
   for (const n of nodes)
@@ -225,7 +225,6 @@ export default function JourneyPage({ demo = false }) {
                 >
                   <b>{parts[0].replace(/ الابتدائي$/, "").replace(/^الفصل الدراسي /, "الفصل ")}</b>
                   {parts[1] && <small>{parts[1].trim()}</small>}
-                  {soon && <em className="journey-soon">قريبًا</em>}
                   {selection[key] === o.id && (
                     <CheckCircle className="journey-tile-check" weight="fill" aria-hidden="true" />
                   )}

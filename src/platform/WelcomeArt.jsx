@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from "react";
 // (692, 420), radii 362 × 345 px; the drawn sphere sits just inside the rim.
 const GLOBE = { left: 29.0, top: 8.7, width: 59.3, height: 67.5 };
 const TILT = (18 * Math.PI) / 180; // the north pole leans toward the viewer
-const SPEED = (360 / 70) * (Math.PI / 180); // one turn in about 70 s
+const SPEED = (360 / 90) * (Math.PI / 180); // one turn in about 90 s
 const START = (58 * Math.PI) / 180; // Egypt starts near the boy's finger
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 

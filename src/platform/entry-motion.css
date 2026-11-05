@@ -181,7 +181,7 @@
   filter: none;
 }
 .entry-experience .entry-art-heading h2 {
-  font-size: clamp(22px, 2.2vw, 30px);
+  font-size: clamp(18px, 1.8vw, 24px);
 }
 .entry-experience .entry-art-heading p {
   font-size: 15px;
@@ -268,23 +268,27 @@
   opacity: 0;
   animation: none !important;
 }
+/* Slower (2026-11-05 review): each stage about 1.6 s after the last. */
+.entry-journey-steps.is-sequence.is-go > * {
+  animation-duration: 900ms;
+}
 .entry-journey-steps.is-sequence.is-go > :nth-child(1) {
-  animation-delay: 0s;
+  animation-delay: 0.2s;
 }
 .entry-journey-steps.is-sequence.is-go > :nth-child(2) {
-  animation-delay: 0.9s;
+  animation-delay: 1.4s;
 }
 .entry-journey-steps.is-sequence.is-go > :nth-child(3) {
-  animation-delay: 1s;
+  animation-delay: 1.8s;
 }
 .entry-journey-steps.is-sequence.is-go > :nth-child(4) {
-  animation-delay: 1.9s;
+  animation-delay: 3s;
 }
 .entry-journey-steps.is-sequence.is-go > :nth-child(5) {
-  animation-delay: 2s;
+  animation-delay: 3.4s;
 }
 .entry-journey-steps.is-sequence.is-go > :nth-child(5)::after {
-  animation-delay: 2.6s;
+  animation-delay: 4.3s;
 }
 @media (max-width: 700px) {
   .entry-hero-wrap {

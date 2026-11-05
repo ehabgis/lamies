@@ -72,12 +72,17 @@ export default function EntryPage() {
       setBlocked(false);
     } else if (spoke.current && voice.state === "idle") {
       // A short pause between lines is not the end of the welcome.
+      let go;
       const t = setTimeout(() => {
         if (narrator.getSettings().state !== "idle") return;
         setGreeting(false);
-        setStagesGo(true);
+        // A breath after the welcome before the stages start.
+        go = setTimeout(() => setStagesGo(true), 700);
       }, 500);
-      return () => clearTimeout(t);
+      return () => {
+        clearTimeout(t);
+        clearTimeout(go);
+      };
     }
     return undefined;
   }, [voice.state]);
@@ -142,7 +147,7 @@ export default function EntryPage() {
           aria-label="رحلتك لاكتشاف مصر"
         >
           <div className="entry-art-heading">
-            <h2>مغامرتك تبدأ من هنا.</h2>
+            <h2>مغامرتك تبدأ من هنا</h2>
             <p>اكتشف مصر… موردًا، ومكانًا، وحكاية.</p>
           </div>
           <div className="entry-hero-wrap">

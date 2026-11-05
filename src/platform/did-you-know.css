@@ -1,97 +1,121 @@
-/* «هل تعلم؟» reveal on a resource card (2026-11-05). */
+/* «هل تعلم؟» on a resource card, after the reference card (2026-11-05):
+   light blue box, navy title, yellow pill, the kid on the right. */
 .dyk {
   display: flex;
   align-items: flex-end;
-  gap: 10px;
-  margin: 4px 0;
+  gap: 6px;
+  margin: 6px 0;
+  padding: 12px 12px 0 12px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: linear-gradient(160deg, #e6f1fd, #d3e6fb);
   font-family: Cairo, system-ui, sans-serif;
   color: #0b2a5b;
 }
 .dyk-kid {
-  flex: 0 0 64px;
-  width: 64px;
-  height: 64px;
-  border: 3px solid #ffd34d;
-  border-radius: 50%;
-  background: #fff6d6;
-  object-fit: cover;
+  flex: 0 0 auto;
+  align-self: flex-end;
+  width: clamp(92px, 30%, 128px);
+  height: auto;
+  margin-bottom: -2px;
 }
-.dyk-ask,
+.dyk-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding-bottom: 14px;
+  text-align: center;
+}
+.map-shell .dyk h3,
+.dyk h3 {
+  margin: 0;
+  color: #13235b;
+  font-size: clamp(24px, 2.2vw, 30px);
+  font-weight: 900;
+  line-height: 1.2;
+}
+.map-shell .dyk .dyk-ask,
+.dyk-ask {
+  margin: 0;
+  color: #13235b;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.6;
+}
+.map-shell .dyk .dyk-go,
+.dyk-go {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: auto;
+  min-height: 48px;
+  padding: 4px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffe14d, #ffc61a);
+  color: #13235b;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #e0a800, 0 8px 16px rgb(224 168 0 / 0.25);
+}
+.dyk-go:active {
+  translate: 0 2px;
+  box-shadow: 0 2px 0 #e0a800;
+}
+/* The fact, in a white bubble whose tail points at the kid (right in RTL). */
 .dyk-bubble {
   position: relative;
-  flex: 1;
-  min-width: 0;
+  align-self: stretch;
   padding: 10px 12px;
   border-radius: 16px;
-  background: #fff8e1;
-  border: 1.5px solid #f3d27a;
-}
-.dyk-bubble {
   background: #ffffff;
   box-shadow: 0 6px 16px rgb(11 47 87 / 0.12);
   animation: dyk-pop 320ms ease-out;
 }
-/* The bubble's tail points at the kid (on the right in RTL). */
 .dyk-bubble::after {
   content: "";
   position: absolute;
-  right: -8px;
-  bottom: 16px;
+  right: -7px;
+  bottom: 14px;
   width: 14px;
   height: 14px;
-  border-right: 1.5px solid #f3d27a;
-  border-bottom: 1.5px solid #f3d27a;
   background: #ffffff;
-  transform: rotate(-45deg);
+  transform: rotate(45deg);
 }
-.dyk p {
+.map-shell .dyk .dyk-bubble p,
+.dyk-bubble p {
+  position: relative;
+  z-index: 1;
   margin: 0;
-  color: #24405e;
-  font-weight: 700;
+  color: #13235b;
+  font-size: 16px;
+  font-weight: 800;
   line-height: 1.7;
-}
-.dyk b {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: #8a5a00;
-  font-weight: 900;
-}
-.dyk-go {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  margin-top: 8px;
-  padding: 2px 16px;
-  border: 0;
-  border-radius: 999px;
-  background: #ffc21a;
-  color: #3b2a00;
-  font: inherit;
-  font-weight: 900;
-  cursor: pointer;
-  box-shadow: 0 4px 0 #d99a00;
-}
-.dyk-go:active {
-  translate: 0 2px;
-  box-shadow: 0 2px 0 #d99a00;
 }
 .dyk-actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 6px;
-  margin-top: 8px;
 }
+.map-shell .dyk-actions button,
 .dyk-actions button {
   display: inline-flex;
+  flex: 0 1 auto;
   align-items: center;
   gap: 4px;
-  min-height: 40px;
-  padding: 2px 12px;
-  border: 1.5px solid #c9dbee;
+  width: auto;
+  min-height: 42px;
+  padding: 2px 14px;
+  border: 1.5px solid #b9d3f0;
   border-radius: 999px;
-  background: #eef5ff;
+  background: #ffffff;
   color: #0a4fb0;
   font: inherit;
   font-size: 14px;
@@ -113,14 +137,25 @@
     animation: none;
   }
 }
-/* Inside the map's resource card, whose own rules are broader. */
-.map-shell .dyk p {
-  font-size: 16px;
+.dyk-go,
+.dyk-actions button {
+  white-space: nowrap;
 }
-.map-shell .dyk .dyk-go {
-  font-size: 16px;
-}
-.map-shell .dyk-actions button {
-  flex: 1 1 auto;
-  width: auto;
+@media (max-width: 520px) {
+  .dyk {
+    padding: 10px 8px 0 8px;
+  }
+  .dyk-kid {
+    width: 84px;
+  }
+  .map-shell .dyk .dyk-go,
+  .dyk-go {
+    min-height: 46px;
+    padding: 4px 14px;
+    font-size: 16px;
+  }
+  .map-shell .dyk .dyk-ask,
+  .dyk-ask {
+    font-size: 15px;
+  }
 }

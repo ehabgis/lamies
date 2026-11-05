@@ -1,6 +1,7 @@
 import RobotGuide from "../components/Map/RobotGuide";
 import { useState, useEffect } from "react";
-import { PaperPlaneTilt } from "phosphor-react";
+import { PaperPlaneTilt, SpeakerHigh } from "phosphor-react";
+import * as narrator from "./narrator";
 import { api } from "./api";
 import { useSession } from "./Session";
 export default function AIAssistant({
@@ -79,6 +80,7 @@ export default function AIAssistant({
           </span>
         </div>
       </div>
+      {mode === "explain" && resource && <Simple resource={resource} />}
       {!canConnect && configured !== null && (
         <p className="p-feedback">
           {demo
@@ -144,5 +146,33 @@ export default function AIAssistant({
         </button>
       </form>
     </section>
+  );
+}
+
+// «اشرح لي ببساطة» without the online teacher: the card's own approved text,
+// cut into a few short sentences (nothing added).
+export function simpleLines(resource) {
+  return [resource.description, resource.importance]
+    .filter(Boolean)
+    .flatMap((t) => String(t).split(/[.؛]|،\s*(?=و?(?:من|يُ|ي|ت|في))/))
+    .map((t) => t.trim().replace(/^و\s*/, ""))
+    .filter((t) => t.split(/\s+/).length >= 3)
+    .slice(0, 4);
+}
+function Simple({ resource }) {
+  const lines = simpleLines(resource);
+  if (!lines.length) return null;
+  return (
+    <div className="ai-simple">
+      <h4>{resource.label} باختصار</h4>
+      <ul>
+        {lines.map((t) => (
+          <li key={t}>{t}.</li>
+        ))}
+      </ul>
+      <button type="button" className="p-secondary" onClick={() => narrator.speak([resource.label, ...lines].join(". "))}>
+        <SpeakerHigh size={18} aria-hidden="true" /> استمع
+      </button>
+    </div>
   );
 }

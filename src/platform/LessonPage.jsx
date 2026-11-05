@@ -61,6 +61,7 @@ import { ToshkaView, ToshkaCard, TOSHKA_ID, TOSHKA_HELPS } from "./ToshkaTour";
 import { ReservoirApproach, ReservoirVideo, RESERVOIR_ID, RESERVOIR_CAMERA } from "./ReservoirTour";
 import GalalaJourney, { GALALA_ID } from "./GalalaJourney";
 import GoldJourney, { GOLD_ID } from "./GoldJourney";
+import DidYouKnowReveal from "./DidYouKnowReveal";
 import { CapitalApproach, CapitalCard, CAPITAL_ID, CAPITAL_QUESTION } from "./CapitalTour";
 import LessonMontage from "./LessonMontage";
 import { buildScenes, SECTIONS } from "./montageScenes";
@@ -112,6 +113,16 @@ function relatedFacts(content, resource) {
     .filter((t) => typeof t === "string" && t.includes(stem) && isNew(t))
     .filter((t, i, all) => all.indexOf(t) === i)
     .slice(0, 2);
+}
+
+// «هل تعلم؟» facts written for a card, each taken from the lesson's own text
+// (server/textbook-unit3.mjs), shown before the book facts found above.
+const CARD_FACTS = {
+  // Glossary «المياه العذبة»: النيل وفرعاه والمياه الجوفية العذبة … والأمطار.
+  "nile-river": ["تتنوع مصادر المياه العذبة بين النيل والمياه الجوفية والأمطار."],
+};
+function cardFacts(content, resource) {
+  return [...(CARD_FACTS[resource.id] || []), ...relatedFacts(content, resource)].filter((t, i, all) => all.indexOf(t) === i);
 }
 
 function Photo({ src, label }) {
@@ -628,15 +639,7 @@ export default function LessonPage({ demo = false }) {
             <Info size={18} aria-hidden="true" /> {resource.locationNote}
           </p>
         )}
-        {relatedFacts(content, resource).map((fact, i) => (
-          <p className="site-card-fact" key={i}>
-            <Lightbulb size={20} weight="duotone" aria-hidden="true" />
-            <span>
-              <b>هل تعلم؟ </b>
-              {fact}
-            </span>
-          </p>
-        ))}
+        <DidYouKnowReveal key={resource.id} facts={cardFacts(content, resource)} />
         {resource.locations?.length > (location ? 1 : 0) && (
           <section className="site-card-others" aria-label={`${location ? "مواقع أخرى" : "مواقع"} ${resource.label}`}>
             <h3>{location ? `مواقع أخرى لـ${resource.label}` : `أين نجد ${resource.label}؟ اختر موقعًا`}</h3>
@@ -690,7 +693,9 @@ export default function LessonPage({ demo = false }) {
         <button
           className="p-button site-card-quiz"
           onClick={() => {
-            setIndex(0);
+            // Open on the first question about this resource.
+            const quiz = questions.filter((q) => ["choice", "boolean"].includes(q.type) && !q.kind);
+            setIndex(Math.max(0, quiz.findIndex((q) => q.resourceId === resource.id)));
             openLearning("questions");
           }}
         >

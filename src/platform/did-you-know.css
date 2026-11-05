@@ -1,0 +1,126 @@
+/* «هل تعلم؟» reveal on a resource card (2026-11-05). */
+.dyk {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin: 4px 0;
+  font-family: Cairo, system-ui, sans-serif;
+  color: #0b2a5b;
+}
+.dyk-kid {
+  flex: 0 0 64px;
+  width: 64px;
+  height: 64px;
+  border: 3px solid #ffd34d;
+  border-radius: 50%;
+  background: #fff6d6;
+  object-fit: cover;
+}
+.dyk-ask,
+.dyk-bubble {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: #fff8e1;
+  border: 1.5px solid #f3d27a;
+}
+.dyk-bubble {
+  background: #ffffff;
+  box-shadow: 0 6px 16px rgb(11 47 87 / 0.12);
+  animation: dyk-pop 320ms ease-out;
+}
+/* The bubble's tail points at the kid (on the right in RTL). */
+.dyk-bubble::after {
+  content: "";
+  position: absolute;
+  right: -8px;
+  bottom: 16px;
+  width: 14px;
+  height: 14px;
+  border-right: 1.5px solid #f3d27a;
+  border-bottom: 1.5px solid #f3d27a;
+  background: #ffffff;
+  transform: rotate(-45deg);
+}
+.dyk p {
+  margin: 0;
+  color: #24405e;
+  font-weight: 700;
+  line-height: 1.7;
+}
+.dyk b {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #8a5a00;
+  font-weight: 900;
+}
+.dyk-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 2px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #ffc21a;
+  color: #3b2a00;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #d99a00;
+}
+.dyk-go:active {
+  translate: 0 2px;
+  box-shadow: 0 2px 0 #d99a00;
+}
+.dyk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.dyk-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 2px 12px;
+  border: 1.5px solid #c9dbee;
+  border-radius: 999px;
+  background: #eef5ff;
+  color: #0a4fb0;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.dyk button:focus-visible {
+  outline: 3px solid #0a62d6;
+  outline-offset: 2px;
+}
+@keyframes dyk-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dyk-bubble {
+    animation: none;
+  }
+}
+/* Inside the map's resource card, whose own rules are broader. */
+.map-shell .dyk p {
+  font-size: 16px;
+}
+.map-shell .dyk .dyk-go {
+  font-size: 16px;
+}
+.map-shell .dyk-actions button {
+  flex: 1 1 auto;
+  width: auto;
+}

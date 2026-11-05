@@ -15,7 +15,7 @@
 .dyk-kid {
   flex: 0 0 auto;
   align-self: flex-end;
-  width: clamp(92px, 30%, 128px);
+  width: clamp(112px, 36%, 156px);
   height: auto;
   margin-bottom: -2px;
 }
@@ -146,13 +146,17 @@
     padding: 10px 8px 0 8px;
   }
   .dyk-kid {
-    width: 84px;
+    width: 96px;
+  }
+  .dyk-main {
+    min-width: 0;
   }
   .map-shell .dyk .dyk-go,
   .dyk-go {
     min-height: 46px;
-    padding: 4px 14px;
-    font-size: 16px;
+    max-width: 100%;
+    padding: 4px 12px;
+    font-size: 15px;
   }
   .map-shell .dyk .dyk-ask,
   .dyk-ask {

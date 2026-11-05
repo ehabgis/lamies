@@ -1149,23 +1149,30 @@
     margin-bottom: 2px;
   }
 }
-/* Lesson 3 has thirteen projects: two columns of rows when the list is long. */
+/* Lesson 3 (thirteen projects): one narrow column, each symbol and its full
+   name on one row; the list scrolls inside the key instead of covering the map. */
 @media (min-width: 851px) {
-  .map-shell .classroom-legend.is-long {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr;
-    align-content: start;
-    column-gap: 4px;
-    width: 440px !important;
-    max-width: 440px !important;
+  .map-shell .studio-workspace > .classroom-legend.is-long {
+    bottom: auto !important;
+    max-height: min(calc(100% - 140px), 560px) !important;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
   }
-  .map-shell .classroom-legend.is-long > :not(button),
-  .map-shell .classroom-legend.is-long > .mobile-panel-close {
-    grid-column: 1 / -1;
-  }
-  .map-shell .classroom-legend.is-long > button:not(.mobile-panel-close) .key-radio {
-    display: none;
-  }
+}
+.map-shell .classroom-legend.is-long > button:not(.mobile-panel-close) > span {
+  white-space: normal;
+}
+.map-shell .classroom-legend.is-long > button:not(.mobile-panel-close) small {
+  display: none;
+}
+/* Lesson 2: the name only, beside its symbol, with tighter rows. */
+.map-shell .classroom-legend.is-names-only > button:not(.mobile-panel-close) small {
+  display: none;
+}
+.map-shell .classroom-legend.is-names-only > button:not(.mobile-panel-close) {
+  min-height: 40px !important;
+  padding-block: 0 !important;
 }
 /* The train key sits under the stacked tools (lesson 3). */
 @media (min-width: 851px) {
@@ -1174,5 +1181,56 @@
     right: 16px !important;
     left: auto !important;
     width: 240px;
+  }
+}
+/* Lesson 3 keeps one column at every width; the list scrolls inside. */
+.map-shell .studio-workspace > .classroom-legend.is-long,
+.map-shell .studio-workspace > .classroom-legend.is-long.mobile-open {
+  display: flex !important;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+@media (max-width: 1250px) {
+  .map-shell .studio-workspace > .classroom-legend.is-long,
+  .map-shell .studio-workspace > .classroom-legend.is-long.mobile-open {
+    width: min(300px, calc(100% - 20px)) !important;
+    right: auto !important;
+    max-height: calc(100% - 200px) !important;
+  }
+}
+@media (max-height: 500px) and (min-width: 650px) {
+  .map-shell .studio-workspace > .classroom-legend.is-long,
+  .map-shell .studio-workspace > .classroom-legend.is-long.mobile-open {
+    max-height: calc(100% - 90px) !important;
+  }
+}
+@media (max-height: 500px) and (min-width: 650px) {
+  .map-shell .studio-workspace > .classroom-legend.is-long,
+  .map-shell .studio-workspace > .classroom-legend.is-long.mobile-open {
+    top: 8px !important;
+    bottom: 76px !important;
+    max-height: none !important;
+  }
+}
+
+/* An open key sits above the map tools on small screens. */
+@media (max-width: 850px), (max-height: 500px) {
+  .map-shell .studio-workspace > .classroom-legend.mobile-open {
+    z-index: 1300 !important;
+  }
+}
+@media (max-width: 850px), (max-height: 500px) {
+  .map-shell .studio-workspace:not(.legend-hidden) .esri-map-toolbar {
+    display: none;
+  }
+}
+.map-shell .studio-workspace > .classroom-legend[hidden] {
+  display: none !important;
+}
+@media (min-width: 851px) {
+  .map-shell .studio-workspace > .classroom-legend.is-names-only {
+    bottom: auto !important;
+    padding-bottom: 10px;
   }
 }

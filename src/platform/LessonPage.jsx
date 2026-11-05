@@ -1002,7 +1002,7 @@ export default function LessonPage({ demo = false }) {
         <aside
           id="lesson-legend"
           hidden={!legendOpen}
-          className={`classroom-legend ${resources.length > 11 ? "is-long" : ""} ${pulse ? "legend-focus" : ""} ${legendOpen ? "mobile-open" : ""}`}
+          className={`classroom-legend ${resources.length > 11 ? "is-long" : ""} ${demo && id === "lesson-2" ? "is-names-only" : ""} ${pulse ? "legend-focus" : ""} ${legendOpen ? "mobile-open" : ""}`}
           aria-label="مفتاح الخريطة"
         >
           <button

@@ -765,3 +765,36 @@ button.ra-card:not(:disabled):hover {
 .activity-featured.count-3 {
   grid-template-columns: repeat(3, 1fr);
 }
+
+/* ---- Picker panel sized to its content (2026-11-05 review): while the list
+   of activities shows, the panel is narrower and only as tall as its cards,
+   with tighter padding; an open activity keeps the full size above. */
+.map-shell .studio-workspace > .learning-drawer.is-activities:has(.activity-picker) {
+  bottom: auto;
+  max-height: calc(100% - 80px);
+  overflow-y: auto;
+}
+.map-shell .learning-drawer.is-activities:has(.activity-picker) .learning-drawer-body {
+  flex: none;
+  padding: 10px 12px 12px;
+}
+.learning-drawer.is-activities .activity-picker.is-v2 {
+  gap: 8px;
+}
+.learning-drawer.is-activities .activity-picker.is-v2 > header {
+  padding-inline-end: 168px;
+}
+@media (min-width: 851px) {
+  .map-shell .studio-workspace > .learning-drawer.is-activities:has(.activity-picker) {
+    width: min(620px, calc(100% - 90px));
+  }
+}
+@media (max-width: 850px) {
+  .map-shell .studio-workspace > .learning-drawer.is-activities:has(.activity-picker) {
+    bottom: auto;
+    max-height: calc(100dvh - 136px);
+  }
+  .learning-drawer.is-activities .activity-picker.is-v2 > header {
+    padding-inline-end: 52px;
+  }
+}

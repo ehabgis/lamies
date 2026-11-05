@@ -1,0 +1,170 @@
+/* Choosing a governorate (2026-11-05 review): white borders, the chosen one
+   in yellow with one soft pulse and a very light fill, its name in a small
+   rounded label, and «عرض جميع المحافظات» to go back. */
+.governorate-line {
+  filter: drop-shadow(0 0 1.5px rgb(0 0 0 / 0.45));
+}
+.governorate-chosen {
+  filter: drop-shadow(0 0 4px rgb(255 210 31 / 0.85));
+  animation: governorate-pulse 900ms ease-out 1;
+}
+@keyframes governorate-pulse {
+  40% {
+    stroke-width: 7px;
+    stroke-opacity: 0.6;
+  }
+}
+.map-shell .governorate-tag {
+  position: absolute;
+  z-index: 1150;
+  top: 14px;
+  left: 50%;
+  translate: -50% 0;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  column-gap: 10px;
+  max-width: min(360px, calc(100% - 24px));
+  padding: 8px 10px 8px 16px;
+  border: 2px solid #ffd21f;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgb(11 47 87 / 0.22);
+  color: #13235b;
+  font-family: Cairo, system-ui, sans-serif;
+  text-align: center;
+  animation: governorate-tag-in 300ms ease-out;
+}
+.map-shell .governorate-tag strong {
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.3;
+}
+.map-shell .governorate-tag span {
+  grid-column: 1;
+  font-size: 13px;
+  font-weight: 700;
+  color: #36506b;
+}
+.map-shell .governorate-tag button {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1.5px solid #c9dbee;
+  border-radius: 50%;
+  background: #eef5ff;
+  color: #0a4fb0;
+  cursor: pointer;
+}
+@keyframes governorate-tag-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.map-shell .esri-governorates-picker .governorate-all {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 8px;
+  border: 1.5px solid #0a62d6;
+  border-radius: 12px;
+  background: #0a62d6;
+  color: #ffffff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.map-shell .esri-governorates-picker .governorate-all:disabled {
+  border-color: #c9dbee;
+  background: #f1f6fb;
+  color: #7890a6;
+  cursor: default;
+}
+@media (max-width: 850px) {
+  .map-shell .governorate-tag {
+    top: 60px;
+  }
+  .map-shell .governorate-tag strong {
+    font-size: 17px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .governorate-chosen,
+  .map-shell .governorate-tag {
+    animation: none;
+  }
+}
+/* Phones: the panel is a compact sheet above the bottom bar so the map stays
+   visible; the name label sits in the clear strip just above it. */
+@media (max-width: 850px) {
+  .map-shell .esri-governorates-picker {
+    top: auto;
+    bottom: 112px;
+    right: 8px;
+    left: 8px;
+    width: auto;
+    max-height: 46%;
+    padding: 6px 10px 8px;
+  }
+  .map-shell .esri-governorates-picker > header {
+    margin-bottom: 2px;
+    padding-bottom: 2px;
+  }
+  .map-shell .esri-governorates-picker .governorate-search-status,
+  .map-shell .esri-governorates-picker small {
+    display: none;
+  }
+  .map-shell .esri-governorates-picker .governorate-all {
+    margin-top: 4px;
+  }
+  /* The name moves into the sheet's top line so it never covers the map. */
+  .map-shell .governorate-tag {
+    display: none;
+  }
+  .map-shell .esri-governorates-picker:has(.governorate-tag-inline) > header > strong {
+    display: none;
+  }
+  .map-shell .governorate-tag-inline {
+    display: inline-flex;
+    flex: 1;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 4px 6px 4px 12px;
+    border: 2px solid #ffd21f;
+    border-radius: 14px;
+    color: #13235b;
+  }
+  .map-shell .governorate-tag-inline b {
+    flex: 1;
+    font-size: 17px;
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .map-shell .esri-governorates-picker .governorate-tag-inline button {
+    min-width: 40px;
+    min-height: 40px;
+    border-radius: 50%;
+    background: #eef5ff;
+    color: #0a4fb0;
+  }
+  .map-shell .esri-governorates-picker label {
+    font-size: 12px;
+  }
+  /* The side tools step aside while the sheet is open; it has its own close. */
+  .map-shell:has(.esri-governorates-picker) .esri-map-toolbar {
+    display: none;
+  }
+}
+@media (min-width: 851px) {
+  .governorate-tag-inline {
+    display: none;
+  }
+}

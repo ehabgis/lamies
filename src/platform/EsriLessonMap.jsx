@@ -16,10 +16,15 @@ import {
   CornersOut,
   ArrowCounterClockwise,
   Check,
+  SpeakerHigh,
 } from "phosphor-react";
 import { LessonSymbol, hasWaterSymbol, WATER_SYMBOLS } from "../components/Map/WaterSymbol";
 import { playWaterEffect, hasWaterEffect, EFFECT_VIEW } from "./waterEffects";
 import SelectField from "./SelectField";
+import * as narrator from "./narrator";
+import "./governorates.css";
+
+const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 import { prepareNileDraw } from "./nileDraw";
 import { BASEMAPS, EGYPT_BOUNDS, EGYPT_FIT, readBasemap } from "./mapBasemaps";
 const textNode = (text) => {
@@ -407,21 +412,27 @@ export default function EsriLessonMap({
   useEffect(() => {
     if (!ready || !governorates || !features) return;
     const map = mapRef.current;
+    // White borders for all; the chosen one turns yellow, pulses once (CSS)
+    // and gets a very light yellow fill. It is drawn last so it sits on top.
+    const chosen = (f) => f.id === selectedGovernorate;
     const boundaries = L.geoJSON(features, {
       style: (f) => ({
-        color: f.id === selectedGovernorate ? "#ffd45b" : "#f9fbff",
-        weight: f.id === selectedGovernorate ? 3 : 1,
-        fillColor: "#f4d777",
-        fillOpacity: f.id === selectedGovernorate ? 0.25 : 0.03,
+        color: chosen(f) ? "#ffd21f" : "#ffffff",
+        weight: chosen(f) ? 3.5 : 1.6,
+        opacity: chosen(f) ? 1 : 0.92,
+        fillColor: "#ffd21f",
+        fillOpacity: chosen(f) ? 0.14 : 0.02,
+        className: chosen(f) ? "governorate-chosen" : "governorate-line",
       }),
       onEachFeature: (feature, layer) => {
         layer.bindTooltip(textNode(feature.properties.name_ar), {
           direction: "center",
           className: "governorate-name",
         });
-        layer.on("click", () => setSelectedGovernorate(feature.id));
+        layer.on("click", () => chooseRef.current(feature.id));
       },
     }).addTo(map);
+    boundaries.eachLayer((l) => l.feature.id === selectedGovernorate && l.bringToFront());
     return () => map.removeLayer(boundaries);
   }, [ready, governorates, features, selectedGovernorate]);
   useEffect(() => {
@@ -673,20 +684,56 @@ export default function EsriLessonMap({
     document.addEventListener("keydown", escape);
     return () => document.removeEventListener("keydown", escape);
   }, [governorates]);
-  function chooseGovernorate(id) {
-    setSelectedGovernorate(id);
-    if (!id) {
-      mapRef.current.fitBounds(EGYPT_BOUNDS, { ...EGYPT_FIT, animate: false });
-      return;
-    }
-    const feature = features?.features.find((f) => f.id === id);
-    if (feature)
-      mapRef.current.fitBounds(L.geoJSON(feature).getBounds(), {
-        padding: [28, 28],
-        maxZoom: 8,
-        animate: false,
-      });
+  // Choosing a governorate: a short move that shows all of it beside the
+  // panel, its name in a label, and the teacher's line once per new choice.
+  const govName = (f) => `محافظة ${f.properties.name_ar.replace(/^محافظة\s*/, "")}`;
+  const govLine = (f) => `دي ${govName(f)}، لاحظ مكانها وحدودها على الخريطة`;
+  const spokenGov = useRef("");
+  function sideOfPicker() {
+    const panel = root.current?.querySelector(".esri-governorates-picker")?.getBoundingClientRect();
+    const box = host.current?.getBoundingClientRect();
+    if (!panel || !box) return { paddingTopLeft: [28, 28], paddingBottomRight: [28, 28] };
+    // A side panel takes the right edge; a bottom sheet (phones) the bottom.
+    return panel.width < box.width * 0.6
+      ? { paddingTopLeft: [28, 70], paddingBottomRight: [Math.max(28, box.right - panel.left + 20), 28] }
+      : { paddingTopLeft: [20, 70], paddingBottomRight: [20, Math.max(28, box.bottom - panel.top + 16)] };
   }
+  function showAllGovernorates() {
+    setSelectedGovernorate("");
+    spokenGov.current = "";
+    narrator.stop();
+    mapRef.current.flyToBounds(EGYPT_BOUNDS, { ...EGYPT_FIT, animate: !reducedMotion(), duration: 0.6 });
+  }
+  function chooseGovernorate(id) {
+    if (!id) return showAllGovernorates();
+    const feature = features?.features.find((f) => f.id === id);
+    if (!feature) return;
+    setSelectedGovernorate(id);
+    mapRef.current.stop();
+    mapRef.current.flyToBounds(L.geoJSON(feature).getBounds(), {
+      ...sideOfPicker(),
+      maxZoom: 8,
+      animate: !reducedMotion(),
+      duration: 0.8,
+    });
+    if (spokenGov.current !== id) {
+      spokenGov.current = id;
+      narrator.speak(govLine(feature));
+    }
+  }
+  const chooseRef = useRef(chooseGovernorate);
+  chooseRef.current = chooseGovernorate;
+  // The label sits just above the panel when it is a bottom sheet (phones).
+  useEffect(() => {
+    const panel = root.current?.querySelector(".esri-governorates-picker");
+    if (panel) root.current.style.setProperty("--gov-sheet", `${Math.round(panel.offsetHeight)}px`);
+  });
+  // Opening the panel starts from all of Egypt with every border in white.
+  useEffect(() => {
+    if (!governorates || !ready) return;
+    if (!selectedGovernorate)
+      mapRef.current.flyToBounds(EGYPT_BOUNDS, { ...EGYPT_FIT, animate: !reducedMotion(), duration: 0.6 });
+  }, [governorates, ready]);
   async function fullscreen() {
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
@@ -902,9 +949,29 @@ export default function EsriLessonMap({
           </p>
         </section>
       )}
+      {governorates && chosenGovernorate && (
+        <div className="governorate-tag" role="status" key={chosenGovernorate.id}>
+          <strong>{govName(chosenGovernorate)}</strong>
+          <span>لاحظ مكانها وحدودها على الخريطة</span>
+          <button
+            type="button"
+            aria-label={`أعد الاستماع: ${govName(chosenGovernorate)}`}
+            onClick={() => narrator.speak(govLine(chosenGovernorate))}
+          >
+            <SpeakerHigh size={18} aria-hidden="true" />
+          </button>
+        </div>
+      )}
       {governorates && (
         <div className="esri-governorates-picker" id="governorate-tools" role="region" aria-label="البحث واختيار المحافظة">
-          <header><strong>المحافظات</strong><button aria-label="إغلاق قائمة المحافظات" onClick={() => { setGovernorates(false); governorateButton.current?.focus({ preventScroll: true }); }}><X size={21} /></button></header>
+          <header><strong>المحافظات</strong>{chosenGovernorate && (
+            <span className="governorate-tag-inline" role="status">
+              <b>{govName(chosenGovernorate)}</b>
+              <button type="button" aria-label={`أعد الاستماع: ${govName(chosenGovernorate)}`} onClick={() => narrator.speak(govLine(chosenGovernorate))}>
+                <SpeakerHigh size={18} aria-hidden="true" />
+              </button>
+            </span>
+          )}<button aria-label="إغلاق قائمة المحافظات" onClick={() => { setGovernorates(false); governorateButton.current?.focus({ preventScroll: true }); }}><X size={21} /></button></header>
           <label className="governorate-search">
             ابحث عن محافظة
             <input ref={governorateSearchInput} type="search" value={governorateQuery} placeholder="اكتب اسم المحافظة…" disabled={!features} onChange={(e) => setGovernorateQuery(e.target.value)} aria-describedby="governorate-search-status" />
@@ -919,15 +986,14 @@ export default function EsriLessonMap({
             {!features ? "جارٍ تحميل المحافظات…" : governorateQuery ? filteredGovernorates.length ? `${filteredGovernorates.length} نتيجة للبحث · الاختيار الحالي محفوظ حتى تختار محافظة أخرى.` : "لا توجد نتائج. جرّب اسمًا آخر أو امسح البحث." : `${governorateOptions.length} محافظة · اختيار المحافظة يقرّب حدودها على الخريطة.`}
           </p>
           <small>حدود Natural Earth التعليمية المعمّمة.</small>
-          {selectedGovernorate && (
-            <span role="status">
-              المحافظة المختارة:{" "}
-              {
-                features?.features.find((f) => f.id === selectedGovernorate)
-                  ?.properties.name_ar
-              }
-            </span>
-          )}
+          <button
+            type="button"
+            className="governorate-all"
+            disabled={!selectedGovernorate}
+            onClick={showAllGovernorates}
+          >
+            عرض جميع المحافظات
+          </button>
           {dataError && <span role="status">{dataError}</span>}
         </div>
       )}

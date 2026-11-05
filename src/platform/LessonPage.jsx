@@ -1116,7 +1116,7 @@ export default function LessonPage({ demo = false }) {
             )}
             spotlight={montage ? spotlight : null}
             onReset={showAll}
-            onToolOpen={() => { setLegendOpen(false); setInfoOpen(false); setPanel(null); }}
+            onToolOpen={() => { setLegendOpen(false); setInfoOpen(false); setPanel(null); setHello(false); }}
             onSelect={(site) => {
               if (demo && id === "lesson-3" && [CAPITAL_ID, TOSHKA_ID, GALALA_ID].includes(site.resource.id)) return pick(site.resource);
               if (demo && id === "lesson-1" && site.resource.id === GOLD_ID) return pick(site.resource);

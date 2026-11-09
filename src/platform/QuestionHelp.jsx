@@ -66,7 +66,14 @@ export function useQuestionHelp({ q, lessonId, demo, enabled = true }) {
       if (r.level === "solution") mem.solution = r;
       else mem.cards.push({ ...r, trigger, asked: message || null });
     } catch (e) {
-      mem.cards.push({ level: "error", title: "المعلم الذكي", text: e.message || "تعذّر عرض الشرح الآن.", source: "prepared" });
+      // No connection at all: the question's own prepared hint keeps it going.
+      mem.cards.push({
+        level: "error",
+        title: "خلّينا نراجع المعلومة",
+        text: q.hint || "اقرأ السؤال مرة أخرى، وراجع بطاقة المورد على الخريطة.",
+        note: "تعذّر الاتصال بالمعلم الآن؛ هذا تلميح معدّ من الدرس.",
+        source: "prepared",
+      });
     } finally {
       busy.current = false;
       if (alive.current) {

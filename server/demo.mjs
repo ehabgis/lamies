@@ -2,12 +2,13 @@ import { mediaIndex, findMedia, IMAGE_EXT, VIDEO_EXT } from "./mediaFiles.mjs";
 import { legacyContent, legacyResourceMedia } from "./legacy-content.mjs";
 import { applyTextbook } from "./textbook-unit3.mjs";
 import { readFileSync } from "node:fs";
+import { isCorrect } from "./answerCheck.mjs";
 const seed = JSON.parse(
   readFileSync(new URL("./seed-content.json", import.meta.url), "utf8"),
 );
 export const DEMO_ID = "lesson-1";
 export const DEMO_IDS = ["lesson-1", "lesson-2", "lesson-3"];
-function fullContent(id) {
+export function fullContent(id) {
   return attachSiteMedia(applyTextbook(id, assembledContent(id)));
 }
 
@@ -138,21 +139,8 @@ export function gradedHint(q, attempt = 1, answer) {
 export function demoAnswer(questionId, answer, lessonId = DEMO_ID, attempt = 1) {
   const q = fullContent(lessonId)?.questions.find((q) => q.id === questionId);
   if (!q) return null;
-  const clean = (v) =>
-    q.type === "blank" && typeof v === "string"
-      ? v
-          .trim()
-          .replace(/\s+/g, " ")
-          .replace(/[أإآ]/g, "ا")
-          .replace(/ى/g, "ي")
-          .replace(/[\u064B-\u065F]/g, "")
-      : v;
   // A blank may list several accepted spellings (e.g. «النحاس» / «نحاس»).
-  const accepted =
-    q.type === "blank" && Array.isArray(q.answer) ? q.answer : [q.answer];
-  const correct = accepted.some(
-    (a) => canonical(clean(a)) === canonical(clean(answer)),
-  );
+  const correct = isCorrect(q, answer);
   return {
     demo: true,
     correct,

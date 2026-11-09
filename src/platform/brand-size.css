@@ -1,0 +1,133 @@
+/* «الخرائط التعليمية الذكية» is the largest text on every page (2026-11-09).
+   One size for the program's name everywhere, and page titles stay just
+   below it. Big counters (stars) and emoji icons are pictures, not titles. */
+:root {
+  --brand-size: 36px;
+  --page-title-max: 30px;
+}
+@media (max-width: 850px) {
+  :root {
+    --brand-size: 24px;
+    --page-title-max: 21px;
+  }
+}
+
+/* The program's name in each page header. */
+.entry-experience .entry-platform-brand > div,
+.platform-header .platform-brand > div,
+.map-header-v2 .map-brand-text strong,
+.bk-top .bk-brand span,
+.exp-top .exp-brand span,
+.pr-top .pr-brand,
+.entry-brand h1 {
+  display: inline !important;
+  font-size: var(--brand-size) !important;
+  font-weight: 900 !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+}
+/* The start page keeps its larger welcome name. */
+@media (min-width: 851px) {
+  .entry-experience .entry-platform-brand > div {
+    font-size: max(var(--brand-size), clamp(28px, 3vw, 40px)) !important;
+  }
+}
+
+/* Page titles: never as large as the name. */
+.platform-signin h1,
+.journey-shell h1,
+.bk-page .bk-title,
+.exp-card-head h1,
+.wq-talk-body h1,
+.bm-head h1,
+.tm-start-card h1,
+.trips h1,
+.ach-hero-title h1,
+.ach-card h2,
+.pr-sheet h1,
+.entry-panel h2 {
+  font-size: min(var(--page-title-max), 100%) !important;
+}
+.platform-signin h1,
+.journey-shell h1,
+.bk-page .bk-title,
+.exp-card-head h1,
+.wq-talk-body h1,
+.bm-head h1,
+.tm-start-card h1,
+.trips h1,
+.ach-hero-title h1,
+.pr-sheet h1,
+.entry-panel h2 {
+  font-size: var(--page-title-max) !important;
+}
+.ach-card h2 {
+  font-size: calc(var(--page-title-max) - 2px) !important;
+}
+.entry-panel h2 .entry-title-dot {
+  font-size: inherit !important;
+}
+
+/* Phones: the name gets its own full line in headers that are too narrow
+   for it beside the other controls. */
+@media (max-width: 850px) {
+  .map-header-v2 .map-brand-text strong,
+  .bk-top .bk-brand span,
+  .exp-top .exp-brand span,
+  .pr-top .pr-brand,
+  .platform-header .platform-brand > div {
+    overflow: visible;
+    text-overflow: clip;
+  }
+}
+.pq-stage h1 {
+  font-size: var(--page-title-max) !important;
+}
+/* The word under the star count is a label, smaller than the name. */
+.ach-stars-box p > span > span {
+  font-size: calc(var(--page-title-max) - 2px) !important;
+}
+
+/* Narrow screens: the header wraps — the name has the first row to itself,
+   the other buttons go to the row below — so nothing is cut or scrolls. */
+@media (max-width: 600px) {
+  .bk-top,
+  .exp-top,
+  .pr-top,
+  .map-shell .studio-titlebar.map-header-v2 {
+    flex-wrap: wrap !important;
+    row-gap: 6px !important;
+  }
+  .bk-top .bk-brand,
+  .exp-top .exp-brand,
+  .pr-top .pr-brand,
+  .map-header-v2 .map-brand {
+    flex: 1 0 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .map-header-v2 .map-brand-text,
+  .map-header-v2 .map-brand-text strong {
+    max-width: none !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+  .map-header-v2 .map-brand-text small {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .exp-top {
+    grid-template-columns: 1fr !important;
+    row-gap: 6px;
+  }
+  .exp-top .exp-top-tools {
+    justify-self: stretch;
+    justify-content: flex-end;
+  }
+  .exp-top .exp-brand img,
+  .exp-top .exp-brand svg {
+    width: 34px;
+    height: 34px;
+  }
+}

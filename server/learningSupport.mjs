@@ -115,7 +115,13 @@ export function createLearningSupport({ db, aiKey, aiModel, fetchImpl }) {
       return out;
     }
     if (prepared?.compare && level === "explain") out.compare = prepared.compare;
-    const fallback = preparedText(content, q, level, prepared);
+    let fallback = preparedText(content, q, level, prepared, s.tried);
+    // Without the online teacher, «اشرح لي أكثر» must not repeat a shown text.
+    const seenTexts = new Set((Array.isArray(shown) ? shown : []).map((t) => String(t).trim()));
+    if (seenTexts.has(fallback.trim()))
+      fallback = prepared && !seenTexts.has(prepared.explain.trim())
+        ? prepared.explain
+        : "هذا كل الشرح المعدّ لهذا السؤال. راجع بطاقة المورد على الخريطة، ثم جرّب مرة أخرى، ويمكنك سؤال معلمك في الفصل.";
     out.text = fallback;
     out.canAsk = Boolean(aiKey);
     if (!aiKey || consent !== true) return out;
@@ -217,7 +223,7 @@ export function revealsAnswer(q, text) {
   const t = normalizeText(text);
   return answerTexts(q).some((a) => t.includes(normalizeText(a)) || t.includes(normalizeText(a).replace(/^ال/, "")));
 }
-function preparedText(content, q, level, prepared) {
+function preparedText(content, q, level, prepared, tried = new Set()) {
   if (prepared) return level === "review" ? prepared.review : prepared.explain;
   const resource = (content.resources || []).find((r) => r.id === q.resourceId);
   const concept = conceptFor(content, q);
@@ -234,8 +240,9 @@ function preparedText(content, q, level, prepared) {
   // With more than two choices, one wrong choice may be set aside.
   const opts = (q.options || []).map((o) => (typeof o === "object" ? { id: o.id, label: o.label || o.name } : { id: o, label: String(o) }));
   if (["choice", "map"].includes(q.type) && opts.length > 2) {
-    const wrong = opts.find((o) => o.id !== q.answer);
-    if (wrong) lines.push(`«${wrong.label}» ليست الإجابة الصحيحة؛ فكّر في الاختيارات الباقية.`);
+    // Set aside a wrong choice the child has not tried yet.
+    const wrong = opts.find((o) => o.id !== q.answer && !tried.has(answerKey(q, o.id)));
+    if (wrong && opts.length - tried.size > 2) lines.push(`«${wrong.label}» ليست الإجابة الصحيحة أيضًا؛ فكّر في الاختيارات الباقية.`);
   }
   lines.push("قارن كل اختيار بالمعلومة السابقة، ثم اختر الأنسب.");
   return [...new Set(lines.filter(Boolean))].slice(0, 4).join(" ");

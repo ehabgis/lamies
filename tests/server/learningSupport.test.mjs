@@ -181,3 +181,17 @@ test("the model writes the text only with consent; a failure falls back to the p
     s3.close();
   }
 });
+
+test("the prepared explanation sets aside a choice the child has not tried", async () => {
+  const { call, close } = await start({ aiKey: "" });
+  try {
+    const q = fullContent("lesson-1").questions.find((x) => x.type === "choice" && !x.kind && x.options.length >= 4);
+    const wrongs = q.options.filter((o) => o !== q.answer);
+    await call(`${L1}/answers`, { questionId: q.id, answer: wrongs[0] }, "tab-aside001");
+    await call(`${L1}/answers`, { questionId: q.id, answer: wrongs[1] }, "tab-aside001");
+    const r = await call(`${L1}/help`, { questionId: q.id, level: "explain" }, "tab-aside001");
+    assert(!r.data.text.includes(`«${wrongs[0]}»`) && !r.data.text.includes(`«${wrongs[1]}»`), r.data.text);
+  } finally {
+    close();
+  }
+});

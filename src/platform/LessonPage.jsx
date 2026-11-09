@@ -1200,8 +1200,9 @@ export default function LessonPage({ demo = false }) {
             <MapTeacher
               name={(user?.name || loadGuest().name || "مستكشف").trim().split(/\s+/)[0]}
               lessonId={id}
-              lessonTitle={content.title}
-              demo={demo}
+              lessonTitle={lesson.title}
+              demo={demo || preview}
+              reviewReady={content.reviewRequired === false && Boolean(content.sources?.some((s) => s.approved && s.text))}
               resources={resources}
               resource={resource}
               location={location}
@@ -1445,7 +1446,7 @@ export default function LessonPage({ demo = false }) {
             {modal === "ai" ? (
               <AIAssistant
                 demo={demo || preview}
-                reviewReady={Boolean(content.sources?.some((s) => s.approved))}
+                reviewReady={content.reviewRequired === false && Boolean(content.sources?.some((s) => s.approved && s.text))}
                 assessment={assessment}
                 lessonTitle={lesson.title}
                 lessonId={id}

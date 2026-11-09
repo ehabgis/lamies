@@ -16,6 +16,10 @@
   color: #0b2a5b;
   overflow: hidden;
 }
+/* Keep the question form clickable when the map fallback alert overlaps it. */
+.map-shell .mt-panel:has(.mt-ask):not(.is-tucked) {
+  z-index: 1851;
+}
 .mt-panel > header {
   display: flex;
   align-items: center;

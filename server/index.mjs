@@ -3,7 +3,9 @@ import { waterQuestPublic, checkWaterQuest } from "./waterQuest.mjs";
 import { projectQuestPublic, checkProjectQuest } from "./projectQuest.mjs";
 import { traceMapPublic, checkTraceMap } from "./traceMap.mjs";
 import { buildMapPublic, checkBuildMap } from "./buildMap.mjs";
-import { DEMO_IDS, demoLesson, demoAnswer, demoCatalog, gradedHint } from "./demo.mjs";
+import { DEMO_IDS, demoLesson, demoAnswer, demoCatalog, gradedHint, fullContent } from "./demo.mjs";
+import { createLearningSupport } from "./learningSupport.mjs";
+import { isCorrect } from "./answerCheck.mjs";
 import { forStudents } from "./studentText.mjs";
 import http from "node:http";
 import {
@@ -79,6 +81,7 @@ export function createApp({
   });
   const db = database(dbPath);
   migrateProgress(db);
+  const learning = createLearningSupport({ db, aiKey, aiModel, fetchImpl });
   mkdirSync(uploadDir, { recursive: true });
   const limits = new Map();
   function visible(node) {
@@ -415,6 +418,8 @@ export function createApp({
           "/api/auth/login",
           "/api/auth/register",
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/answers`),
+          ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/help`),
+          ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/apply`),
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/expedition/check`),
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/build-map/check`),
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/trace/check`),
@@ -520,8 +525,28 @@ export function createApp({
         fail(405, "العملية غير متاحة");
       }
       const demoMatch = path.match(
-        /^\/api\/demo\/lessons\/([^/]+)(?:\/(answers))?$/,
+        /^\/api\/demo\/lessons\/([^/]+)(?:\/(answers|help|apply))?$/,
       );
+      // Who the help counters belong to: the account, or this browser tab.
+      const helpActor = () => {
+        const tab = String(req.headers["x-help-session"] || "");
+        return user ? `u:${user.id}` : /^[a-z0-9-]{8,64}$/i.test(tab) ? `v:${tab}` : `ip:${req.socket.remoteAddress}`;
+      };
+      const supportRoute = async (kind, lessonId, content) => {
+        const b = await body(req);
+        const q = (content.questions || []).find((x) => x.id === b.questionId);
+        if (!q) fail(400, "السؤال غير موجود");
+        if (kind === "help") {
+          rate(`help:${helpActor()}`, 30);
+          if (b.message !== undefined && (typeof b.message !== "string" || b.message.length > 500)) fail(400, "الاستفسار طويل");
+          const r = await learning.help({ actor: helpActor(), user, lessonId, content, q, level: b.level, trigger: b.trigger === "asked" ? "asked" : "auto", answer: b.answer, message: b.message, consent: b.consent === true, shown: b.shown });
+          if (r.error) fail(r.error, r.message);
+          return send(r);
+        }
+        const r = learning.checkApply({ actor: helpActor(), user, lessonId, q, answer: b.answer });
+        if (r.error) fail(r.error, r.message);
+        return send(r);
+      };
       if (demoMatch) {
         if (!DEMO_IDS.includes(demoMatch[1])) fail(404, "التجربة غير موجودة");
         if (method === "GET" && !demoMatch[2])
@@ -535,10 +560,18 @@ export function createApp({
           const b = await body(req);
           if (b.answer === undefined || JSON.stringify(b.answer).length > 20000)
             fail(400, "الإجابة غير صالحة");
-          const result = demoAnswer(b.questionId, b.answer, demoMatch[1], b.attempt);
-          if (!result) fail(400, "السؤال غير موجود");
-          logEvent(db, user, demoMatch[1], questionKind(demoMatch[1], b.questionId), b.questionId, result.correct);
-          return send(result);
+          const q = fullContent(demoMatch[1])?.questions.find((x) => x.id === b.questionId);
+          if (!q) fail(400, "السؤال غير موجود");
+          const check = learning.check({ actor: helpActor(), user, lessonId: demoMatch[1], q, answer: b.answer });
+          if (check.empty) return send({ demo: true, empty: true, correct: false, questionId: q.id, ...check });
+          const result = demoAnswer(b.questionId, b.answer, demoMatch[1], Math.max(1, check.wrong));
+          // After the answer was shown, the original question is completed, not credited.
+          if (check.counted) logEvent(db, user, demoMatch[1], questionKind(demoMatch[1], b.questionId), b.questionId, check.credit);
+          return send({ ...result, ...check, explanation: check.correct ? result.explanation : "" });
+        }
+        if (method === "POST" && ["help", "apply"].includes(demoMatch[2])) {
+          rate(`demo:${req.socket.remoteAddress}`, 90);
+          return await supportRoute(demoMatch[2], demoMatch[1], fullContent(demoMatch[1]));
         }
         fail(405, "العملية غير متاحة في التجربة");
       }
@@ -944,7 +977,7 @@ export function createApp({
         return send(progressFor(user.id));
       }
       const lm = path.match(
-        /^\/api\/lessons\/([^/]+)(?:\/(answers|complete|state))?$/,
+        /^\/api\/lessons\/([^/]+)(?:\/(answers|complete|state|help|apply))?$/,
       );
       if (lm) {
         auth();
@@ -1036,32 +1069,24 @@ export function createApp({
           if (!q) fail(400, "السؤال غير موجود");
           if (b.answer === undefined || JSON.stringify(b.answer).length > 20000)
             fail(400, "الإجابة غير صالحة");
-          const clean = (v) =>
-            q.type === "blank" && typeof v === "string"
-              ? v
-                  .trim()
-                  .replace(/\s+/g, " ")
-                  .replace(/[أإآ]/g, "ا")
-                  .replace(/ى/g, "ي")
-                  .replace(/[\u064B-\u065F]/g, "")
-              : v;
-          const accepted =
-            q.type === "blank" && Array.isArray(q.answer) ? q.answer : [q.answer];
-          const correct = accepted.some(
-            (a) => canonical(clean(a)) === canonical(clean(b.answer)),
-          );
+          const check = learning.check({ actor: helpActor(), user, lessonId: n.id, q, answer: b.answer });
+          if (check.empty) return send({ empty: true, correct: false, questionId: q.id, ...check });
+          // A repeated answer is not another attempt; a shown answer earns no credit.
+          if (!check.counted) return send({ ...check, questionId: q.id, hint: check.correct ? null : gradedHint(q, Math.max(1, check.wrong), b.answer), explanation: check.correct ? q.explanation || "" : "" });
+          const correct = check.credit;
           db.prepare(
             "INSERT INTO answers(user_id,lesson_id,question_id,correct) VALUES(?,?,?,?) ON CONFLICT(user_id,lesson_id,question_id) DO UPDATE SET correct=MAX(answers.correct,excluded.correct),attempts=answers.attempts+1",
           ).run(user.id, n.id, q.id, +correct);
           // The classroom lesson with the same id feeds the parent report too.
           logEvent(db, user, n.id, ["choice", "boolean"].includes(q.type) && !q.kind ? "question" : "activity", q.id, correct);
           return send({
-            correct,
-            hint: correct ? null : gradedHint(q, b.attempt, b.answer),
-            explanation: correct ? q.explanation || "" : "",
+            ...check,
+            hint: check.correct ? null : gradedHint(q, Math.max(1, check.wrong), b.answer),
+            explanation: check.correct ? q.explanation || "" : "",
             questionId: q.id,
           });
         }
+        if (method === "POST" && ["help", "apply"].includes(lm[2])) return await supportRoute(lm[2], n.id, lesson.content);
         if (method === "POST" && lm[2] === "complete") {
           if (!qs.length) fail(400, "الدرس لا يحتوي على تقييم معتمد");
           const solved = db
@@ -1275,3 +1300,4 @@ if (
   import.meta.url === pathToFileURL(resolve(process.argv[1])).href
 )
   startServer();
+

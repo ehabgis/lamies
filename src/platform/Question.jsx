@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { ArrowUp, ArrowDown, Star, Lightbulb, Check, X, ArrowLeft, ArrowCounterClockwise, CheckCircle } from "phosphor-react";
+import { useRef } from "react";
+import { ArrowUp, ArrowDown, Star, Lightbulb, Check, X, ArrowLeft, ArrowCounterClockwise, CheckCircle, XCircle } from "phosphor-react";
+import { useQuestionHelp, HelpCard, helpHeaders } from "./QuestionHelp";
 import { ClassifyActivity, MatchActivity, OrderActivity } from "./ActivityKinds";
 
 const LETTERS = ["أ", "ب", "ج", "د", "هـ", "و"];
@@ -20,15 +22,20 @@ export default function Question({
   resources,
 }) {
   const [showHint, setShowHint] = useState(false);
-  const [attempts, setAttempts] = useState(0);
+  // Graded help: counts, levels and the card live per question for the visit.
+  const help = useQuestionHelp({ q, lessonId, demo, enabled: !preview });
+  const mem = help.mem;
+  const field = useRef(null);
+  const focusAnswer = () =>
+    requestAnimationFrame(() => (field.current || document.querySelector(`[data-question="${q.id}"] [role=radio], [data-question="${q.id}"] button`))?.focus());
   const initial = () =>
     q.type === "order"
       ? [...(q.options || [])].reverse()
       : ["match", "drag", "image-match"].includes(q.type)
         ? {}
         : "";
-  const [answer, setAnswer] = useState(initial),
-    [feedback, setFeedback] = useState(null),
+  const [answer, setAnswerState] = useState(() => mem.answer ?? initial()),
+    [feedback, setFeedbackState] = useState(() => mem.feedback),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const pairItems = ["match", "image-match"].includes(q.type)
@@ -38,6 +45,14 @@ export default function Question({
       : [];
   const missing = pairItems.filter((k) => !answer[k]).length;
   const [incomplete, setIncomplete] = useState(false);
+  const setAnswer = (a) => {
+    mem.answer = a;
+    setAnswerState(a);
+  };
+  const setFeedback = (f) => {
+    mem.feedback = f;
+    setFeedbackState(f);
+  };
   const choose = (key, choice) => {
     setAnswer({ ...answer, [key]: choice });
     setFeedback(null);
@@ -46,10 +61,13 @@ export default function Question({
   async function submit(e) {
     e.preventDefault();
     // Unfinished answers get a friendly nudge instead of a wasted server attempt.
-    if (missing) {
+    if (missing || (q.type === "blank" && !String(answer).trim())) {
       setIncomplete(true);
       return;
     }
+    // The same answer again is not a new try: keep what is shown.
+    const key = JSON.stringify(typeof answer === "string" ? answer.trim() : answer);
+    if (feedback && !feedback.correct && key === mem.lastKey) return;
     setBusy(true);
     setError("");
     try {
@@ -66,20 +84,46 @@ export default function Question({
         `${demo ? "/demo" : ""}/lessons/${lessonId}/answers`,
         {
           method: "POST",
-          body: { questionId: q.id, answer, attempt: attempts + 1 },
+          headers: helpHeaders(),
+          body: { questionId: q.id, answer, attempt: (mem.wrong || 0) + 1 },
         },
       );
-      if (!result.correct) setAttempts(attempts + 1);
-      setFeedback({ ...result, attempt: attempts + 1 });
+      if (result.empty) {
+        setIncomplete(true);
+        return;
+      }
+      mem.wrong = result.wrong ?? mem.wrong;
+      mem.lastKey = key;
+      setFeedback({ ...result, attempt: result.wrong });
       play(result.correct ? "correct" : "wrong");
-      if (result.correct) onSolved(q.id);
+      // A question finished after its answer was shown is not credited.
+      if (result.correct && result.credit !== false) onSolved(q.id);
+      // The rules on the server say when help opens by itself, once per level.
+      if (!result.correct && result.due) help.ask({ level: result.due, trigger: "auto", answer });
     } catch (e) {
       setError(e.message);
     } finally {
       setBusy(false);
     }
   }
-  const done = solved || feedback?.correct;
+  const done = solved || feedback?.correct || Boolean(mem.solution);
+  const helpCard = (
+    <HelpCard
+      help={help}
+      q={q}
+      answer={answer}
+      resources={resources}
+      onRetry={() => {
+        help.close();
+        focusAnswer();
+      }}
+      onMore={() => {
+        const shownExplain = mem.cards.some((c) => c.level === "explain");
+        help.ask({ level: q.type === "blank" && !shownExplain ? "explain" : "more", trigger: "asked", answer });
+      }}
+    />
+  );
+  const askHelp = () => help.ask({ trigger: "asked", answer });
   const [placement, setPlacement] = useState(null);
   function move(i, delta) {
     const next = [...answer];
@@ -123,10 +167,11 @@ export default function Question({
         onNext={onNext}
         submit={submit}
         resources={resources}
+        helpCard={helpCard}
       />
     );
   return (
-    <form className="p-question" onSubmit={submit}>
+    <form className="p-question" onSubmit={submit} data-question={q.id}>
       <h3>{q.prompt}</h3>
       {showHint && (
         <p className="p-feedback" role="status">
@@ -270,9 +315,13 @@ export default function Question({
         <label>
           أكمل الإجابة
           <input
+            ref={field}
             aria-label="إجابتك"
             value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
+            onChange={(e) => {
+              setAnswer(e.target.value);
+              setIncomplete(false);
+            }}
             maxLength={200}
             disabled={done || busy}
           />
@@ -404,6 +453,11 @@ export default function Question({
           اختر اسم الموقع من الخيارات؛ الأسماء بديل ميسّر عن النقر على العلامات.
         </p>
       )}
+      {incomplete && q.type === "blank" && (
+        <p className="p-feedback" role="status">
+          اكتب إجابتك في الفراغ أولًا، ثم اضغط «تحقق من إجابتي».
+        </p>
+      )}
       {incomplete && missing > 0 && (
         <p className="p-feedback" role="status">
           لم تختر إجابة بعد لـ <bdi>{missing}</bdi> من <bdi>{pairItems.length}</bdi>. أكمل الاختيار ثم اضغط «تحقق من إجابتي».
@@ -422,7 +476,8 @@ export default function Question({
           {feedback.correct ? (
             <>
               <Star weight="fill" />
-              أحسنت! {feedback.explanation}
+              {feedback.credit === false ? "أكملت السؤال بعد عرض الإجابة. " : "أحسنت! "}
+              {feedback.explanation}
               {onNext && (
                 <button type="button" className="p-button feedback-next" onClick={onNext}>
                   التالي
@@ -430,11 +485,25 @@ export default function Question({
                 </button>
               )}
             </>
+          ) : q.type === "blank" ? (
+            <span className="qh-wrong">
+              <XCircle size={22} weight="fill" aria-hidden="true" /> حاول مرة أخرى
+              {feedback.counted === false && <small> — جرّبت هذه الإجابة من قبل</small>}
+            </span>
+          ) : feedback.counted === false ? (
+            <>
+              <Lightbulb size={20} aria-hidden="true" />
+              جرّبت هذه الإجابة من قبل؛ اختر إجابة أخرى.
+            </>
+          ) : feedback.attempt <= 1 ? (
+            <>
+              <Lightbulb size={20} aria-hidden="true" />
+              إجابتك غير صحيحة. راجع المعلومة، وفكّر مرة أخرى قبل أن تختار.
+            </>
           ) : (
             <>
               <Lightbulb size={20} aria-hidden="true" />
-              {feedback.attempt > 1 ? `تلميح ${Math.min(feedback.attempt, 3)} من 3: ` : "ليست هذه الإجابة، حاول مرة أخرى. "}
-              {feedback.hint}
+              ليست هذه الإجابة. {feedback.hint}
             </>
           )}
         </div>
@@ -446,17 +515,25 @@ export default function Question({
       )}
       <div className="p-actions">
         <button className="p-button" disabled={done || busy || answer === ""}>
-          {busy ? "جارٍ التحقق…" : done ? "إجابة متقنة ✓" : "تحقق من إجابتي"}
+          {busy ? "جارٍ التحقق…" : mem.solution && !solved ? "أُكمل بعد عرض الإجابة" : done ? "إجابة متقنة ✓" : "تحقق من إجابتي"}
         </button>
         <button
           type="button"
           className="p-secondary"
-          onClick={() => (demo ? setShowHint(true) : onHelp(q, answer))}
+          disabled={preview || help.loading || Boolean(mem.solution)}
+          onClick={askHelp}
         >
           <Lightbulb size={20} />
-          ساعدني
+          {help.loading ? "المعلم يجهز لك الشرح…" : "ساعدني"}
         </button>
+        {mem.solution && onNext && (
+          <button type="button" className="p-button" onClick={onNext}>
+            التالي <ArrowLeft aria-hidden="true" />
+          </button>
+        )}
       </div>
+      {/* Below the buttons: «تحقق» and «ساعدني» stay right under the answer. */}
+      {helpCard}
     </form>
   );
 }
@@ -489,7 +566,7 @@ const RICH = {
   },
 };
 
-function RichActivity({ q, kind, answer, setAnswer, reset, move, missing, total, done, solved, busy, error, feedback, showHint, toggleHint, onNext, submit, resources }) {
+function RichActivity({ q, kind, answer, setAnswer, reset, move, missing, total, done, solved, busy, error, feedback, showHint, toggleHint, onNext, submit, resources, helpCard }) {
   const complete = q.type === "order" || !missing;
   const locked = done || busy;
   const Body = { drag: ClassifyActivity, match: MatchActivity, order: OrderActivity }[q.type];
@@ -540,6 +617,7 @@ function RichActivity({ q, kind, answer, setAnswer, reset, move, missing, total,
           </p>
         ) : null}
       </div>
+      {helpCard}
       <footer className="ra-actions">
         <button className="p-button ra-check" disabled={locked || !complete}>
           {!busy && !done && <CheckCircle size={22} weight="fill" aria-hidden="true" />}

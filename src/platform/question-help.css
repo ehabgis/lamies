@@ -1,0 +1,252 @@
+/* Help card inside a question (2026-11-09): sits between the answer and the
+   buttons, so the question, the answer field and «تحقق» stay in view. */
+.qh-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 10px 0;
+  padding: 12px 14px;
+  border: 1.5px solid #bcd6f4;
+  border-radius: 18px;
+  background: linear-gradient(170deg, #f1f7ff, #e3effd);
+  color: #13235b;
+  font-family: Cairo, system-ui, sans-serif;
+  animation: qh-in 260ms ease-out;
+}
+.qh-card.is-solution {
+  border-color: #9fd8b5;
+  background: linear-gradient(170deg, #f1fbf5, #e3f6ea);
+}
+.qh-robot {
+  flex: 0 0 54px;
+  width: 54px;
+}
+.qh-robot svg {
+  width: 100%;
+  height: auto;
+}
+.qh-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.qh-body h4 {
+  margin: 0;
+  color: #0b3a8c;
+  font-size: 19px;
+  font-weight: 900;
+}
+.qh-body h4 b {
+  color: #b5541a;
+}
+.qh-body p {
+  margin: 0;
+  color: #1d3550;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.75;
+}
+.qh-entry + .qh-entry {
+  padding-top: 8px;
+  border-top: 1px dashed #bcd6f4;
+}
+.qh-asked {
+  color: #4a6178 !important;
+  font-size: 14px !important;
+}
+.qh-note {
+  color: #6b4a00;
+  font-size: 13px;
+}
+.qh-loading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #0a4fb0 !important;
+}
+.qh-loading svg {
+  animation: qh-spin 1.2s linear infinite;
+}
+.qh-compare {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.qh-compare li {
+  display: flex;
+  flex: 1 1 120px;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 6px;
+  border-radius: 14px;
+  background: #ffffff;
+  text-align: center;
+}
+.qh-compare li.is-unknown {
+  border: 2px dashed #f0b429;
+  background: #fffbea;
+}
+.qh-symbol {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 52px;
+  color: #b5541a;
+  font-size: 30px;
+  font-weight: 900;
+}
+.qh-symbol svg,
+.qh-symbol img {
+  width: 100%;
+  height: 100%;
+}
+.qh-compare small {
+  color: #13235b;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+.qh-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.qh-actions button {
+  display: inline-flex;
+  flex: 1 1 140px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  margin: 0;
+}
+.qh-ask {
+  display: flex;
+  gap: 6px;
+}
+.qh-ask input {
+  flex: 1;
+  min-width: 0;
+  min-height: 42px;
+  padding: 4px 12px;
+  border: 1.5px solid #bcd6f4;
+  border-radius: 12px;
+  font: inherit;
+}
+.qh-ask button {
+  min-width: 46px;
+  min-height: 42px;
+  margin: 0;
+}
+.qh-consent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #36506b;
+  font-size: 14px;
+  font-weight: 700;
+}
+.qh-consent input {
+  width: 20px;
+  height: 20px;
+}
+.qh-badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: #d7f2e0;
+  color: #11703a;
+  font-size: 13px;
+  font-weight: 900;
+}
+.qh-apply {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 14px;
+  background: #ffffff;
+}
+.qh-apply label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #13235b;
+  font-weight: 900;
+}
+.qh-apply input {
+  min-height: 44px;
+  padding: 4px 12px;
+  border: 1.5px solid #bcd6f4;
+  border-radius: 12px;
+  font: inherit;
+}
+.qh-apply .p-button {
+  justify-self: center;
+  min-width: 180px;
+  margin: 0;
+}
+/* The wrong-answer pill under a blank (as in the reference). */
+.qh-wrong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #b42318;
+  font-weight: 900;
+}
+.qh-wrong small {
+  color: #6b4a00;
+  font-weight: 700;
+}
+@media (max-width: 600px) {
+  .qh-card {
+    padding: 10px;
+  }
+  .qh-robot {
+    flex-basis: 40px;
+    width: 40px;
+  }
+  .qh-body p {
+    font-size: 15px;
+  }
+}
+@keyframes qh-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes qh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qh-card,
+  .qh-loading svg {
+    animation: none;
+  }
+}
+.qh-earlier {
+  color: #4a6178;
+  font-size: 14px;
+}
+.qh-earlier summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: #0a4fb0;
+}
+.qh-earlier p {
+  margin-top: 4px !important;
+  font-size: 14px !important;
+  color: #4a6178 !important;
+}

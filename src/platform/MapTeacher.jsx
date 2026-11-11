@@ -57,8 +57,12 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, reviewRe
   const closeRef = useRef(null);
   const end = useRef(null);
   const say = (text) => setSaid((s) => [...s, text]);
-  useEffect(() => closeRef.current?.focus({ preventScroll: true }), []);
-  useEffect(() => end.current?.scrollIntoView({ block: "nearest" }), [said.length, view]);
+  useEffect(() => {
+    closeRef.current?.focus({ preventScroll: true });
+  }, []);
+  useEffect(() => {
+    end.current?.scrollIntoView({ block: "nearest" });
+  }, [said.length, view]);
   useEffect(() => () => onMeasure(null), []);
 
   const explain = (r) =>

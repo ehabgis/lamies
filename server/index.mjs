@@ -607,8 +607,11 @@ export function createApp({
         }
         fail(405, "العملية غير متاحة في التجربة");
       }
-      if (path === "/api/health" && method === "GET")
-        return send({ ok: true, database: true, aiConfigured: aiAllowed(user) });
+      // Whether «المعلم الذكي» may use the model for this viewer, so the map
+      // teacher can ask for consent before the first question. /api/health
+      // stays the plain Render health check above.
+      if (path === "/api/ai/chat-status" && method === "GET")
+        return send({ canAsk: aiAllowed(user) });
       if (path === "/api/ai/status" && method === "GET")
         return send({
           configured: tutor.configured,

@@ -68,7 +68,7 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, reviewRe
   useEffect(() => setChat(chatFor(lessonId)), [lessonId]);
   useEffect(() => {
     let on = true;
-    api("/health").then((h) => on && setCanAsk(Boolean(h.aiConfigured))).catch(() => {});
+    api("/ai/chat-status").then((s) => on && setCanAsk(Boolean(s.canAsk))).catch(() => {});
     return () => {
       on = false;
     };

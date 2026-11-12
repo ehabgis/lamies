@@ -239,6 +239,9 @@ const LESSON_2 = {
       label: "المياه الجوفية",
       description: "مياه توجد في باطن الأرض؛ منها العذب ومنها المالح. تعتمد عليها الحياة في الواحات المصرية.",
       importance: "مصدر الماء الأساسي في واحات سيوة والبحرية والفرافرة والداخلة والخارجة.",
+      // Added at the program owner's request (2026-11-12) for «المعلم الذكي»;
+      // not in the student book text — awaiting the teacher's review.
+      extraFacts: ["نصل إلى المياه الجوفية بحفر الآبار، ثم نرفع الماء منها لنستخدمه في الشرب والزراعة."],
       locations: [
         loc("groundwater-siwa", "واحة سيوة", 29.2, 25.52),
         loc("groundwater-bahariya", "الواحات البحرية", 28.35, 28.86),

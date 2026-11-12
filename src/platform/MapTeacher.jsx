@@ -88,7 +88,7 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, reviewRe
         body: { message: text, history, resourceId: resource?.id || null, consent: chatConsent },
       });
       if (r.canAsk !== undefined) setCanAsk(r.canAsk);
-      const next = [...mine, { role: "assistant", text: r.answer, note: r.note || (r.source === "prepared" && r.canAsk && !chatConsent ? "إجابة من نص الدرس." : "") }];
+      const next = [...mine, { role: "assistant", text: r.answer, note: r.note || (r.source === "prepared" ? (r.canAsk ? "إجابة من نص الدرس. علّم على الموافقة تحت عشان يجاوبك المعلم المتصل." : "إجابة من نص الدرس؛ المعلم المتصل غير مفعّل هنا.") : "") }];
       keepChat(lessonId, next);
       setChat(next);
     } catch (e) {

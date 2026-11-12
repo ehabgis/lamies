@@ -21,12 +21,12 @@ export function lessonContext(content, question, previous = "", resourceId = nul
   const resources = (content.resources || [])
     .map((r) => ({
       r,
-      s: score(r.label, 4) + score((r.locations || []).map((l) => l.name).join(" "), 2) + score(`${r.description} ${r.importance}`) + (r.id === resourceId ? 3 : 0),
+      s: score(r.label, 4) + score((r.locations || []).map((l) => l.name).join(" "), 2) + score(`${r.description} ${r.importance} ${(r.extraFacts || []).join(" ")}`) + (r.id === resourceId ? 3 : 0),
     }))
     .filter((x) => x.s > 0)
     .sort((a, b) => b.s - a.s)
     .slice(0, 4)
-    .map(({ r }) => ({ name: r.label, places: (r.locations || []).map((l) => l.name).slice(0, 6), info: [r.description, r.importance].filter(Boolean).join(" ") }));
+    .map(({ r }) => ({ name: r.label, places: (r.locations || []).map((l) => l.name).slice(0, 6), info: [r.description, r.importance, ...(r.extraFacts || [])].filter(Boolean).join(" ") }));
   const concepts = (content.concepts || [])
     .map((c) => ({ c, s: score(c.term, 3) + score(c.definition) }))
     .filter((x) => x.s > 0)
@@ -42,6 +42,13 @@ export function createLessonChat({ ai }) {
     const lastUser = [...turns].reverse().find((t) => t.role === "user")?.text || "";
     const ctx = lessonContext(content, message, lastUser, resourceId);
     let prepared = preparedAnswer(ctx, lessonTitle, content);
+    // A follow-up that names nothing («طيب بنوصل لها إزاي؟») is about the last
+    // thing named in the question before it: answer with all of its lesson text.
+    const own = lessonContext(content, message, "", resourceId);
+    if (!own.resources.length && !own.concepts.length && lastUser) {
+      const focus = lastNamed(lastUser, ctx.resources);
+      if (focus) prepared = `عن «${focus.name}» الدرس بيقول: ${focus.info}`;
+    }
     // The same lesson text again would not answer a follow-up: say so instead.
     const lastAnswer = [...turns].reverse().find((t) => t.role === "assistant")?.text;
     if (lastAnswer && lastAnswer.trim() === prepared.trim())
@@ -104,3 +111,19 @@ const firstSentences = (t, n) =>
     .split(/(?<=[.؛])\s+/)
     .slice(0, n)
     .join(" ");
+
+// The resource named last in a sentence (by where its name's words appear).
+function lastNamed(text, resources) {
+  const t = normalizeText(text);
+  let best = null;
+  let at = -1;
+  for (const r of resources) {
+    const key = normalizeText(r.name).split(" ").filter((w) => w.length > 2).map((w) => w.replace(/^ال/, ""));
+    const pos = Math.max(...key.map((w) => t.lastIndexOf(w)));
+    if (pos > at) {
+      at = pos;
+      best = r;
+    }
+  }
+  return best;
+}

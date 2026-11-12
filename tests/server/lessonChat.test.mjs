@@ -82,7 +82,7 @@ test("with consent, Cloudflare Workers AI gets the question, the conversation an
   }
 });
 
-test("without the model, a follow-up that the lesson text does not answer says so", async () => {
+test("without the model, a follow-up is answered about the last thing named, and repeats say so", async () => {
   const { ask, close } = await start();
   try {
     const first = await ask("lesson-2", { message: "إيه الفرق بين مياه النيل والمياه الجوفية؟" });
@@ -93,7 +93,19 @@ test("without the model, a follow-up that the lesson text does not answer says s
         { role: "assistant", text: first.data.answer },
       ],
     });
-    assert.match(follow.data.answer, /مش لاقي التفصيلة دي في نص الدرس/);
+    // «لها» is the groundwater named last in the question before it.
+    assert.match(follow.data.answer, /المياه الجوفية/);
+    assert.match(follow.data.answer, /الآبار/);
+    assert.doesNotMatch(follow.data.answer, /نهر النيل/);
+    // Asked again with that answer already given: say the detail is not in the lesson.
+    const again = await ask("lesson-2", {
+      message: "طيب بنوصل لها إزاي؟",
+      history: [
+        { role: "user", text: "إيه الفرق بين مياه النيل والمياه الجوفية؟" },
+        { role: "assistant", text: follow.data.answer },
+      ],
+    });
+    assert.match(again.data.answer, /مش لاقي التفصيلة دي في نص الدرس/);
   } finally {
     close();
   }

@@ -47,7 +47,7 @@ test("every blank question in the three lessons has prepared support", () => {
 });
 
 test("blank: review, then explanation, then the answer with an application question", async () => {
-  const { call, close } = await start({ aiKey: "" });
+  const { call, close } = await start({ aiKey: "", cfAccount: "", cfToken: "" });
   try {
     const q = "book-l1-blank-1";
     // Correct at once: no help.
@@ -108,7 +108,7 @@ test("blank: review, then explanation, then the answer with an application quest
 });
 
 test("questions: note first, explanation once at the second wrong (first for true/false), counters per question", async () => {
-  const { call, close } = await start({ aiKey: "" });
+  const { call, close } = await start({ aiKey: "", cfAccount: "", cfToken: "" });
   try {
     const qs = fullContent("lesson-1").questions;
     const choice = qs.find((q) => q.type === "choice" && !q.kind && q.options.length > 2);
@@ -142,11 +142,13 @@ test("questions: note first, explanation once at the second wrong (first for tru
 
 test("the model writes the text only with consent; a failure falls back to the prepared text", async () => {
   let calls = 0;
-  const fetchImpl = async () => {
+  let sent;
+  const fetchImpl = async (url, init) => {
     calls += 1;
-    return { ok: true, json: async () => ({ output: [{ content: [{ type: "output_text", text: JSON.stringify({ message: "فكّر في المعدن الذي يوصل الكهرباء جيدًا، مثل الأسلاك في بيتك." }) }] }] }) };
+    sent = { url, body: JSON.parse(init.body), auth: init.headers.Authorization };
+    return { ok: true, json: async () => ({ success: true, result: { response: "فكّر في المعدن الذي يوصل الكهرباء جيدًا، مثل الأسلاك في بيتك." } }) };
   };
-  const { call, close } = await start({ aiKey: "test-key", fetchImpl });
+  const { call, close } = await start({ aiKey: "", cfAccount: "acc1", cfToken: "tok1", fetchImpl });
   try {
     const q = "book-l1-blank-1";
     await call(`${L1}/answers`, { questionId: q, answer: "الحديد" }, "tab-model01");
@@ -157,12 +159,19 @@ test("the model writes the text only with consent; a failure falls back to the p
     const withConsent = await call(`${L1}/help`, { questionId: q, level: "more", consent: true, message: "مش فاهم" }, "tab-model01");
     assert.equal(withConsent.data.source, "ai");
     assert.equal(calls, 1);
+    // Cloudflare Workers AI, from the server, with the question and the approved lesson part.
+    assert.match(sent.url, /api\.cloudflare\.com\/client\/v4\/accounts\/acc1\/ai\/run\//);
+    assert.equal(sent.auth, "Bearer tok1");
+    const asked = JSON.parse(sent.body.messages[1].content);
+    assert.match(asked.context.question, /أسلاك الكهرباء/);
+    assert(asked.context.approvedLesson.length);
+    assert.equal(asked.studentQuestion, "مش فاهم");
   } finally {
     close();
   }
   // A model that gives the answer away, or fails, is replaced by the prepared text.
-  const leaky = async () => ({ ok: true, json: async () => ({ output: [{ content: [{ type: "output_text", text: JSON.stringify({ message: "الإجابة هي النحاس." }) }] }] }) });
-  const s2 = await start({ aiKey: "k", fetchImpl: leaky });
+  const leaky = async () => ({ ok: true, json: async () => ({ success: true, result: { response: "الإجابة هي النحاس." } }) });
+  const s2 = await start({ aiKey: "", cfAccount: "a", cfToken: "t", fetchImpl: leaky });
   try {
     const r = await s2.call(`${L1}/help`, { questionId: "book-l1-blank-1", level: "review", consent: true }, "tab-model02");
     assert.equal(r.data.source, "prepared");
@@ -171,7 +180,7 @@ test("the model writes the text only with consent; a failure falls back to the p
     s2.close();
   }
   const down = async () => { throw Error("offline"); };
-  const s3 = await start({ aiKey: "k", fetchImpl: down });
+  const s3 = await start({ aiKey: "", cfAccount: "a", cfToken: "t", fetchImpl: down });
   try {
     const r = await s3.call(`${L1}/help`, { questionId: "book-l1-blank-1", level: "review", consent: true }, "tab-model03");
     assert.equal(r.status, 200);
@@ -183,7 +192,7 @@ test("the model writes the text only with consent; a failure falls back to the p
 });
 
 test("the prepared explanation sets aside a choice the child has not tried", async () => {
-  const { call, close } = await start({ aiKey: "" });
+  const { call, close } = await start({ aiKey: "", cfAccount: "", cfToken: "" });
   try {
     const q = fullContent("lesson-1").questions.find((x) => x.type === "choice" && !x.kind && x.options.length >= 4);
     const wrongs = q.options.filter((o) => o !== q.answer);
@@ -191,6 +200,47 @@ test("the prepared explanation sets aside a choice the child has not tried", asy
     await call(`${L1}/answers`, { questionId: q.id, answer: wrongs[1] }, "tab-aside001");
     const r = await call(`${L1}/help`, { questionId: q.id, level: "explain" }, "tab-aside001");
     assert(!r.data.text.includes(`«${wrongs[0]}»`) && !r.data.text.includes(`«${wrongs[1]}»`), r.data.text);
+  } finally {
+    close();
+  }
+});
+
+test("blank: help seen by asking moves the next level forward; opening help never shows the answer", async () => {
+  const { call, close } = await start({ aiKey: "", cfAccount: "", cfToken: "" });
+  try {
+    const q = "book-l1-blank-3";
+    // «ساعدني» before answering: the review; a first wrong answer then brings the explanation.
+    const asked = await call(`${L1}/help`, { questionId: q, trigger: "asked" }, "tab-order001");
+    assert.equal(asked.data.level, "review");
+    const w1 = await call(`${L1}/answers`, { questionId: q, answer: "الغاز" }, "tab-order001");
+    assert.equal(w1.data.due, "explain");
+    // Opening more help alone does not reveal the answer.
+    const more = await call(`${L1}/help`, { questionId: q, level: "solution" }, "tab-order001");
+    assert.equal(more.status, 403);
+    const w2 = await call(`${L1}/answers`, { questionId: q, answer: "الفحم" }, "tab-order001");
+    assert.equal(w2.data.due, "solution", "after the clearer explanation, a new wrong answer brings the answer");
+
+    // Review shown by itself, then «اشرح لي أكثر», then a new wrong answer: the answer.
+    const w = "book-l2-blank-1", L2 = "/api/demo/lessons/lesson-2";
+    const a1 = await call(`${L2}/answers`, { questionId: w, answer: "المنزلة" }, "tab-order002");
+    assert.equal(a1.data.due, "review");
+    const explain = await call(`${L2}/help`, { questionId: w, level: "explain", trigger: "asked" }, "tab-order002");
+    assert.equal(explain.data.level, "explain");
+    const same = await call(`${L2}/answers`, { questionId: w, answer: " المنزلة " }, "tab-order002");
+    assert.equal(same.data.counted, false);
+    assert.equal(same.data.wrong, 1);
+    const a2 = await call(`${L2}/answers`, { questionId: w, answer: "البرلس" }, "tab-order002");
+    assert.equal(a2.data.due, "solution");
+    const sol = await call(`${L2}/help`, { questionId: w, level: "solution" }, "tab-order002");
+    assert.equal(sol.data.answer, "ناصر");
+    assert.equal(sol.data.apply.id, undefined, "only the prompt and hint of the application question are sent");
+
+    // Right after help: recorded as answered after help.
+    const r = "book-l1-blank-4";
+    await call(`${L1}/answers`, { questionId: r, answer: "الشمسية" }, "tab-order003");
+    const ok = await call(`${L1}/answers`, { questionId: r, answer: "الكهرومائيه" }, "tab-order003");
+    assert.equal(ok.data.correct, true);
+    assert.equal(ok.data.support.outcome, "after-help");
   } finally {
     close();
   }

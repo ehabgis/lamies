@@ -1553,6 +1553,14 @@ export default function LessonPage({ demo = false }) {
                           ? () => setIndex((i) => i + 1)
                           : undefined
                       }
+                      onFinish={
+                        modal === "activities"
+                          ? () => {
+                              setPickActivity(true);
+                              openLearning("activities");
+                            }
+                          : () => setModal(null)
+                      }
                       lessonId={id}
                       solved={solved.includes(current.id)}
                       onSolved={answered}

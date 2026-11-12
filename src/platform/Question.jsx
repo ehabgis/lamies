@@ -19,6 +19,7 @@ export default function Question({
   demo = false,
   presentation,
   onNext,
+  onFinish,
   resources,
 }) {
   const [showHint, setShowHint] = useState(false);
@@ -65,9 +66,14 @@ export default function Question({
       setIncomplete(true);
       return;
     }
-    // The same answer again is not a new try: keep what is shown.
-    const key = JSON.stringify(typeof answer === "string" ? answer.trim() : answer);
-    if (feedback && !feedback.correct && key === mem.lastKey) return;
+    // The same answer again (ignoring spaces and approved spelling forms) is
+    // not a new try: a short note, no count, no new help request.
+    const key = q.type === "blank" ? sameKey(answer) : JSON.stringify(typeof answer === "string" ? answer.trim() : answer);
+    mem.tried ||= [];
+    if (mem.tried.includes(key) && !feedback?.correct) {
+      setFeedback({ ...(mem.feedback || {}), correct: false, counted: false, repeat: true });
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -94,6 +100,7 @@ export default function Question({
       }
       mem.wrong = result.wrong ?? mem.wrong;
       mem.lastKey = key;
+      if (!result.correct) mem.tried.push(key);
       setFeedback({ ...result, attempt: result.wrong });
       play(result.correct ? "correct" : "wrong");
       // A question finished after its answer was shown is not credited.
@@ -123,7 +130,9 @@ export default function Question({
       }}
     />
   );
-  const askHelp = () => help.ask({ trigger: "asked", answer });
+  // «ساعدني»: the first time, the short review; after that it reopens the
+  // card already seen, with no new request and no attempt counted.
+  const askHelp = () => (mem.cards.length || mem.solution ? help.reopen() : help.ask({ trigger: "asked", answer }));
   const [placement, setPlacement] = useState(null);
   function move(i, delta) {
     const next = [...answer];
@@ -455,7 +464,7 @@ export default function Question({
       )}
       {incomplete && q.type === "blank" && (
         <p className="p-feedback" role="status">
-          اكتب إجابتك في الفراغ أولًا، ثم اضغط «تحقق من إجابتي».
+          اكتب إجابتك أولًا
         </p>
       )}
       {incomplete && missing > 0 && (
@@ -476,19 +485,32 @@ export default function Question({
           {feedback.correct ? (
             <>
               <Star weight="fill" />
-              {feedback.credit === false ? "أكملت السؤال بعد عرض الإجابة. " : "أحسنت! "}
-              {feedback.explanation}
-              {onNext && (
+              {q.type === "blank"
+                ? feedback.credit === false
+                  ? "أُكمل السؤال بعد عرض الحل. "
+                  : "إجابة صحيحة! أحسنت "
+                : feedback.credit === false
+                  ? "أكملت السؤال بعد عرض الإجابة. "
+                  : "أحسنت! "}
+              {q.type !== "blank" && feedback.explanation}
+              {onNext ? (
                 <button type="button" className="p-button feedback-next" onClick={onNext}>
-                  التالي
+                  {q.type === "blank" ? "السؤال التالي" : "التالي"}
                   <ArrowLeft aria-hidden="true" />
                 </button>
+              ) : (
+                q.type === "blank" &&
+                onFinish && (
+                  <button type="button" className="p-button feedback-next" onClick={onFinish}>
+                    إنهاء النشاط
+                  </button>
+                )
               )}
             </>
           ) : q.type === "blank" ? (
             <span className="qh-wrong">
-              <XCircle size={22} weight="fill" aria-hidden="true" /> حاول مرة أخرى
-              {feedback.counted === false && <small> — جرّبت هذه الإجابة من قبل</small>}
+              <XCircle size={22} weight="fill" aria-hidden="true" />
+              {feedback.counted === false ? "عدّل إجابتك وجرب مرة تانية" : "إجابتك تحتاج مراجعة"}
             </span>
           ) : feedback.counted === false ? (
             <>
@@ -636,4 +658,21 @@ function RichActivity({ q, kind, answer, setAnswer, reset, move, missing, total,
       </footer>
     </form>
   );
+}
+
+// Two answers the checker treats as the same: spaces, short vowels, tatweel,
+// alef / yaa / taa marbuta forms, punctuation and a leading «ال».
+function sameKey(text) {
+  return String(text ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, "")
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[.،,؛!؟?«»"']/g, "")
+    .split(" ")
+    .map((w) => w.replace(/^ال(?=..)/, ""))
+    .join(" ")
+    .trim();
 }

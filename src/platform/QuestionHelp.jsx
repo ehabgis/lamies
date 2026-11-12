@@ -68,7 +68,9 @@ export function useQuestionHelp({ q, lessonId, demo, enabled = true }) {
     } catch (e) {
       // No connection at all: the question's own prepared hint keeps it going.
       mem.cards.push({
-        level: "error",
+        // Shown at the level that was asked for, as the same kind of card.
+        level: level || "review",
+        failed: true,
         title: "خلّينا نراجع المعلومة",
         text: q.hint || "اقرأ السؤال مرة أخرى، وراجع بطاقة المورد على الخريطة.",
         note: "تعذّر الاتصال بالمعلم الآن؛ هذا تلميح معدّ من الدرس.",
@@ -98,12 +100,20 @@ export function useQuestionHelp({ q, lessonId, demo, enabled = true }) {
       mem.open = false;
       refresh();
     },
+    // Reopen what was already shown: no request, no attempt.
+    reopen: () => {
+      mem.open = true;
+      refresh();
+    },
     refresh,
   };
 }
 
 /** The card: inside the question, never over its answer field or buttons. */
 export function HelpCard({ help, q, resources, onRetry, onMore, answer }) {
+  // In «أكمل الفراغ», the clearer explanation and the follow-up chat are the
+  // smart teacher's window («أرجع للسؤال»); the short review is a small card
+  // («أحاول مرة أخرى» / «اشرح لي أكثر»).
   const { mem, loading } = help;
   const [message, setMessage] = useState("");
   const [consent, setConsent] = useState(consentGiven);
@@ -129,13 +139,14 @@ export function HelpCard({ help, q, resources, onRetry, onMore, answer }) {
         <SolutionCard help={help} q={q} />
       </div>
     );
+  const teacher = q.type === "blank" && last && last.level !== "review";
   return (
-    <section ref={box} className={`qh-card ${last?.level === "explain" ? "is-explain" : ""}`} aria-live="polite" aria-label="مساعدة المعلم الذكي">
+    <section ref={box} className={`qh-card ${last?.level === "explain" ? "is-explain" : ""} ${teacher ? "is-teacher" : ""}`} aria-live="polite" aria-label={teacher ? "المعلم الذكي" : "خلّينا نراجع المعلومة"}>
       <span className="qh-robot" aria-hidden="true">
         <RobotGuide />
       </span>
       <div className="qh-body">
-        <h4>{loading && !last ? "المعلم الذكي" : last?.title || "المعلم الذكي"}</h4>
+        <h4>{teacher || (loading && last) ? "المعلم الذكي" : last?.title || "خلّينا نراجع المعلومة"}</h4>
         {mem.cards.length > 1 && (
           <details className="qh-earlier">
             <summary>الشرح السابق</summary>
@@ -170,12 +181,17 @@ export function HelpCard({ help, q, resources, onRetry, onMore, answer }) {
         )}
         <div className="qh-actions">
           <button type="button" className="p-button" onClick={onRetry}>
-            <ArrowCounterClockwise size={18} aria-hidden="true" /> أحاول مرة أخرى
+            <ArrowCounterClockwise size={18} aria-hidden="true" /> {teacher ? "أرجع للسؤال" : "أحاول مرة أخرى"}
           </button>
-          <button type="button" className="p-secondary" disabled={loading} onClick={() => onMore()}>
-            <ChatCircleText size={18} aria-hidden="true" /> اشرح لي أكثر
-          </button>
+          {!teacher && (
+            <button type="button" className="p-secondary" disabled={loading} onClick={() => onMore()}>
+              <ChatCircleText size={18} aria-hidden="true" /> اشرح لي أكثر
+            </button>
+          )}
         </div>
+        {teacher && !canAsk && !loading && !last?.failed && (
+          <small className="qh-note">كتابة الأسئلة للمعلم الذكي تعمل بعد ربطه بالخادم؛ هذا شرح معدّ من الدرس.</small>
+        )}
         {canAsk && (
           <div className="qh-ask" role="group" aria-label="استفسار إضافي">
             {!consent ? (
@@ -223,6 +239,13 @@ function SolutionCard({ help, q }) {
   const [value, setValue] = useState(mem.apply?.answer || "");
   const [busy, setBusy] = useState(false);
   const done = mem.apply?.correct;
+  const [open, setOpen] = useState(Boolean(mem.applyOpen || mem.apply));
+  const field = useRef(null);
+  const openApply = () => {
+    mem.applyOpen = true;
+    setOpen(true);
+    requestAnimationFrame(() => field.current?.focus());
+  };
   const check = async () => {
     if (!value.trim() || busy || done) return;
     setBusy(true);
@@ -248,11 +271,20 @@ function SolutionCard({ help, q }) {
           الإجابة: <b>{s.answer}</b>
         </h4>
         <p>{s.text}</p>
+        {!open && (
+          <div className="qh-actions">
+            <button type="button" className="p-button" onClick={openApply}>
+              <PencilSimple size={18} aria-hidden="true" /> جرّب سؤالًا تطبيقيًا
+            </button>
+          </div>
+        )}
+        {open && (
         <div className="qh-apply" role="group" aria-label="سؤال تطبيق">
           <label htmlFor={`apply-${q.id}`}>
             <PencilSimple size={18} aria-hidden="true" /> {s.apply.prompt}
           </label>
           <input
+            ref={field}
             id={`apply-${q.id}`}
             value={value}
             maxLength={120}
@@ -274,6 +306,7 @@ function SolutionCard({ help, q }) {
             </p>
           )}
         </div>
+        )}
       </div>
     </section>
   );

@@ -5,6 +5,7 @@ import { traceMapPublic, checkTraceMap } from "./traceMap.mjs";
 import { buildMapPublic, checkBuildMap } from "./buildMap.mjs";
 import { DEMO_IDS, demoLesson, demoAnswer, demoCatalog, gradedHint, fullContent } from "./demo.mjs";
 import { createLearningSupport } from "./learningSupport.mjs";
+import { createAiProvider } from "./aiProvider.mjs";
 import { isCorrect } from "./answerCheck.mjs";
 import { forStudents } from "./studentText.mjs";
 import http from "node:http";
@@ -67,11 +68,16 @@ export function createApp({
   aiKey = process.env.OPENAI_API_KEY,
   aiModel = process.env.OPENAI_MODEL || "gpt-4.1-mini",
   fetchImpl = fetch,
+  // «المعلم الذكي»: Cloudflare Workers AI, server-side only (aiProvider.mjs).
+  cfAccount = process.env.CLOUDFLARE_ACCOUNT_ID,
+  cfToken = process.env.CLOUDFLARE_API_TOKEN,
+  cfModel = process.env.CLOUDFLARE_AI_MODEL,
   clientDir = resolve("dist"),
 } = {}) {
   const db = database(dbPath);
   migrateProgress(db);
-  const learning = createLearningSupport({ db, aiKey, aiModel, fetchImpl });
+  const ai = createAiProvider({ fetchImpl, cfAccount, cfToken, ...(cfModel ? { cfModel } : {}), openaiKey: aiKey, openaiModel: aiModel });
+  const learning = createLearningSupport({ db, ai });
   mkdirSync(uploadDir, { recursive: true });
   const limits = new Map();
   function visible(node) {
@@ -566,7 +572,7 @@ export function createApp({
         fail(405, "العملية غير متاحة في التجربة");
       }
       if (path === "/api/health" && method === "GET")
-        return send({ ok: true, database: true, aiConfigured: !!aiKey });
+        return send({ ok: true, database: true, aiConfigured: ai.available });
       if (path === "/api/auth/register" && method === "POST") {
         rate(`auth:${req.socket.remoteAddress}`);
         const b = await body(req);

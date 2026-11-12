@@ -304,3 +304,51 @@
   background: #0a62d6;
   color: #ffffff;
 }
+
+/* Lesson chat (2026-11-12): any question about the open lesson. */
+.mt-panel h2 {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.mt-lesson {
+  color: #4a6178;
+  font-size: 13px;
+  font-weight: 800;
+}
+.mt-type .mt-send {
+  display: inline-flex;
+  gap: 6px;
+  width: auto;
+  padding: 0 14px;
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 900;
+}
+.mt-type .mt-send:disabled {
+  opacity: 0.5;
+}
+.mt-consent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 0;
+  color: #36506b;
+  font-size: 13px;
+  font-weight: 700;
+}
+.mt-consent input {
+  width: 18px;
+  height: 18px;
+}
+.mt-note {
+  display: block;
+  margin-top: 4px;
+  color: #6b4a00;
+  font-size: 12px;
+  font-weight: 700;
+}
+.mt-say.is-thinking {
+  color: #0a4fb0;
+  font-style: italic;
+}

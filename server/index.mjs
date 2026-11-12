@@ -6,6 +6,7 @@ import { buildMapPublic, checkBuildMap } from "./buildMap.mjs";
 import { DEMO_IDS, demoLesson, demoAnswer, demoCatalog, gradedHint, fullContent } from "./demo.mjs";
 import { createLearningSupport } from "./learningSupport.mjs";
 import { createAiProvider } from "./aiProvider.mjs";
+import { createLessonChat } from "./lessonChat.mjs";
 import { isCorrect } from "./answerCheck.mjs";
 import { forStudents } from "./studentText.mjs";
 import http from "node:http";
@@ -78,6 +79,7 @@ export function createApp({
   migrateProgress(db);
   const ai = createAiProvider({ fetchImpl, cfAccount, cfToken, ...(cfModel ? { cfModel } : {}), openaiKey: aiKey, openaiModel: aiModel });
   const learning = createLearningSupport({ db, ai });
+  const lessonChat = createLessonChat({ ai });
   mkdirSync(uploadDir, { recursive: true });
   const limits = new Map();
   function visible(node) {
@@ -416,6 +418,7 @@ export function createApp({
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/answers`),
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/help`),
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/apply`),
+          ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/ask`),
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/expedition/check`),
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/build-map/check`),
           ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/trace/check`),
@@ -521,12 +524,20 @@ export function createApp({
         fail(405, "العملية غير متاحة");
       }
       const demoMatch = path.match(
-        /^\/api\/demo\/lessons\/([^/]+)(?:\/(answers|help|apply))?$/,
+        /^\/api\/demo\/lessons\/([^/]+)(?:\/(answers|help|apply|ask))?$/,
       );
       // Who the help counters belong to: the account, or this browser tab.
       const helpActor = () => {
         const tab = String(req.headers["x-help-session"] || "");
         return user ? `u:${user.id}` : /^[a-z0-9-]{8,64}$/i.test(tab) ? `v:${tab}` : `ip:${req.socket.remoteAddress}`;
+      };
+      // «المعلم الذكي» for the whole lesson: a typed question, with or without a resource.
+      const askRoute = async (lessonTitle, content) => {
+        rate(`ask:${helpActor()}`, 30);
+        const b = await body(req);
+        if (typeof b.message !== "string" || !b.message.trim() || b.message.length > 500) fail(400, "اكتب سؤالك عن الدرس (حتى 500 حرف).");
+        if (b.history !== undefined && (!Array.isArray(b.history) || JSON.stringify(b.history).length > 8000)) fail(400, "المحادثة طويلة");
+        return send(await lessonChat.ask({ content, lessonTitle, message: b.message.trim(), history: b.history, resourceId: b.resourceId, consent: b.consent === true }));
       };
       const supportRoute = async (kind, lessonId, content) => {
         const b = await body(req);
@@ -564,6 +575,10 @@ export function createApp({
           // After the answer was shown, the original question is completed, not credited.
           if (check.counted) logEvent(db, user, demoMatch[1], questionKind(demoMatch[1], b.questionId), b.questionId, check.credit);
           return send({ ...result, ...check, explanation: check.correct ? result.explanation : "" });
+        }
+        if (method === "POST" && demoMatch[2] === "ask") {
+          const lesson = demoLesson(demoMatch[1]);
+          return await askRoute(lesson.title, fullContent(demoMatch[1]));
         }
         if (method === "POST" && ["help", "apply"].includes(demoMatch[2])) {
           rate(`demo:${req.socket.remoteAddress}`, 90);
@@ -969,7 +984,7 @@ export function createApp({
         return send(progressFor(user.id));
       }
       const lm = path.match(
-        /^\/api\/lessons\/([^/]+)(?:\/(answers|complete|state|help|apply))?$/,
+        /^\/api\/lessons\/([^/]+)(?:\/(answers|complete|state|help|apply|ask))?$/,
       );
       if (lm) {
         auth();
@@ -1079,6 +1094,7 @@ export function createApp({
           });
         }
         if (method === "POST" && ["help", "apply"].includes(lm[2])) return await supportRoute(lm[2], n.id, lesson.content);
+        if (method === "POST" && lm[2] === "ask") return await askRoute(lesson.title, lesson.content);
         if (method === "POST" && lm[2] === "complete") {
           if (!qs.length) fail(400, "الدرس لا يحتوي على تقييم معتمد");
           const solved = db

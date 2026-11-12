@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import { X, BookOpen, MapPin, Compass, Ruler, ChatText, PaperPlaneRight, ArrowRight } from "phosphor-react";
 import RobotGuide from "../components/Map/RobotGuide";
-import AIAssistant from "./AIAssistant";
+import { api } from "./api";
+import { helpHeaders } from "./QuestionHelp";
 import { play } from "./sfx";
 import "./map-teacher.css";
 
@@ -17,8 +18,27 @@ const HELPS = [
   ["find", "العثور على مكان", MapPin],
   ["direction", "تحديد الاتجاه", Compass],
   ["measure", "قياس المسافة", Ruler],
-  ["ask", "كتابة سؤالي", ChatText],
 ];
+
+// The lesson conversation, one per lesson, kept for the visit (and the tab).
+const chats = new Map();
+let chatConsent = false;
+function chatFor(lessonId) {
+  if (!chats.has(lessonId)) {
+    let saved = [];
+    try {
+      saved = JSON.parse(sessionStorage.getItem(`lamis.chat.${lessonId}`) || "[]");
+    } catch {}
+    chats.set(lessonId, Array.isArray(saved) ? saved : []);
+  }
+  return chats.get(lessonId);
+}
+function keepChat(lessonId, list) {
+  chats.set(lessonId, list);
+  try {
+    sessionStorage.setItem(`lamis.chat.${lessonId}`, JSON.stringify(list.slice(-20)));
+  } catch {}
+}
 const first = (text) => String(text || "").split(/[.،؛]/)[0].trim();
 const km = (a, b) => {
   const r = (d) => (d * Math.PI) / 180;
@@ -32,15 +52,6 @@ function direction(p) {
   if (!ns && !ew) return "قريب جدًا من القاهرة";
   return `${ns && ew ? `${ns} ${ew}` : ns || ew} القاهرة`;
 }
-// A typed question that matches one of the helps starts it directly.
-function route(text) {
-  if (/مساف|بعيد|كيلو|كم\b|اقيس|أقيس|قياس/.test(text)) return "measure";
-  if (/اتجاه|شمال|جنوب|شرق|غرب/.test(text)) return "direction";
-  if (/فين|أين|اين|مكان|ألاقي|الاقي/.test(text)) return "find";
-  if (/رمز|علامة|المفتاح/.test(text)) return "symbol";
-  return "ask";
-}
-
 // `seeing`: ready questions about what is on the map now (e.g. Toshka's
 // fields), each with its answer and an optional map action.
 export default function MapTeacher({ name, lessonId, lessonTitle, demo, resources, resource, location, kindName, keyOpen, seeing = [], onSeeing, onFocusSite, onOpenKey, onMeasure, onClose }) {
@@ -48,8 +59,46 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, resource
   const [said, setSaid] = useState([]);
   const [waiting, setWaiting] = useState(null); // help waiting for a symbol from the key
   const [typed, setTyped] = useState("");
-  const [asked, setAsked] = useState("");
   const [query, setQuery] = useState("");
+  // «المعلم الذكي» for the whole lesson: any question, a resource chosen or not.
+  const [chat, setChat] = useState(() => chatFor(lessonId));
+  const [thinking, setThinking] = useState(false);
+  const [canAsk, setCanAsk] = useState(false);
+  const [consent, setConsent] = useState(chatConsent);
+  useEffect(() => setChat(chatFor(lessonId)), [lessonId]);
+  useEffect(() => {
+    let on = true;
+    api("/health").then((h) => on && setCanAsk(Boolean(h.aiConfigured))).catch(() => {});
+    return () => {
+      on = false;
+    };
+  }, []);
+  async function sendChat(text) {
+    if (thinking) return;
+    const history = chat.map(({ role, text: t }) => ({ role, text: t })).slice(-8);
+    const mine = [...chat, { role: "user", text }];
+    keepChat(lessonId, mine);
+    setChat(mine);
+    setView("chat");
+    setThinking(true);
+    try {
+      const r = await api(`${demo ? "/demo" : ""}/lessons/${lessonId}/ask`, {
+        method: "POST",
+        headers: helpHeaders(),
+        body: { message: text, history, resourceId: resource?.id || null, consent: chatConsent },
+      });
+      if (r.canAsk !== undefined) setCanAsk(r.canAsk);
+      const next = [...mine, { role: "assistant", text: r.answer, note: r.note || (r.source === "prepared" && r.canAsk && !chatConsent ? "إجابة من نص الدرس." : "") }];
+      keepChat(lessonId, next);
+      setChat(next);
+    } catch (e) {
+      const next = [...mine, { role: "assistant", text: "معلش، مقدرتش أوصل للمعلم الذكي دلوقتي. راجع بطاقة المورد على الخريطة، وجرّب تسأل تاني بعد شوية.", note: e.message }];
+      keepChat(lessonId, next);
+      setChat(next);
+    } finally {
+      setThinking(false);
+    }
+  }
   const sites = resources.flatMap((r) => (r.locations || []).map((l) => ({ ...l, resource: r })));
   const places = [CAIRO, ...sites];
   const [from, setFrom] = useState("cairo");
@@ -58,7 +107,7 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, resource
   const end = useRef(null);
   const say = (text) => setSaid((s) => [...s, text]);
   useEffect(() => closeRef.current?.focus({ preventScroll: true }), []);
-  useEffect(() => end.current?.scrollIntoView({ block: "nearest" }), [said.length, view]);
+  useEffect(() => end.current?.scrollIntoView({ block: "nearest" }), [said.length, view, chat.length, thinking]);
   useEffect(() => () => onMeasure(null), []);
 
   const explain = (r) =>
@@ -115,7 +164,6 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, resource
       const p = placeOf(resource, location);
       if (p) setTo(p.id);
     }
-    if (id === "ask") setAsked(text);
   }
   function measure() {
     const a = places.find((p) => p.id === from),
@@ -135,7 +183,10 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, resource
         <span className="mt-robot" aria-hidden="true">
           <RobotGuide />
         </span>
-        <h2>المعلم الذكي</h2>
+        <h2>
+          المعلم الذكي
+          {lessonTitle && <small className="mt-lesson">درس «{lessonTitle}»</small>}
+        </h2>
         <button ref={closeRef} type="button" className="mt-x" aria-label="إغلاق المعلم الذكي" onClick={onClose}>
           <X size={20} weight="bold" />
         </button>
@@ -146,8 +197,13 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, resource
           <>
             <p className="mt-hello">
               <b>أهلًا يا {name}!</b>
-              محتاج مساعدة في إيه؟
+              اكتب سؤالك عن الدرس تحت، أو اختار مساعدة على الخريطة.
             </p>
+            {chat.length > 0 && (
+              <button type="button" className="mt-back" onClick={() => setView("chat")}>
+                <ChatText size={16} aria-hidden="true" /> كمّل محادثتك عن الدرس
+              </button>
+            )}
             {seeing.length > 0 && (
               <>
                 <b className="mt-seeing-title">أسئلة عن اللي شايفه:</b>
@@ -171,13 +227,24 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, resource
                 </li>
               ))}
             </ul>
-            <small className="mt-tip">اختار مساعدة، وهنستكشف الخريطة مع بعض.</small>
+            <small className="mt-tip">تقدر تسأل عن أي حاجة في الدرس، حتى لو ما اخترتش رمزًا.</small>
           </>
         ) : (
           <>
             <button type="button" className="mt-back" onClick={() => (setView("menu"), onMeasure(null), setWaiting(null))}>
               <ArrowRight size={16} aria-hidden="true" /> كل المساعدات
             </button>
+            {view === "chat" && (
+              <div className="mt-chat is-lesson" aria-live="polite">
+                {chat.map((m, i) => (
+                  <p key={i} className={`mt-say ${m.role === "user" ? "is-me" : ""}`}>
+                    {m.text}
+                    {m.note && <small className="mt-note">{m.note}</small>}
+                  </p>
+                ))}
+                {thinking && <p className="mt-say is-thinking">المعلم بيفكّر…</p>}
+              </div>
+            )}
             <div className="mt-chat" aria-live="polite">
               {said.map((t, i) => (
                 <p key={i} className={`mt-say ${view === "seeing" && i === 0 ? "is-me" : ""}`}>
@@ -254,39 +321,46 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, resource
                 </button>
               </div>
             )}
-            {view === "ask" && (
-              <div className="mt-ask">
-                <AIAssistant key={asked} lessonId={lessonId} lessonTitle={lessonTitle} resource={resource} location={location} initial={asked} demo={demo} />
-              </div>
-            )}
             <span ref={end} />
           </>
         )}
       </div>
 
-      {view !== "ask" && (
-        <form
-          className="mt-type"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const text = typed.trim();
-            if (!text) return;
-            setTyped("");
-            // A question about what is on the map now gets its ready answer.
-            const ready = seeing.find((h) => h.match?.test(text));
-            if (ready) answerSeeing(ready);
-            else start(route(text), text);
-          }}
-        >
-          <label className="sr-only" htmlFor="mt-question">
-            اكتب سؤالك
-          </label>
-          <input id="mt-question" value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="اكتب سؤالك هنا…" />
-          <button type="submit" aria-label="إرسال">
-            <PaperPlaneRight size={20} weight="fill" mirrored />
-          </button>
-        </form>
+      {canAsk && !consent && (
+        <label className="mt-consent">
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => {
+              chatConsent = e.target.checked;
+              setConsent(e.target.checked);
+            }}
+          />
+          أوافق على إرسال سؤالي للمعلم الذكي، من غير اسمي.
+        </label>
       )}
+      <form
+        className="mt-type"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const text = typed.trim();
+          if (!text || thinking) return;
+          setTyped("");
+          // A question about what is on the map now gets its ready answer;
+          // anything else goes to the lesson's smart teacher.
+          const ready = seeing.find((h) => h.match?.test(text));
+          if (ready) answerSeeing(ready);
+          else sendChat(text);
+        }}
+      >
+        <label className="sr-only" htmlFor="mt-question">
+          اكتب سؤالك عن الدرس
+        </label>
+        <input id="mt-question" value={typed} maxLength={500} onChange={(e) => setTyped(e.target.value)} placeholder="اكتب سؤالك عن الدرس" />
+        <button type="submit" className="mt-send" disabled={thinking || !typed.trim()}>
+          إرسال <PaperPlaneRight size={18} weight="fill" mirrored aria-hidden="true" />
+        </button>
+      </form>
     </aside>
   );
 }

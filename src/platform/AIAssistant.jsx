@@ -17,21 +17,25 @@ export default function AIAssistant({
   reviewReady = true,
 }) {
   const { user } = useSession();
-  const [configured, setConfigured] = useState(null);
+  const [status, setStatus] = useState(null);
+  const userId = user?.id;
   useEffect(() => {
     let active = true;
-    api("/health")
-      .then((s) => {
-        if (active) setConfigured(s.aiConfigured);
+    setStatus(null);
+    api("/ai/status")
+      .then((result) => {
+        if (active) setStatus(result);
       })
       .catch(() => {
-        if (active) setConfigured(false);
+        if (active) setStatus({ configured: false, available: false });
       });
     return () => {
       active = false;
     };
-  }, []);
-  const canConnect = configured === true && !demo && !!user && reviewReady;
+  }, [userId, user?.role]);
+  const providerLabel = status?.provider === "cloudflare" ? "Cloudflare Workers AI"
+    : status?.provider === "openai" ? "OpenAI" : "خدمة الذكاء الاصطناعي";
+  const canConnect = status?.available === true && !demo && !!user && reviewReady;
   const [message, setMessage] = useState(initial),
     [consent, setConsent] = useState(false),
     [history, setHistory] = useState([]),
@@ -42,6 +46,7 @@ export default function AIAssistant({
     if (!canConnect) return;
     setError("");
     setBusy(true);
+    setConsent(false);
     try {
       const data = await api("/ai", {
         method: "POST",
@@ -72,29 +77,31 @@ export default function AIAssistant({
         <div>
           <h3>المعلم الذكي</h3>
           <span role="status">
-            {configured === null
+            {status === null
               ? "جارٍ فحص الاتصال…"
               : canConnect
-                ? "جاهز للإجابة عبر OpenAI"
+                ? `جاهز للإجابة عبر ${providerLabel}`
                 : "المعلم المتصل غير متاح حاليًا"}
           </span>
         </div>
       </div>
       {mode === "explain" && resource && <Simple resource={resource} />}
-      {!canConnect && configured !== null && (
+      {!canConnect && status !== null && (
         <p className="p-feedback">
           {demo
             ? "أنت في درس تجريبي؛ استخدم التلميحات المكتوبة داخل الأسئلة. الاتصال بالمعلم يتطلب حسابًا ودرسًا منشورًا بمصادر مراجعة وتفعيل الخدمة."
-            : !configured
+            : !status.configured
               ? "خدمة المعلم لم تُفعّل بعد. يمكنك متابعة التعلّم واستخدام تلميحات الأسئلة."
               : !reviewReady
                 ? "المعلم المتصل غير مفعّل لهذا الدرس بعد."
-                : "سجّل الدخول لاستخدام المعلم المتصل."}
+                : !user
+                  ? "سجّل الدخول لاستخدام المعلم المتصل."
+                  : "المعلم المتصل متاح لفريق التعليم فقط حاليًا."}
         </p>
       )}
       <p>
         اسأل عن الدرس{resource ? ` أو ${resource.label}` : ""}. يُرسل السؤال
-        وسياق الدرس إلى OpenAI، دون اسمك أو نتائجك.
+        وسياق الدرس إلى {providerLabel}، دون إرفاق اسم حسابك أو نتائجك.
       </p>
       <p className="p-muted">
         قد يخطئ المساعد؛ راجع مصدره واسأل معلمك عند الشك. التقييم والنقاط
@@ -128,7 +135,7 @@ export default function AIAssistant({
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
           />
-          أوافق على إرسال هذا السؤال وسياق الدرس إلى خدمة OpenAI. لن أكتب
+          أوافق على إرسال هذا السؤال وسياق الدرس إلى {providerLabel}. لن أكتب
           معلومات شخصية.
         </label>
         {error && (

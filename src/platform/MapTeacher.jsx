@@ -54,7 +54,7 @@ function direction(p) {
 }
 // `seeing`: ready questions about what is on the map now (e.g. Toshka's
 // fields), each with its answer and an optional map action.
-export default function MapTeacher({ name, lessonId, lessonTitle, demo, resources, resource, location, kindName, keyOpen, seeing = [], onSeeing, onFocusSite, onOpenKey, onMeasure, onClose }) {
+export default function MapTeacher({ name, lessonId, lessonTitle, demo, reviewReady, resources, resource, location, kindName, keyOpen, seeing = [], onSeeing, onFocusSite, onOpenKey, onMeasure, onClose }) {
   const [view, setView] = useState("menu");
   const [said, setSaid] = useState([]);
   const [waiting, setWaiting] = useState(null); // help waiting for a symbol from the key
@@ -106,8 +106,12 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, resource
   const closeRef = useRef(null);
   const end = useRef(null);
   const say = (text) => setSaid((s) => [...s, text]);
-  useEffect(() => closeRef.current?.focus({ preventScroll: true }), []);
-  useEffect(() => end.current?.scrollIntoView({ block: "nearest" }), [said.length, view, chat.length, thinking]);
+  useEffect(() => {
+    closeRef.current?.focus({ preventScroll: true });
+  }, []);
+  useEffect(() => {
+    end.current?.scrollIntoView({ block: "nearest" });
+  }, [said.length, view, chat.length, thinking]);
   useEffect(() => () => onMeasure(null), []);
 
   const explain = (r) =>

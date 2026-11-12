@@ -8,7 +8,7 @@ import { createApp } from "../../server/index.mjs";
 
 async function start(options = {}) {
   const dir = mkdtempSync(join(tmpdir(), "lamis-chat-"));
-  const app = createApp({ dbPath: join(dir, "t.sqlite"), uploadDir: join(dir, "up"), aiKey: "", cfAccount: "", cfToken: "", ...options });
+  const app = createApp({ dbPath: join(dir, "t.sqlite"), uploadDir: join(dir, "up"), aiKey: "", aiProvider: "openai", cloudflareAccountId: "", cloudflareToken: "", ...options });
   const server = http.createServer(app.handler);
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -42,7 +42,7 @@ test("with consent, Cloudflare Workers AI gets the question, the conversation an
     sent = { url, body: JSON.parse(init.body) };
     return { ok: true, json: async () => ({ success: true, result: { response: "مياه النيل تجري على سطح الأرض، والمياه الجوفية توجد في باطن الأرض." } }) };
   };
-  const { ask, close } = await start({ cfAccount: "acc", cfToken: "tok", fetchImpl });
+  const { ask, close } = await start({ aiProvider: "cloudflare", cloudflareAccountId: "acc", cloudflareToken: "tok", aiStudentEnabled: true, fetchImpl });
   try {
     const first = await ask("lesson-2", { message: "إيه الفرق بين مياه النيل والمياه الجوفية؟", consent: true });
     assert.equal(first.data.source, "ai");
@@ -69,7 +69,7 @@ test("with consent, Cloudflare Workers AI gets the question, the conversation an
   }
   // Without consent, or when the service fails: the lesson's own text.
   const down = async () => { throw Error("offline"); };
-  const s2 = await start({ cfAccount: "a", cfToken: "t", fetchImpl: down });
+  const s2 = await start({ aiProvider: "cloudflare", cloudflareAccountId: "a", cloudflareToken: "t", aiStudentEnabled: true, fetchImpl: down });
   try {
     const noConsent = await s2.ask("lesson-2", { message: "ما المياه الجوفية؟" });
     assert.equal(noConsent.data.source, "prepared");
@@ -94,6 +94,20 @@ test("without the model, a follow-up that the lesson text does not answer says s
       ],
     });
     assert.match(follow.data.answer, /مش لاقي التفصيلة دي في نص الدرس/);
+  } finally {
+    close();
+  }
+});
+
+test("with AI_STUDENT_ENABLED off, visitors get the lesson text and no model call", async () => {
+  let calls = 0;
+  const fetchImpl = async () => { calls += 1; return { ok: true, json: async () => ({ success: true, result: { response: "رد" } }) }; };
+  const { ask, close } = await start({ aiProvider: "cloudflare", cloudflareAccountId: "a", cloudflareToken: "t", aiStudentEnabled: false, fetchImpl });
+  try {
+    const r = await ask("lesson-2", { message: "ما المياه الجوفية؟", consent: true });
+    assert.equal(r.data.source, "prepared");
+    assert.equal(r.data.canAsk, false);
+    assert.equal(calls, 0);
   } finally {
     close();
   }

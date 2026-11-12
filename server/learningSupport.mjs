@@ -104,7 +104,7 @@ export function createLearningSupport({ db, ai }) {
   const support = (q, s) => ({ wrong: s.wrong, seen: [...s.seen], outcome: s.outcome, solutionShown: s.seen.has("solution") });
 
   /** The words of a help level: prepared text, or the model's when allowed. */
-  async function help({ actor, user, lessonId, content, q, level, trigger, answer, message, consent, shown }) {
+  async function help({ actor, user, lessonId, content, q, level, trigger, answer, message, consent, aiAllowed = true, shown }) {
     const s = stateFor(actor, lessonId, q.id);
     const prepared = blankHelp(q);
     // The answer only comes when the rules have opened it after wrong tries.
@@ -137,8 +137,8 @@ export function createLearningSupport({ db, ai }) {
         ? prepared.explain
         : "هذا كل الشرح المعدّ لهذا السؤال. راجع بطاقة المورد على الخريطة، ثم جرّب مرة أخرى، ويمكنك سؤال معلمك في الفصل.";
     out.text = fallback;
-    out.canAsk = Boolean(ai?.available);
-    if (!ai?.available || consent !== true) return out;
+    out.canAsk = Boolean(ai?.available) && aiAllowed;
+    if (!out.canAsk || consent !== true) return out;
     try {
       const text = await askModel({ content, q, level, answer, message, shown, wrong: s.wrong, prepared, fallback });
       if (text) Object.assign(out, { text, source: "ai" });

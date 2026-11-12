@@ -47,7 +47,7 @@ test("every blank question in the three lessons has prepared support", () => {
 });
 
 test("blank: review, then explanation, then the answer with an application question", async () => {
-  const { call, close } = await start({ aiKey: "", cfAccount: "", cfToken: "" });
+  const { call, close } = await start({ aiKey: "", aiProvider: "openai", cloudflareAccountId: "", cloudflareToken: "" });
   try {
     const q = "book-l1-blank-1";
     // Correct at once: no help.
@@ -108,7 +108,7 @@ test("blank: review, then explanation, then the answer with an application quest
 });
 
 test("questions: note first, explanation once at the second wrong (first for true/false), counters per question", async () => {
-  const { call, close } = await start({ aiKey: "", cfAccount: "", cfToken: "" });
+  const { call, close } = await start({ aiKey: "", aiProvider: "openai", cloudflareAccountId: "", cloudflareToken: "" });
   try {
     const qs = fullContent("lesson-1").questions;
     const choice = qs.find((q) => q.type === "choice" && !q.kind && q.options.length > 2);
@@ -148,7 +148,7 @@ test("the model writes the text only with consent; a failure falls back to the p
     sent = { url, body: JSON.parse(init.body), auth: init.headers.Authorization };
     return { ok: true, json: async () => ({ success: true, result: { response: "فكّر في المعدن الذي يوصل الكهرباء جيدًا، مثل الأسلاك في بيتك." } }) };
   };
-  const { call, close } = await start({ aiKey: "", cfAccount: "acc1", cfToken: "tok1", fetchImpl });
+  const { call, close } = await start({ aiKey: "", aiProvider: "cloudflare", cloudflareAccountId: "acc1", cloudflareToken: "tok1", aiStudentEnabled: true, fetchImpl });
   try {
     const q = "book-l1-blank-1";
     await call(`${L1}/answers`, { questionId: q, answer: "الحديد" }, "tab-model01");
@@ -171,7 +171,7 @@ test("the model writes the text only with consent; a failure falls back to the p
   }
   // A model that gives the answer away, or fails, is replaced by the prepared text.
   const leaky = async () => ({ ok: true, json: async () => ({ success: true, result: { response: "الإجابة هي النحاس." } }) });
-  const s2 = await start({ aiKey: "", cfAccount: "a", cfToken: "t", fetchImpl: leaky });
+  const s2 = await start({ aiKey: "", aiProvider: "cloudflare", cloudflareAccountId: "a", cloudflareToken: "t", aiStudentEnabled: true, fetchImpl: leaky });
   try {
     const r = await s2.call(`${L1}/help`, { questionId: "book-l1-blank-1", level: "review", consent: true }, "tab-model02");
     assert.equal(r.data.source, "prepared");
@@ -180,7 +180,7 @@ test("the model writes the text only with consent; a failure falls back to the p
     s2.close();
   }
   const down = async () => { throw Error("offline"); };
-  const s3 = await start({ aiKey: "", cfAccount: "a", cfToken: "t", fetchImpl: down });
+  const s3 = await start({ aiKey: "", aiProvider: "cloudflare", cloudflareAccountId: "a", cloudflareToken: "t", aiStudentEnabled: true, fetchImpl: down });
   try {
     const r = await s3.call(`${L1}/help`, { questionId: "book-l1-blank-1", level: "review", consent: true }, "tab-model03");
     assert.equal(r.status, 200);
@@ -192,7 +192,7 @@ test("the model writes the text only with consent; a failure falls back to the p
 });
 
 test("the prepared explanation sets aside a choice the child has not tried", async () => {
-  const { call, close } = await start({ aiKey: "", cfAccount: "", cfToken: "" });
+  const { call, close } = await start({ aiKey: "", aiProvider: "openai", cloudflareAccountId: "", cloudflareToken: "" });
   try {
     const q = fullContent("lesson-1").questions.find((x) => x.type === "choice" && !x.kind && x.options.length >= 4);
     const wrongs = q.options.filter((o) => o !== q.answer);
@@ -206,7 +206,7 @@ test("the prepared explanation sets aside a choice the child has not tried", asy
 });
 
 test("blank: help seen by asking moves the next level forward; opening help never shows the answer", async () => {
-  const { call, close } = await start({ aiKey: "", cfAccount: "", cfToken: "" });
+  const { call, close } = await start({ aiKey: "", aiProvider: "openai", cloudflareAccountId: "", cloudflareToken: "" });
   try {
     const q = "book-l1-blank-3";
     // «ساعدني» before answering: the review; a first wrong answer then brings the explanation.

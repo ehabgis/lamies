@@ -69,14 +69,11 @@ export default function JourneyPage({ demo = false }) {
     Promise.all([
       api(demo ? "/demo/catalog" : "/catalog"),
       demo ? Promise.resolve(emptyProgress) : api("/progress"),
-      api("/demo/catalog"),
     ])
-      .then(([catalog, p, example]) => {
+      .then(([catalog, p]) => {
         if (!active) return;
-        const useSample =
-          demo || !catalog.nodes.some((n) => n.kind === "lesson");
+        const useSample = demo;
         setSample(useSample);
-        catalog = useSample ? example : catalog;
         setNodes(catalog.nodes);
         setProgress(p);
         const enrolled = user?.enrollment;

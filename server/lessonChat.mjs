@@ -37,7 +37,7 @@ export function lessonContext(content, question, previous = "", resourceId = nul
 }
 
 export function createLessonChat({ ai }) {
-  async function ask({ content, lessonTitle, message, history, resourceId, consent }) {
+  async function ask({ content, lessonTitle, message, history, resourceId, consent, aiAllowed = true }) {
     const turns = cleanHistory(history);
     const lastUser = [...turns].reverse().find((t) => t.role === "user")?.text || "";
     const ctx = lessonContext(content, message, lastUser, resourceId);
@@ -46,8 +46,8 @@ export function createLessonChat({ ai }) {
     const lastAnswer = [...turns].reverse().find((t) => t.role === "assistant")?.text;
     if (lastAnswer && lastAnswer.trim() === prepared.trim())
       prepared = "مش لاقي التفصيلة دي في نص الدرس. تقدر تسأل معلمك في الفصل، أو تسألني عن حاجة تانية في الدرس.";
-    const out = { answer: prepared, source: "prepared", canAsk: Boolean(ai?.available) };
-    if (!ai?.available || consent !== true) return out;
+    const out = { answer: prepared, source: "prepared", canAsk: Boolean(ai?.available) && aiAllowed };
+    if (!out.canAsk || consent !== true) return out;
     try {
       const text = await ai.chat(
         [

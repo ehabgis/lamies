@@ -78,10 +78,12 @@ Remove-Variable adminSecret
 شرح «أكمل الفراغ» و«أسئلة الدرس» (`POST .../help`) ومحادثة الدرس على الخريطة (`POST .../ask`) تستدعي النموذج من الخادم فقط عبر `server/aiProvider.mjs`. اضبط في بيئة الخادم (لوحة Render ← Environment) ولا تضعها في الكود أو في متغيرات VITE:
 
 - `CLOUDFLARE_ACCOUNT_ID`: معرّف حساب Cloudflare.
-- `CLOUDFLARE_API_TOKEN`: رمز API بصلاحية Workers AI.
+- `CLOUDFLARE_AI_TOKEN` أو `CLOUDFLARE_API_TOKEN`: رمز API بصلاحية Workers AI.
+- `AI_PROVIDER=cloudflare` (اختياري إذا وُجد الحساب والرمز)، و`AI_STUDENT_ENABLED=true` ليصل النموذج للطلاب والزوار.
 - `CLOUDFLARE_AI_MODEL` (اختياري): الافتراضي `@cf/meta/llama-3.3-70b-instruct-fp8-fast`.
 
 بدون هذه القيم يُستخدم `OPENAI_API_KEY` إن وُجد، وبدونهما يعرض التطبيق الشرح المعدّ من الدرس. يُرسل للنموذج نص السؤال وإجابة الطالب والجزء المعتمد من الدرس ومستوى المساعدة والشرح السابق ومحادثة الدرس، ولا يُرسل اسم الطالب أو بريده. لا يُطلب النموذج إلا بعد موافقة الطالب داخل البطاقة.
+يمكن اختيار Cloudflare عبر `AI_PROVIDER=cloudflare` بدل المزود الافتراضي. راجع [خطوات التفعيل ونشر أول درس](../docs/RENDER_DEPLOY.md#المعلم-الذكي-عبر-cloudflare). يدعم `GET /api/ai/status` فحص الإعدادات وصلاحية الحساب الحالي من دون الاتصال بالمزود.
 
 اضبط `OPENAI_API_KEY` في بيئة الخادم فقط و`OPENAI_MODEL` اختياريًا (الافتراضي gpt-4.1-mini). لا تستخدم متغير VITE للمفتاح. `POST /api/ai` يقبل `{lessonId,resourceId?,locationId?,message,mode,consent:true}`، mode: explain/hint/feedback/question. يتحقق من درس الطالب والمورد والموقع، ويسترجع أعلى ثلاث فقرات مراجعة تطابق كلمات السؤال والمورد والموقع بعد تطبيع عربي بسيط. إذا لم يجد تطابقًا يرفض السؤال دون الاتصال بالمزود. المطابقة اللفظية لا تعادل البحث الدلالي، وقد تتطلب إعادة صياغة السؤال. لا يرسل اسم الطالب أو بريده أو سجل محادثاته. يستخدم OpenAI Responses API مع store:false وJSON Schema ومهلة 20 ثانية. يتحقق من معرفات المصادر وشكل الاستجابة ويختار السؤال من بنك معتمد فقط؛ يمنح الخادم النقاط عبر التقييم الحتمي وحده.
 

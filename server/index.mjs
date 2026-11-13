@@ -21,6 +21,7 @@ import { resolve, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { database, unpack, roles, kinds } from "./db.mjs";
 import { lessonBook } from "./lessonBook.mjs";
+import { RECOVERY_PATH, recoveryConfig, createAdminRecovery } from "./adminRecovery.mjs";
 import { migrate as migrateProgress, logEvent, childReport, newLinkCode, useLinkCode, previewLinkCode, REQUIREMENTS } from "./progressLog.mjs";
 import { serveClient } from "./staticFiles.mjs";
 import { createTutorProvider } from "./tutorProvider.mjs";
@@ -87,6 +88,10 @@ export function createApp({
   aiLog = console.log,
   fetchImpl = fetch,
   clientDir = resolve("dist"),
+  // One-time administrator recovery (adminRecovery.mjs): off unless the
+  // ADMIN_RECOVERY_* variables are set.
+  adminRecovery = recoveryConfig(),
+  recoveryLog = console.log,
 } = {}) {
   const tutor = createTutorProvider({
     provider: aiProvider, aiKey, aiModel, cloudflareAccountId, cloudflareToken,
@@ -94,6 +99,13 @@ export function createApp({
   });
   const db = database(dbPath);
   migrateProgress(db);
+  const recovery = createAdminRecovery({
+    db,
+    config: adminRecovery,
+    hashPassword,
+    newId: () => randomBytes(12).toString("hex"),
+    log: recoveryLog,
+  });
   // 2026-11-13: the three lessons of «كنوز مصر» open in a student's
   // /classroom with their bundled content once an admin has reviewed and
   // published them. Nothing is published here.
@@ -548,7 +560,9 @@ export function createApp({
         headers["Set-Cookie"] =
           "lamis_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0";
       };
-      if (writable && !["/api/auth/login", "/api/auth/register"].includes(path)) {
+      // Signing in, signing up and the one-time administrator recovery need no
+      // session (the recovery proves itself with its secret instead).
+      if (writable && !["/api/auth/login", "/api/auth/register", RECOVERY_PATH].includes(path)) {
         const visitorRoute = visitorRoutes.includes(path);
         if (!user) {
           if (!visitorRoute) fail(401, "سجّل الدخول أولًا");
@@ -820,6 +834,18 @@ export function createApp({
           startSession(db.prepare("SELECT * FROM users WHERE id=?").get(id)),
           201,
         );
+      }
+      // One-time administrator recovery: answers like an unknown route unless
+      // it is configured, open, unused and not closed by wrong secrets.
+      if (path === RECOVERY_PATH) {
+        if (method !== "POST" || !recovery.active()) fail(404, "المسار غير موجود");
+        rate(`recover:${req.socket.remoteAddress}`, 5);
+        // The secret and password travel in the body only, never in a URL.
+        if (url.search) fail(400, "أرسل البيانات في جسم الطلب فقط");
+        const r = recovery.attempt(await body(req));
+        if (r.status === 404) fail(404, "المسار غير موجود");
+        if (r.status !== 200) fail(r.status, r.error);
+        return send(r.body);
       }
       if (path === "/api/auth/login" && method === "POST") {
         rate(`auth:${req.socket.remoteAddress}`);

@@ -65,6 +65,45 @@
   color: #8a9bb0;
   cursor: not-allowed;
 }
+/* Signed-in: a grade or term with no published lesson yet can still be chosen. */
+.journey-shell .journey-tile.is-empty {
+  border-style: dashed;
+}
+.journey-tile-note {
+  display: block;
+  margin-top: 2px;
+  color: #5d6f84;
+  font-size: 12px;
+  font-weight: 700;
+}
+.journey-shell .journey-tile[aria-checked="true"] .journey-tile-note {
+  color: #ffffff;
+}
+.journey-notice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border: 1.5px solid #bcd6f2;
+  border-radius: 14px;
+  background: #eef6ff;
+  color: #1d3a5c;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.journey-notice p {
+  margin: 0;
+}
+.journey-notice svg {
+  flex: none;
+  margin-top: 3px;
+  color: #0a62d6;
+}
+.journey-notice a {
+  color: #0a4fae;
+  font-weight: 800;
+}
 .journey-soon {
   display: inline-block;
   margin-top: 2px;

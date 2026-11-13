@@ -87,8 +87,13 @@ export default function JourneyPage({ demo = false }) {
           const u = catalog.nodes.find((n) => n.id === params.get("unit") && n.kind === "unit");
           setSelection({ yearTitle: y.title, stageId: g.parentId, gradeId: g.id, termId: t.id, ...(u ? { unitId: u.id } : {}) });
           setStep(1);
+        } else if (year) {
+          // A saved grade and term (still published) opens straight on the
+          // units; the first step stays one click away to change them.
+          setSelection({ ...enrolled, yearTitle: year.title });
+          setStep(1);
         } else {
-          setSelection(year ? { ...enrolled, yearTitle: year.title } : {});
+          setSelection({});
           setStep(0);
         }
       })
@@ -165,32 +170,42 @@ export default function JourneyPage({ demo = false }) {
       for (let p = byId.get(n.parentId); p; p = byId.get(p.parentId)) withContent.add(p.id);
   const ready = step === 0 ? selection.gradeId && selection.termId && year && subject : selection.unitId;
   const name = (id) => nodes.find((n) => n.id === id)?.title;
+  // Signed-in only: the server checks the grade, term and year are published
+  // and belong together. Unchanged choices are not sent again.
+  async function saveEnrollment() {
+    const enrollment = {
+      stageId: selection.stageId,
+      gradeId: selection.gradeId,
+      termId: selection.termId,
+      yearId: year.id,
+    };
+    const old = user?.enrollment;
+    if (old && Object.keys(enrollment).every((k) => old[k] === enrollment[k])) return true;
+    setSaving(true);
+    setError("");
+    try {
+      const result = await api("/enrollment", { method: "PUT", body: enrollment });
+      setUser(result.user || { ...user, enrollment });
+      return true;
+    } catch (e) {
+      setError(e.message);
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }
   async function openLesson(lesson) {
     if (saving || lesson.available === false) return;
     if (lesson.demo) {
       navigate(`/demo/${lesson.demoLessonId || lesson.id}`);
       return;
     }
-    setSaving(true);
-    setError("");
-    try {
-      const enrollment = {
-        stageId: selection.stageId,
-        gradeId: selection.gradeId,
-        termId: selection.termId,
-        yearId: year.id,
-      };
-      const result = await api("/enrollment", {
-        method: "PUT",
-        body: enrollment,
-      });
-      setUser(result.user || { ...user, enrollment });
-      navigate(`/classroom/${lesson.id}`);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setSaving(false);
-    }
+    if (await saveEnrollment()) navigate(`/classroom/${lesson.id}`);
+  }
+  async function next() {
+    play("open");
+    if (!sample && !(await saveEnrollment())) return;
+    setStep(1);
   }
   function tiles(key, label, options, { disabled = false, prerequisite, wide = false } = {}) {
     const items = options.map((o) => (typeof o === "string" ? { id: o, title: o } : o));
@@ -205,7 +220,11 @@ export default function JourneyPage({ demo = false }) {
           <div role="radiogroup" aria-label={label}>
             {items.map((o, i) => {
               const parts = o.title.split(":");
-              const soon = ["gradeId", "termId", "unitId"].includes(key) && !withContent.has(o.id);
+              const empty = ["gradeId", "termId", "unitId"].includes(key) && !withContent.has(o.id);
+              // The sample journey dims what has no lesson yet. A signed-in
+              // student may still pick their real grade and term: it is saved,
+              // and the page says plainly that no lesson is published yet.
+              const soon = empty && sample;
               return (
                 <button
                   type="button"
@@ -214,7 +233,7 @@ export default function JourneyPage({ demo = false }) {
                   aria-checked={selection[key] === o.id}
                   aria-disabled={soon || undefined}
                   disabled={soon}
-                  className={`journey-tile tile-tone-${i % 4} ${soon ? "is-soon" : ""}`}
+                  className={`journey-tile tile-tone-${i % 4} ${soon ? "is-soon" : empty ? "is-empty" : ""}`}
                   onClick={() => {
                     play("select");
                     choose(key, o.id);
@@ -222,6 +241,7 @@ export default function JourneyPage({ demo = false }) {
                 >
                   <b>{parts[0].replace(/ الابتدائي$/, "").replace(/^الفصل الدراسي /, "الفصل ")}</b>
                   {parts[1] && <small>{parts[1].trim()}</small>}
+                  {empty && !soon && <span className="journey-tile-note">لا دروس منشورة بعد</span>}
                   {selection[key] === o.id && (
                     <CheckCircle className="journey-tile-check" weight="fill" aria-hidden="true" />
                   )}
@@ -283,6 +303,16 @@ export default function JourneyPage({ demo = false }) {
             <p role="status">جارٍ تحميل الخيارات…</p>
           ) : (
             <>
+              {!sample && !withContent.size && (
+                <div className="journey-notice" role="status">
+                  <Info size={22} aria-hidden="true" />
+                  <p>
+                    لم تُنشر دروس لحسابك بعد. اختر صفك وفصلك ليُحفظا، وستظهر دروسك
+                    هنا بعد أن يراجعها المعلم وينشرها. حتى ذلك الحين{" "}
+                    <Link to="/explore">جرّب الرحلة التجريبية</Link>.
+                  </p>
+                </div>
+              )}
               <div className="journey-fields">
                 {step === 0 && (
                   <>
@@ -303,9 +333,9 @@ export default function JourneyPage({ demo = false }) {
                     })}
                   </>
                 )}
-                {step === 1 && tiles("unitId", "الوحدة", units, { wide: true })}
+                {step === 1 && units.length > 0 && tiles("unitId", "الوحدة", units, { wide: true })}
               </div>
-              {step === 1 && (
+              {step === 1 && units.length > 0 && (
                 <section
                   className="journey-lesson-list"
                   aria-label="الدروس المتاحة"
@@ -379,15 +409,23 @@ export default function JourneyPage({ demo = false }) {
                   )}
                 </section>
               )}
+              {step === 0 && !sample && withContent.size > 0 && selection.termId && subjects.length > 0 &&
+                !withContent.has(selection.termId) && (
+                <p className="journey-inline-help" role="status">
+                  لا توجد دروس منشورة لهذا الفصل حتى الآن. يُحفظ اختيارك، وستظهر الدروس عند نشرها.
+                </p>
+              )}
               {step === 0 && selection.termId && !subjects.length && (
                 <p className="journey-inline-help">
                   لا توجد مواد منشورة لهذا الفصل. جرّب اختيار فصل آخر.
                 </p>
               )}
-              {step === 1 && !units.length && (
-                <p className="journey-inline-help">
-                  لا توجد وحدات منشورة لهذه المادة.{" "}
-                  {!demo && <Link to="/explore">يمكنك تجربة درس كنوز مصر</Link>}
+              {/* With nothing published at all, the notice above already says it. */}
+              {step === 1 && !units.length && (sample || withContent.size > 0) && (
+                <p className="journey-inline-help" role="status">
+                  لا توجد دروس منشورة لهذا الصف والفصل حتى الآن. يمكنك تغيير اختيارك من
+                  «الصف والفصل الدراسي».{" "}
+                  {!demo && <Link to="/explore">أو جرّب الرحلة التجريبية</Link>}
                 </p>
               )}
             </>
@@ -424,13 +462,10 @@ export default function JourneyPage({ demo = false }) {
             {step < 1 && (
               <button
                 className="p-button"
-                disabled={!ready || loading}
-                onClick={() => {
-                  play("open");
-                  setStep(step + 1);
-                }}
+                disabled={!ready || loading || saving}
+                onClick={next}
               >
-                التالي
+                {saving ? "جارٍ الحفظ…" : "التالي"}
                 <ArrowLeft size={19} />
               </button>
             )}
@@ -438,7 +473,9 @@ export default function JourneyPage({ demo = false }) {
         </section>
         <aside className="journey-companion" aria-label="دليل الرحلة">
           <p className="journey-bubble" aria-live="polite">
-            {step === 1
+            {step === 1 && !units.length
+              ? "اختيارك محفوظ. ستظهر دروسك هنا عندما تُنشر."
+              : step === 1
               ? "اختر درسك، ثم ذاكر الدرس أو استكشف خريطته."
               : !selection.gradeId
                 ? "أهلًا يا مستكشف! اختر صفك الدراسي"

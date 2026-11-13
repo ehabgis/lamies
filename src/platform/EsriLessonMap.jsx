@@ -73,6 +73,7 @@ export default function EsriLessonMap({
   railKey = false,
   hideTools = false,
   overlay,
+  banner = null,
 }) {
   const host = useRef(null),
     mapRef = useRef(null),
@@ -938,6 +939,7 @@ export default function EsriLessonMap({
         </div>
       )}
       <div className="esri-map-alerts">
+        {banner}
         {status === "error" && basemap !== "local" && !alertClosed && (
           <div className="esri-map-warning is-esri" role="status">
             <span>تعذر تحميل Esri؛ نعرض خريطة محلية وليست صورة قمر صناعي.</span>

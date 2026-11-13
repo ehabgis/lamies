@@ -142,6 +142,11 @@ function Photo({ src, label }) {
 export default function LessonPage({ demo = false }) {
   const { id } = useParams();
   const { user } = useSession();
+  // A signed-in student in a sample lesson is told up front that nothing here
+  // reaches their account; it shows again on each sample lesson they open.
+  const [demoNoteClosed, setDemoNoteClosed] = useState(false);
+  useEffect(() => setDemoNoteClosed(false), [id]);
+  const demoNote = demo && user?.role === "student" && !demoNoteClosed;
   const [unitTitle, setUnitTitle] = useState("");
   const navigate = useNavigate();
   const [lessonOptions, setLessonOptions] = useState([]);
@@ -1076,6 +1081,19 @@ export default function LessonPage({ demo = false }) {
             waterLesson={demo && id === "lesson-2"}
             railLesson={demo && id === "lesson-3"}
             hideTools={toolsHidden}
+            banner={
+              demoNote && (
+                <div className="esri-map-warning is-demo-note" role="status">
+                  <span>أنت الآن في تجربة تعليمية. إجاباتك وتقدمك هنا لا يُحفظان في حسابك.</span>
+                  <Link className="demo-note-back" to="/journey">
+                    العودة إلى رحلتي
+                  </Link>
+                  <button className="esri-alert-close" aria-label="إغلاق التنبيه" onClick={() => setDemoNoteClosed(true)}>
+                    <X size={16} aria-hidden="true" />
+                  </button>
+                </div>
+              )
+            }
             hideRail={railTrip || Boolean(capital) || Boolean(toshka) || Boolean(galala)}
             overlay={(map) => (
               <>

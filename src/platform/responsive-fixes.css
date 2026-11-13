@@ -297,6 +297,36 @@
   min-height: 32px;
   padding: 0 !important;
 }
+/* Signed-in student in a sample lesson: nothing here is saved to the account.
+   Same strip as the map alerts, so the map stays usable around it. */
+.map-shell .esri-map-alerts .esri-map-warning.is-demo-note {
+  gap: 8px;
+  background: #eef6ff;
+  border: 1.5px solid #bcd6f2;
+  color: #1d3a5c;
+}
+.map-shell .esri-map-alerts .esri-map-warning.is-demo-note > span:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 700;
+}
+.map-shell .esri-map-alerts .demo-note-back {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 4px 12px;
+  border-radius: 10px;
+  background: #0a62d6;
+  color: #ffffff;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.map-shell .esri-map-alerts .demo-note-back:focus-visible {
+  outline: 3px solid #f2b705;
+  outline-offset: 2px;
+}
 @media (max-width: 850px) {
   /* At the map's right (RTL start), only as wide as it needs, clear of the zoom column. */
   .map-shell .esri-map-alerts {
@@ -310,6 +340,17 @@
     font-size: 11.5px;
     line-height: 1.35;
     padding: 4px 4px 4px 8px;
+  }
+  /* The sample-lesson note sits above the dock, clear of the zoom column at
+     the top, so it may use the map's width and stay short. */
+  .map-shell .esri-map-alerts:has(.is-demo-note) {
+    left: 8px;
+    right: 8px;
+    max-width: none;
+  }
+  .map-shell .esri-map-alerts .esri-map-warning.is-demo-note {
+    font-size: 12.5px;
+    padding: 6px 6px 6px 10px;
   }
   .map-shell .esri-map-alerts .esri-retry-text {
     position: absolute;

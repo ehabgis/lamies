@@ -151,6 +151,12 @@ function AppContent() {
               <Route path="/journey" element={<JourneyPage />} />
               <Route path="/my-progress" element={<StudentProgress />} />
               <Route path="/classroom/:id" element={<ClassroomPage />} />
+              {/* A published bundled lesson's journey, activities and book, in
+                  the student's classroom (the server checks the lesson). */}
+              <Route path="/classroom/:id/expedition" element={<TripRoute />} />
+              <Route path="/classroom/:id/build-map" element={<BuildMapPage />} />
+              <Route path="/classroom/:id/trace" element={<TraceMapPage />} />
+              <Route path="/classroom/:id/book" element={<BookPage />} />
             </Route>
             <Route element={<AccountGuard admin />}>
               <Route path="/admin" element={<AdminRoute />} />

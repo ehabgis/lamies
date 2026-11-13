@@ -29,6 +29,7 @@ import {
   X,
 } from "phosphor-react";
 import { api } from "./api";
+import { useLessonPlace } from "./lessonPlace";
 import BrandMark from "./BrandMark";
 import { LessonSymbol } from "../components/Map/WaterSymbol";
 import * as narrator from "./narrator";
@@ -67,6 +68,9 @@ const ICON = {
 // the index jumps to any part, «استمع للشرح» reads the screen aloud, and the
 // last screen leads to the lesson map and activities.
 export default function BookPage() {
+  const place = useLessonPlace();
+  // The unit's lessons: the student's journey, or the visitor's sample.
+  const lessonsHref = place.classroom ? "/journey" : LESSONS_HREF;
   const { id } = useParams();
   const navigate = useNavigate();
   const [search, setSearch] = useSearchParams();
@@ -80,7 +84,7 @@ export default function BookPage() {
   useEffect(() => {
     setBook(null);
     setError("");
-    api(`/demo/lessons/${encodeURIComponent(id)}/book`)
+    api(`${place.api}/${encodeURIComponent(id)}/book`)
       .then((d) => setBook(d.book))
       .catch((e) => setError(e.message));
   }, [id]);
@@ -109,7 +113,7 @@ export default function BookPage() {
     setIndexOpen(false);
     setSearch(i ? { s: String(i) } : {});
   };
-  const mapHref = (rid) => `/demo/${id}${rid ? `?resource=${encodeURIComponent(rid)}` : ""}`;
+  const mapHref = (rid) => `${place.page}/${id}${rid ? `?resource=${encodeURIComponent(rid)}` : ""}`;
 
   if (error)
     return (
@@ -178,7 +182,7 @@ export default function BookPage() {
             <ArrowRight size={20} aria-hidden="true" /> السابق
           </button>
         ) : (
-          <Link className="bk-side-btn" to={LESSONS_HREF}>
+          <Link className="bk-side-btn" to={lessonsHref}>
             <ArrowRight size={20} aria-hidden="true" /> دروس الوحدة
           </Link>
         )}
@@ -215,30 +219,33 @@ export default function BookPage() {
 
 function Frame({ id, children }) {
   const navigate = useNavigate();
+  const place = useLessonPlace();
+  const lessonsHref = place.classroom ? "/journey" : LESSONS_HREF;
+  const home = place.classroom ? "/journey" : "/";
   return (
     <div className="bk-shell" dir="rtl">
       <header className="bk-top">
-        <Link to="/" className="bk-brand">
+        <Link to={home} className="bk-brand">
           <BrandMark size={42} /> <span>الخرائط التعليمية الذكية</span>
         </Link>
         <nav aria-label="التنقل">
-          <button type="button" onClick={() => (window.history.length > 1 ? navigate(-1) : navigate(LESSONS_HREF))}>
+          <button type="button" onClick={() => (window.history.length > 1 ? navigate(-1) : navigate(lessonsHref))}>
             <ArrowRight size={22} aria-hidden="true" /> <span>رجوع</span>
           </button>
-          <Link to="/">
-            <House size={22} aria-hidden="true" /> <span>الرئيسية</span>
+          <Link to={home}>
+            <House size={22} aria-hidden="true" /> <span>{place.classroom ? "رحلتي" : "الرئيسية"}</span>
           </Link>
-          <Link to={LESSONS_HREF} className="is-current" title="العودة إلى دروس الوحدة">
+          <Link to={lessonsHref} className="is-current" title="العودة إلى دروس الوحدة">
             <BookOpen size={22} aria-hidden="true" /> <span>كتابي التفاعلي</span>
           </Link>
-          <Link to={`/demo/${id}`}>
+          <Link to={`${place.page}/${id}`}>
             <MapTrifold size={22} aria-hidden="true" /> <span>الخريطة التعليمية</span>
           </Link>
         </nav>
       </header>
       <nav className="bk-lessons" aria-label="دروس الوحدة الثالثة: كنوز مصر">
         {LESSONS.map(([lid, n, name], i) => (
-          <Link key={lid} to={`/demo/${lid}/book`} aria-current={lid === id ? "page" : undefined} onClick={() => play("select")}>
+          <Link key={lid} to={`${place.page}/${lid}/book`} aria-current={lid === id ? "page" : undefined} onClick={() => play("select")}>
             <b aria-hidden="true">{i + 1}</b>
             <span>
               <strong>{n}</strong>

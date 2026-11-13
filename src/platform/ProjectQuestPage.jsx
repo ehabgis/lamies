@@ -15,6 +15,7 @@ import {
   ArrowCounterClockwise,
 } from "phosphor-react";
 import { api } from "./api";
+import { useLessonPlace } from "./lessonPlace";
 import RobotGuide from "../components/Map/RobotGuide";
 import ResourcePin from "../components/Map/ResourcePin";
 import ProjectQuestMap, { TYPE_LABEL } from "./ProjectQuestMap";
@@ -46,6 +47,7 @@ const symbolOf = (type) => <ResourcePin resource={{ id: type, iconFamily: type }
 
 // «نكتشف مشروعات مصر»: three stations, each watch → find on the map → answer.
 export default function ProjectQuestPage({ id = "lesson-3" }) {
+  const place = useLessonPlace();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
@@ -56,7 +58,7 @@ export default function ProjectQuestPage({ id = "lesson-3" }) {
   const talkRef = useRef(null);
 
   useEffect(() => {
-    api(`/demo/lessons/${id}/expedition`)
+    api(`${place.api}/${id}/expedition`)
       .then((r) => setData(r.expedition))
       .catch((e) => setError(e.message));
     return () => narrator.stop();
@@ -84,10 +86,10 @@ export default function ProjectQuestPage({ id = "lesson-3" }) {
     <Frame
       title={data?.lessonTitle || "الدرس الثالث: المشروعات القومية"}
       stars={data ? stars : undefined}
-      lessonPath="/explore"
+      lessonPath={place.classroom ? `/classroom/${id}` : "/explore"}
       onSettings={data ? () => setSettings(true) : undefined}
       extraNav={
-        <Link to={`/demo/${id}`}>
+        <Link to={`${place.page}/${id}`}>
           <MapTrifold size={22} aria-hidden="true" /> الخريطة التفاعلية
         </Link>
       }
@@ -134,7 +136,7 @@ export default function ProjectQuestPage({ id = "lesson-3" }) {
 
   async function check(body) {
     try {
-      return await api(`/demo/lessons/${id}/expedition/check`, { method: "POST", body: { missionId: mission.id, ...body } });
+      return await api(`${place.api}/${id}/expedition/check`, { method: "POST", body: { missionId: mission.id, ...body } });
     } catch (e) {
       say(`تعذر التحقق الآن: ${e.message}. حاول مرة أخرى.`);
       return null;
@@ -280,10 +282,10 @@ export default function ProjectQuestPage({ id = "lesson-3" }) {
           <strong>{data.badge}</strong>
         </div>
         <div className="pq-finale-actions">
-          <button className="exp-primary" onClick={() => navigate(`/demo/${id}`)}>
+          <button className="exp-primary" onClick={() => navigate(`${place.page}/${id}`)}>
             <MapTrifold size={22} aria-hidden="true" /> استكشف الخريطة
           </button>
-          <button className="exp-secondary" onClick={() => navigate("/demo/trips")}>
+          <button className="exp-secondary" onClick={() => navigate(place.classroom ? "/journey" : "/demo/trips")}>
             <FlagCheckered size={22} aria-hidden="true" /> إنهاء الرحلة
           </button>
           <button className="pq-link" onClick={() => setP(fresh)}>

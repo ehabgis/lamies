@@ -20,6 +20,7 @@ import {
   Stack,
 } from "phosphor-react";
 import { api } from "./api";
+import { useLessonPlace } from "./lessonPlace";
 import RobotGuide from "../components/Map/RobotGuide";
 import { Frame } from "./ExpeditionPage";
 import { studentKey } from "./guestProfile";
@@ -52,6 +53,7 @@ const load = (id) => {
 
 // «تتبّع وارسم خريطتك»: trace → practise → draw alone, then name the seas.
 export default function TraceMapPage() {
+  const place = useLessonPlace();
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [base, setBase] = useState(null);
@@ -69,7 +71,7 @@ export default function TraceMapPage() {
   const [choice, setChoice] = useState(null);
 
   useEffect(() => {
-    api(`/demo/lessons/${id}/trace`)
+    api(`${place.api}/${id}/trace`)
       .then((r) => setData(r.activity))
       .catch((e) => setError(e.message));
     Promise.all(["egypt-governorates", "egypt-seas"].map((f) => fetch(`/geodata/${f}.geojson`).then((r) => r.json())))
@@ -97,7 +99,7 @@ export default function TraceMapPage() {
   async function check(body) {
     setBusy(true);
     try {
-      return await api(`/demo/lessons/${id}/trace/check`, { method: "POST", body });
+      return await api(`${place.api}/${id}/trace/check`, { method: "POST", body });
     } catch (e) {
       setSay(`تعذر التحقق الآن: ${e.message}`);
       return null;
@@ -150,7 +152,7 @@ export default function TraceMapPage() {
   }
 
   const frame = (children) => (
-    <Frame title={data?.title || "تتبّع وارسم خريطتك"} lessonPath="/explore" className="trace-map">
+    <Frame title={data?.title || "تتبّع وارسم خريطتك"} lessonPath={place.classroom ? `/classroom/${id}` : "/explore"} className="trace-map">
       {children}
     </Frame>
   );
@@ -163,7 +165,7 @@ export default function TraceMapPage() {
   if (!data || !base || !model) return frame(<p className="exp-loading" role="status">نجهّز ورقة الرسم…</p>);
 
   const back = (
-    <Link className="tm-crumb" to={`/demo/${id}`}>
+    <Link className="tm-crumb" to={`${place.page}/${id}`}>
       <ArrowRight size={16} aria-hidden="true" /> الأنشطة التفاعلية
     </Link>
   );
@@ -438,7 +440,7 @@ export default function TraceMapPage() {
           </h2>
           <p>رسمت نهر النيل بنفسك، ووضعت البحرين في مكانيهما، وعرفت أين يصب النيل.</p>
         </section>
-        <Link className="exp-primary" to={`/demo/${id}`}>
+        <Link className="exp-primary" to={`${place.page}/${id}`}>
           العودة إلى الأنشطة <ArrowLeft size={18} aria-hidden="true" />
         </Link>
         <button

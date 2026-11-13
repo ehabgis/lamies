@@ -34,19 +34,29 @@ test("a linked parent sees only their child's graded progress", async () => {
     const stranger = await signUp("ولي أمر آخر", "other@example.test", "parent");
     assert.equal(parent.role, "parent");
 
-    // Ahmed: lesson 1 journey final, the classify activity, 5 questions (3 right first time).
+    // Ahmed learns in his classroom: the bundled lessons, published here in
+    // the test database only, and his grade and term.
+    app.db.prepare("UPDATE nodes SET status='published' WHERE id IN ('egypt-treasures','lesson-1','lesson-3')").run();
+    assert.equal((await api("/api/enrollment", "PUT", { stageId: "primary", gradeId: "grade-5", termId: "grade-5-term-1", yearId: "grade-5-term-1-2026" }, ahmed)).status, 200);
+    // Lesson 1: the classify activity, 5 questions (3 right first time).
     const qs = demoLesson("lesson-1").content.questions.filter((q) => ["choice", "boolean"].includes(q.type) && !q.kind).slice(0, 5);
     for (const [i, q] of qs.entries()) {
       const wrong = q.type === "boolean" ? "nope" : "إجابة خاطئة";
-      await api("/api/demo/lessons/lesson-1/answers", "POST", { questionId: q.id, answer: i < 2 ? wrong : "x", attempt: 1 }, ahmed);
+      assert.equal((await api("/api/lessons/lesson-1/answers", "POST", { questionId: q.id, answer: i < 2 ? wrong : "x", attempt: 1 }, ahmed)).status, 200);
     }
-    await api("/api/demo/lessons/lesson-1/answers", "POST", {
+    await api("/api/lessons/lesson-1/answers", "POST", {
       questionId: "book-l1-drag-energy",
       answer: { "البترول": "مصادر غير متجددة", "الفحم": "مصادر غير متجددة", "الغاز الطبيعي": "مصادر غير متجددة", "الطاقة الشمسية": "مصادر متجددة", "طاقة الرياح": "مصادر متجددة", "الطاقة الكهرومائية": "مصادر متجددة" },
     }, ahmed);
-    await api("/api/demo/lessons/lesson-3/expedition/check", "POST", { missionId: "new-delta", step: "use", answer: "نشتري قمحًا أقل من الخارج", attempt: 1 }, ahmed);
-    // Anonymous demo use records nothing.
+    assert.equal((await api("/api/lessons/lesson-3/expedition/check", "POST", { missionId: "new-delta", step: "use", answer: "نشتري قمحًا أقل من الخارج", attempt: 1 }, ahmed)).status, 200);
+    // The sample keeps nothing, for a visitor or a signed-in student (lesson 2 stays «new»).
     await api("/api/demo/lessons/lesson-3/expedition/check", "POST", { missionId: "birket-ghalioun", step: "use", answer: "يوفّر الأسماك وفرص العمل" });
+    const l2 = demoLesson("lesson-2").content.questions.find((q) => ["choice", "boolean"].includes(q.type) && !q.kind);
+    await api("/api/demo/lessons/lesson-2/answers", "POST", { questionId: l2.id, answer: "x", attempt: 1 }, ahmed);
+    await api("/api/demo/lessons/lesson-2/expedition/check", "POST", { missionId: "farm", step: "use", answer: "x", attempt: 1 }, ahmed);
+    // A lesson that is not published (lesson 2) or not in his enrolment is refused in the classroom.
+    assert.equal((await api("/api/lessons/lesson-2/expedition/check", "POST", { missionId: "farm", step: "use", answer: "x" }, ahmed)).status, 403);
+    assert.equal((await api("/api/lessons/lesson-2/answers", "POST", { questionId: l2.id, answer: "x" }, ahmed)).status, 403);
 
     // Only a student can make a code; it works once.
     assert.equal((await api("/api/parent/link-code", "POST", {}, parent)).status, 403);

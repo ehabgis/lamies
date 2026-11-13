@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import L from "leaflet";
 import { SpeakerHigh, ArrowRight, CheckCircle, XCircle } from "phosphor-react";
 import { api } from "./api";
+import { useLessonPlace } from "./lessonPlace";
 import * as narrator from "./narrator";
 import { play } from "./sfx";
 import RobotGuide from "../components/Map/RobotGuide";
@@ -69,6 +70,7 @@ export function CapitalApproach({ map, site, onArrive }) {
 // 4: the card beside the scene: a short definition, «استمع للمعلومة», the
 // question (graded on the server) and «عودة للخريطة».
 export function CapitalCard({ resource, lessonId, question, onBack }) {
+  const place = useLessonPlace();
   const [picked, setPicked] = useState(null);
   const [result, setResult] = useState(null);
   const [attempt, setAttempt] = useState(1);
@@ -79,7 +81,7 @@ export function CapitalCard({ resource, lessonId, question, onBack }) {
     setBusy(true);
     setPicked(option);
     try {
-      const r = await api(`/demo/lessons/${lessonId}/answers`, {
+      const r = await api(`${place.api}/${lessonId}/answers`, {
         method: "POST",
         body: { questionId: question.id, answer: option, attempt },
       });

@@ -14,6 +14,7 @@ import {
   Crosshair,
 } from "phosphor-react";
 import { api } from "./api";
+import { useLessonPlace } from "./lessonPlace";
 import RobotGuide from "../components/Map/RobotGuide";
 import ResourcePin from "../components/Map/ResourcePin";
 import BuildMapCanvas from "./BuildMapCanvas";
@@ -41,6 +42,7 @@ const load = (id) => {
 };
 
 export default function BuildMapPage() {
+  const where = useLessonPlace();
   const { id = "lesson-1" } = useParams();
   const [data, setData] = useState(null);
   const [resources, setResources] = useState({});
@@ -55,7 +57,7 @@ export default function BuildMapPage() {
 
   useEffect(() => {
     setP(load(id));
-    Promise.all([api(`/demo/lessons/${id}/build-map`), api(`/demo/lessons/${id}`)])
+    Promise.all([api(`${where.api}/${id}/build-map`), api(`${where.api}/${id}`)])
       .then(([a, l]) => {
         setData(a.activity);
         setResources(Object.fromEntries((l.lesson.content.resources || []).map((r) => [r.id, r])));
@@ -117,7 +119,7 @@ export default function BuildMapPage() {
     for (const [itemId, at] of pending) {
       const attempt = (attempts[itemId] || 0) + 1;
       try {
-        const r = await api(`/demo/lessons/${id}/build-map/check`, {
+        const r = await api(`${where.api}/${id}/build-map/check`, {
           method: "POST",
           body: { itemId, lat: at.lat, lng: at.lng, attempt },
         });
@@ -146,7 +148,7 @@ export default function BuildMapPage() {
     if (!target) return;
     const level = Math.max(p.hints[target] || 0, p.attempts[target] || 0) + 1;
     try {
-      const r = await api(`/demo/lessons/${id}/build-map/check`, { method: "POST", body: { itemId: target, hint: true, attempt: level } });
+      const r = await api(`${where.api}/${id}/build-map/check`, { method: "POST", body: { itemId: target, hint: true, attempt: level } });
       go({ hints: { ...p.hints, [target]: level } });
       say(`تلميح عن ${items[target].label}: ${r.hint}`);
     } catch (e) {
@@ -203,7 +205,7 @@ export default function BuildMapPage() {
     let answer = why.answer;
     if (why.final) {
       try {
-        answer = (await api(`/demo/lessons/${id}/build-map/check`, { method: "POST", body: { reveal: "final", roundIndex: p.round } })).answer;
+        answer = (await api(`${where.api}/${id}/build-map/check`, { method: "POST", body: { reveal: "final", roundIndex: p.round } })).answer;
       } catch {
         answer = "";
       }
@@ -216,14 +218,14 @@ export default function BuildMapPage() {
 
   const nav = (
     <>
-      <Link to={`/demo/${id}`}>
+      <Link to={`${where.page}/${id}`}>
         <MapTrifold size={22} aria-hidden="true" /> الخريطة التفاعلية
       </Link>
     </>
   );
   if (error)
     return (
-      <Frame title="ابنِ خريطتك" lessonPath="/explore">
+      <Frame title="ابنِ خريطتك" lessonPath={where.classroom ? `/classroom/${id}` : "/explore"}>
         <div className="exp-error" role="alert">
           <p>تعذر تحميل النشاط. {error}</p>
           <button className="p-button" onClick={() => window.location.reload()}>
@@ -234,14 +236,14 @@ export default function BuildMapPage() {
     );
   if (!data)
     return (
-      <Frame title="ابنِ خريطتك" lessonPath="/explore">
+      <Frame title="ابنِ خريطتك" lessonPath={where.classroom ? `/classroom/${id}` : "/explore"}>
         <p className="exp-loading" role="status">جارٍ تجهيز الخريطة…</p>
       </Frame>
     );
 
   const guideText = robot || round?.intro;
   return (
-    <Frame title={`ابنِ خريطتك — ${data.title}`} stars={stars} lessonPath="/explore" extraNav={nav} className="build-map-page">
+    <Frame title={`ابنِ خريطتك — ${data.title}`} stars={stars} lessonPath={where.classroom ? `/classroom/${id}` : "/explore"} extraNav={nav} className="build-map-page">
       <div className="bm-layout">
         <aside className="bm-palette" aria-label="رموز الموارد">
           <h2>رموز الموارد</h2>

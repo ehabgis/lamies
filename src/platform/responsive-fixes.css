@@ -1,0 +1,462 @@
+/* Responsive batch 2 (2026-11-13) for the lesson map page. Loaded last in
+   LessonPage.jsx (after map-compact.css); remove that import to roll back.
+   Measured in Chrome at 320–1440px, 844×390 and 200% zoom. */
+
+/* 1) Lesson tabs on laptop widths (851–1440). The three tabs share the room
+      left by the program name and the explorer chip; long subtitles end with
+      «…» instead of the third tab running off the screen (it started at
+      x=-56 at 1280px). The full title stays the button's accessible name. */
+@media (min-width: 851px) and (max-width: 1440px) {
+  .map-shell .map-header-v2 .map-top-button-cluster.lesson-switcher {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .map-shell .map-header-v2 .lesson-number-buttons {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .map-shell .map-header-v2 .lesson-button-wrap {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .map-shell .map-header-v2 .lesson-button-wrap button {
+    width: 100%;
+    min-width: 0;
+  }
+  .map-shell .map-header-v2 .lesson-tab-text {
+    min-width: 0;
+    overflow: hidden;
+  }
+  .map-shell .map-header-v2 .lesson-tab-text b,
+  .map-shell .map-header-v2 .lesson-tab-text small {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .map-shell .explorer-text strong {
+    max-width: 120px;
+  }
+}
+/* Up to 1320px the explorer chip drops its «المستكشف» caption (the name and
+   stars stay), so the lesson titles keep their full words. */
+@media (min-width: 851px) and (max-width: 1320px) {
+  .map-shell .explorer-text small {
+    display: none;
+  }
+  .map-shell .explorer-text strong {
+    max-width: 96px;
+  }
+  .map-shell .studio-titlebar.map-header-v2 {
+    gap: 10px;
+  }
+  /* Slimmer tabs: «الدرس الثالث» needs ~85px; the number and padding took 81px of a ~155px tab. */
+  .map-shell .map-header-v2 .lesson-button-wrap button {
+    gap: 7px;
+    padding: 5px 8px 5px 10px;
+  }
+  .map-shell .map-header-v2 .lesson-tab-number {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+    flex: none;
+  }
+}
+
+/* 2) Map key and zoom buttons (computers). The key is open by default on the
+      left edge and covered the zoom, «عرض مصر» and full-screen buttons; while
+      it is shown they sit just beside it. Widths measured in Chrome, from
+      x=20: 460px (two columns) at 851–1250, 236–260px from 1251. */
+@media (min-width: 851px) and (max-width: 1250px) {
+  .map-shell .studio-workspace:not(.legend-hidden):has(> .classroom-legend:not([hidden])) .esri-map-zoom {
+    left: 483px;
+  }
+}
+@media (min-width: 1251px) {
+  .map-shell .studio-workspace:not(.legend-hidden):has(> .classroom-legend:not([hidden])) .esri-map-zoom {
+    left: 283px;
+  }
+}
+
+/* 3) Short screens (landscape phones, 200% zoom): a slimmer header gives the
+      map more height (the header took 154 of 390–400px), and the four zoom
+      buttons sit in two columns, so they fit above the dock. All buttons keep
+      at least 36–40px. The lesson tabs and the lesson information row stay. */
+@media (max-height: 500px) {
+  .map-shell {
+    --brand-size: 19px;
+  }
+  .map-shell .studio-titlebar.map-header-v2 {
+    padding-block: 2px 4px !important;
+    row-gap: 2px !important;
+  }
+  .map-shell .map-header-v2 .map-brand-logo,
+  .map-shell .map-header-v2 .map-brand-mark {
+    width: 30px;
+    height: 30px;
+  }
+  .map-shell .map-header-v2 .lesson-button-wrap button {
+    min-height: 38px;
+  }
+  .map-shell .map-header-v2 .lesson-top-actions button {
+    min-height: 36px;
+  }
+  .map-shell .explorer-avatar {
+    width: 32px;
+    height: 32px;
+  }
+  .map-shell .explorer-sound {
+    width: 36px;
+    height: 36px;
+  }
+}
+/* 200% zoom of a 1280px screen (640×400): the dock is 470px for five buttons;
+   «أكملت درسي» ran 2px out of its 78px button at 13px. */
+@media (max-height: 500px) and (max-width: 700px) {
+  .map-shell .floating-learning-dock > button > span {
+    font-size: 12px !important;
+  }
+  .map-shell .floating-learning-dock button small:not(.dock-progress) {
+    display: none;
+  }
+}
+@media (max-height: 500px) {
+  .map-shell .esri-map-zoom {
+    display: grid;
+    grid-template-columns: repeat(2, 40px);
+    gap: 4px;
+  }
+  .map-shell .esri-map-zoom button {
+    width: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    height: 40px;
+    padding: 0;
+  }
+}
+
+/* 4) Dock on phones (≤600). «أكملت درسي» was squeezed to 19px at 320px and
+      its words were cut; it keeps a minimum width and its label wraps onto
+      two short lines. The other buttons share the rest. */
+@media (max-width: 600px) {
+  .map-shell .floating-learning-dock > button {
+    min-width: 0;
+  }
+  /* Labels may take two short lines inside their button (e.g. «المعلم الذكي»
+     ran 10px out of each side of a 61px button at 390px). */
+  .map-shell .floating-learning-dock > button > span {
+    white-space: normal;
+    text-align: center;
+    line-height: 1.15;
+  }
+  .map-shell .floating-learning-dock .dock-finish {
+    flex: 0 1 64px;
+    width: 64px;
+    min-width: 58px;
+  }
+}
+/* Phones up to 480px: the smart teacher's button drops its small subtitle
+   («اسأل الخريطة»); its name stays. */
+@media (max-width: 480px) {
+  .map-shell .floating-learning-dock button small:not(.dock-progress) {
+    display: none;
+  }
+}
+/* Computers: the dock is one 40px row. map-compact.css meant «أكملت درسي» and
+   «0/43» on one line with 6px under them for the progress bar, but map-ux.css
+   (column, padding-bottom 14px !important) won, so the two lines did not fit
+   and ~7px of the label's top was cut. Same selectors, loaded later. */
+@media (min-width: 851px) {
+  .map-shell .floating-learning-dock .dock-finish {
+    padding-bottom: 8px !important;
+  }
+  .map-shell .floating-learning-dock .dock-finish > span:not(.dock-progress-bar) {
+    flex-direction: row;
+  }
+}
+/* Narrowest phones: a smaller robot and 12px labels, so all five fit at 320–380px. */
+@media (max-width: 380px) {
+  .map-shell .floating-learning-dock > button > span {
+    font-size: 12px !important;
+  }
+  .map-shell .floating-learning-dock button svg[class*="robot"],
+  .map-shell .floating-learning-dock button > svg:first-child {
+    max-width: 30px;
+    max-height: 32px;
+  }
+}
+
+/* ======================= Batch 3 (2026-11-13) ======================= */
+
+/* 5) Greeting bubble «أهلًا يا مستكشف!». Not shown on short screens (also not
+      spoken there, LessonPage.jsx). On narrow phones it starts right of the
+      zoom column (16–60px) instead of covering it. */
+@media (max-height: 500px) {
+  .map-shell .map-teacher-hint {
+    display: none;
+  }
+}
+@media (max-width: 400px) {
+  /* Right of the zoom buttons, which are two columns here (16–100px). */
+  .map-shell .map-teacher-hint {
+    left: 108px;
+    right: 8px;
+    max-width: none;
+  }
+  .map-shell .map-teacher-hint .map-hint-bubble {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+}
+/* Phones and tablets: the bubble steps aside while the map key sheet is open. */
+@media (max-width: 850px), (max-height: 500px) {
+  .map-shell .studio-workspace:has(> .classroom-legend.mobile-open:not([hidden])) .map-teacher-hint {
+    display: none;
+  }
+}
+
+/* 6) Map tools on small maps (≤600px wide or ≤500px high): «أسماء المعالم»,
+      «المحافظات» and «معرض الخرائط» open from one «أدوات الخريطة» button at
+      the map's top right (RTL start), with aria-expanded; Escape closes. The
+      zoom, «عرض مصر» and full-screen buttons always stay out. */
+.map-shell .map-tools-toggle {
+  display: none;
+}
+@media (max-width: 600px), (max-height: 500px) {
+  .map-shell .map-tools-toggle:not([hidden]) {
+    position: absolute;
+    z-index: 760;
+    top: 8px;
+    right: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 6px 12px;
+    border: 1px solid #b9d1e4;
+    border-radius: 14px;
+    background: #ffffff;
+    color: #0b2a5b;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    box-shadow: 0 4px 12px #12365c1f;
+    cursor: pointer;
+  }
+  .map-shell .map-tools-toggle[aria-expanded="true"] {
+    background: #0869c4;
+    border-color: #0869c4;
+    color: #ffffff;
+  }
+  .map-shell .esri-map-toolbar:not(.is-open) {
+    display: none !important;
+  }
+  .map-shell .esri-map-toolbar.is-open {
+    top: 58px !important;
+    right: 8px !important;
+    left: auto !important;
+    transform: none !important;
+    z-index: 1000;
+  }
+}
+/* Narrow phones: the button shows its icon only (the name stays for screen
+   readers), so it does not reach «الكل» / «المفتاح» on the left. */
+@media (max-width: 420px) {
+  .map-shell .map-tools-toggle .map-tool-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* 7) «تعذر تحميل Esri» alert: smaller, closable, and below the questions and
+      activities drawer (1700) and the smart teacher (1851); it was 1850. On
+      phones it starts right of the zoom column and no longer pushes the open
+      panels up (they keep their usual size). */
+.map-shell .esri-map-alerts {
+  /* Over the map, its zoom (750) and tools (1000); under the map key (1100,
+     1300 on phones), the questions/activities drawer (1700), the dock (1800)
+     and the smart teacher (1851). It was 1850. */
+  z-index: 1050;
+}
+.map-shell .esri-map-alerts .esri-map-warning.is-esri {
+  gap: 6px;
+}
+/* Its message takes the room; «إعادة المحاولة» and «إغلاق» sit together at the end. */
+.map-shell .esri-map-alerts .esri-map-warning.is-esri > span:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.map-shell .esri-map-alerts .esri-map-warning .esri-alert-close {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0 !important;
+}
+@media (max-width: 850px) {
+  /* At the map's right (RTL start), only as wide as it needs, clear of the zoom column. */
+  .map-shell .esri-map-alerts {
+    left: auto;
+    right: 8px;
+    width: auto;
+    max-width: calc(100% - 76px);
+    transform: none;
+  }
+  .map-shell .esri-map-alerts .esri-map-warning {
+    font-size: 11.5px;
+    line-height: 1.35;
+    padding: 4px 4px 4px 8px;
+  }
+  .map-shell .esri-map-alerts .esri-retry-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .map-shell .esri-map-alerts .esri-map-warning button {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0 6px !important;
+  }
+  .map-shell .studio-workspace:has(.esri-map-warning) > .classroom-legend,
+  .map-shell .studio-workspace:has(.esri-map-warning) > .classroom-guide,
+  .map-shell .studio-workspace:has(.esri-map-warning) > .learning-drawer {
+    bottom: 126px;
+  }
+  .map-shell .studio-workspace:has(.esri-map-warning) > .classroom-guide {
+    max-height: 47%;
+  }
+}
+@media (max-height: 500px), (max-width: 400px) {
+  /* Clear of the two zoom columns (16–100px). */
+  .map-shell .esri-map-alerts {
+    left: auto;
+    right: 8px;
+    width: auto;
+    max-width: calc(100% - 116px);
+    transform: none;
+  }
+}
+/* Phones: the greeting waits while the alert is shown (they shared the
+   bottom of the map); it comes back when the alert is closed. */
+@media (max-width: 600px) {
+  .map-shell .studio-workspace:has(.esri-map-warning) .map-teacher-hint {
+    display: none;
+  }
+}
+
+/* 8) Zoom buttons and the map key on phones, tablets and short screens.
+      There the open key is a sheet as wide as the map (measured: from x=18 to
+      the right edge, its top ~110px below the map's top, 60px on short
+      screens), so nothing fits beside it: while it is open the four buttons
+      form one row above it. ≤600px: under the tools button. 601–850px and
+      short screens: between «الكل/المفتاح» and the tools. */
+@media (max-width: 400px) {
+  /* Narrow phones, key closed: two columns, so «ملء الشاشة» stays above the dock. */
+  .map-shell .esri-map-zoom {
+    display: grid;
+    grid-template-columns: repeat(2, 40px);
+    gap: 4px;
+  }
+  .map-shell .esri-map-zoom button {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+  }
+}
+/* The same while the governorates picker («المحافظات», also a map-wide sheet
+   there) is open: it covered two zoom buttons at 375px and all four on short
+   screens. */
+@media (max-width: 850px), (max-height: 500px) {
+  .map-shell .studio-workspace:has(> .classroom-legend.mobile-open:not([hidden])) .esri-map-zoom,
+  .map-shell .esri-map-surface:has(.esri-governorates-picker) .esri-map-zoom {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+  }
+  .map-shell .studio-workspace:has(> .classroom-legend.mobile-open:not([hidden])) .esri-map-zoom button,
+  .map-shell .esri-map-surface:has(.esri-governorates-picker) .esri-map-zoom button {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+  }
+}
+@media (max-width: 600px) {
+  .map-shell .studio-workspace:has(> .classroom-legend.mobile-open:not([hidden])) .esri-map-zoom,
+  .map-shell .esri-map-surface:has(.esri-governorates-picker) .esri-map-zoom {
+    top: 60px;
+    right: 8px;
+    left: auto;
+  }
+}
+/* Short screens: from 264px, clear of «الكل/المفتاح» and of lesson 3's
+   narrower key (x 18–254 there). */
+@media (min-width: 601px) and (max-height: 500px) {
+  .map-shell .studio-workspace:has(> .classroom-legend.mobile-open:not([hidden])) .esri-map-zoom,
+  .map-shell .esri-map-surface:has(.esri-governorates-picker) .esri-map-zoom {
+    top: 8px;
+    left: 264px;
+    right: auto;
+  }
+}
+/* Tablets: «عرض الجميع / المفتاح والأدوات» are wider (to ~300px). */
+@media (min-width: 601px) and (max-width: 850px) and (min-height: 501px) {
+  .map-shell .studio-workspace:has(> .classroom-legend.mobile-open:not([hidden])) .esri-map-zoom {
+    top: 8px;
+    left: 320px;
+    right: auto;
+  }
+}
+
+/* 9) Short screens: one header row. The logo stays and the program name is
+      kept for screen readers; the lesson tabs, the lesson information
+      buttons (icons with their names for screen readers below 760px) and the
+      explorer chip share the row, giving the map about 40px more. */
+@media (max-height: 500px) {
+  .map-shell .studio-titlebar.map-header-v2 {
+    flex-wrap: nowrap !important;
+    align-items: center;
+  }
+  .map-shell .map-header-v2 .map-brand {
+    flex: none !important;
+    max-width: none !important;
+  }
+  .map-shell .map-header-v2 .map-brand-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .map-shell .map-header-v2 .map-top-button-cluster.lesson-switcher {
+    flex: 1 1 auto !important;
+    min-width: 0;
+  }
+}
+@media (max-height: 500px) and (max-width: 760px) {
+  .map-shell .map-header-v2 .lesson-sub-label {
+    display: none !important;
+  }
+  .map-shell .map-header-v2 .lesson-top-actions b {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .map-shell .map-header-v2 .lesson-top-actions .info-tab-icon {
+    display: inline-grid !important;
+  }
+}

@@ -78,6 +78,7 @@
   display: block;
   width: 100%;
   max-height: calc(100vh - 300px);
+  max-height: calc(100dvh - 300px);
   aspect-ratio: 16 / 9;
   background: #0b2a5b;
 }
@@ -301,5 +302,6 @@
   }
   .gj-player video {
     max-height: calc(100vh - 200px);
+    max-height: calc(100dvh - 200px);
   }
 }

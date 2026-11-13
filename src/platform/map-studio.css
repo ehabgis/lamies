@@ -843,7 +843,7 @@
     padding: 14px;
   }
 }
-@media (max-height: 500px) and (min-width: 650px) {
+@media (max-height: 500px) and (min-width: 560px) {
   .map-shell .studio-titlebar {
     display: flex;
     flex-wrap: nowrap;
@@ -1212,7 +1212,7 @@
 .smart-teacher-heading .atlas-robot {
   flex: 0 0 72px;
 }
-@media (max-height: 500px) and (min-width: 650px) {
+@media (max-height: 500px) and (min-width: 560px) {
   .map-shell .floating-learning-dock button {
     flex-direction: row;
     min-height: 44px;
@@ -1273,7 +1273,7 @@
   .map-sidebar-handles .map-label-icon { display: none; }
   .map-shell .studio-workspace > .learning-drawer { width: calc(100% - 20px); bottom: 102px; }
 }
-@media (max-height: 500px) and (min-width: 650px) {
+@media (max-height: 500px) and (min-width: 560px) {
   .map-shell .studio-titlebar { flex-direction: row; gap: 8px; }
   .map-top-button-cluster { flex-direction: row; gap: 8px; width: auto; }
   .map-shell .map-header-identity { position: static; order: 0; flex-direction: column; font-size: 9px; }

@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "server": "node --env-file-if-exists=.env server/index.mjs",
     "bootstrap": "node --env-file-if-exists=.env server/bootstrap.mjs",
-    "test": "node --test tests/server/*.test.mjs",
+    "test": "node --test tests/server/*.test.mjs tests/client/*.test.mjs",
     "check": "node --check server/index.mjs && node --check server/db.mjs",
     "start": "node --env-file-if-exists=.env server/index.mjs",
     "dev:client": "vite",

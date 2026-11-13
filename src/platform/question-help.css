@@ -157,6 +157,22 @@
   width: 20px;
   height: 20px;
 }
+/* The platform's form rules (label display:block, input min-height:48px and
+   margins in platform.css) also reached this consent box (2026-11-13). */
+.qh-card .qh-consent {
+  display: flex;
+  margin: 0;
+  cursor: pointer;
+}
+.qh-card .qh-consent input[type="checkbox"] {
+  display: block;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
 .qh-badge {
   align-self: flex-start;
   display: inline-flex;

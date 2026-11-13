@@ -104,7 +104,7 @@
 }
 
 /* ---------- Narrow phones: one-line toolbar and dock ---------- */
-@media (max-width: 600px), (max-height: 500px) and (min-width: 650px) {
+@media (max-width: 600px), (max-height: 500px) and (min-width: 560px) {
   .ux-short {
     display: inline;
   }
@@ -159,7 +159,7 @@
 }
 
 /* ---------- Landscape phones: header text was 9–11px; dock covered the card ---------- */
-@media (max-height: 500px) and (min-width: 650px) {
+@media (max-height: 500px) and (min-width: 560px) {
   .map-shell .studio-workspace > .classroom-guide,
   .map-shell .classroom-workspace > .classroom-guide.mobile-open,
   .map-shell .studio-workspace > .classroom-legend {

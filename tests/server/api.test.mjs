@@ -509,6 +509,15 @@ test("AI uses only ranked approved context without identity and rejects unground
       });
     // Email matching normalizes lowercase, so seed account consistently.
     if (login.status !== 200) assert.fail(JSON.stringify(auth));
+    // Without this session's consent on the server, no call is made.
+    assert.equal((await ask("اشرح الحديد")).status, 400);
+    assert.equal(calls, 0);
+    const agreed = await fetch(base + "/api/ai/consent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: cookie, "X-CSRF-Token": auth.csrfToken },
+      body: JSON.stringify({ consent: true }),
+    });
+    assert.equal(agreed.status, 200);
     assert.equal((await ask("اشرح الحديد")).status, 200);
     assert.equal(calls, 1);
     const context = JSON.stringify(sent);

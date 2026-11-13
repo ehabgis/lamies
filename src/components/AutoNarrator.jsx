@@ -11,8 +11,9 @@ const PROFILE_LABELS = {
 
 const BOT_NAME = 'المساعد الراجل';
 const BOT_INTRO_MESSAGE = 'هاي يا بطل! أنا المساعد الراجل. اسألني أي حاجة في الدروس أو الخريطة، وأنا هشرح لك ببساطة جدًا.';
-const GEMINI_API_KEY = String(import.meta.env.VITE_GEMINI_API_KEY || '').trim();
-const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+// (2026-11-13) No model is called from the browser: a VITE_ key would be built
+// into the public JavaScript. The platform's smart teacher asks the model on
+// the server (consent, M6 limits). This legacy assistant answers locally.
 const ASSISTANT_STORAGE_KEY = 'smart-assistant-floating-position-v1';
 const ASSISTANT_MARGIN = 12;
 const ASSISTANT_DOCK_OFFSET = 16;
@@ -288,50 +289,9 @@ const buildPrompt = (question, historySnippet) => {
   ].filter(Boolean).join('\n');
 };
 
-const requestGeminiReply = async (question, messages = []) => {
-  if (!GEMINI_API_KEY || !question) return null;
-
-  const historySnippet = buildHistorySnippet(messages);
-  const prompt = buildPrompt(question, historySnippet);
-  const payload = {
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: {
-      temperature: 0.45,
-      topP: 0.9,
-      maxOutputTokens: 380
-    }
-  };
-
-  for (const model of GEMINI_MODELS) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 13000);
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          signal: controller.signal
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Gemini request failed (${response.status})`);
-      }
-
-      const data = await response.json();
-      const answer = extractGeminiAnswer(data);
-      if (answer) return answer;
-    } catch (_) {
-      // Try next model or fallback
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  }
-
-  return null;
-};
+// Was a browser call to Gemini with a VITE_ key (removed 2026-11-13, see top):
+// always the local answer now.
+const requestGeminiReply = async () => null;
 
 const localBotAnswer = (question) => {
   const normalized = normalizeArabic(question);

@@ -17,6 +17,7 @@ import {
   ArrowCounterClockwise,
   Check,
   SpeakerHigh,
+  SlidersHorizontal,
 } from "phosphor-react";
 import { LessonSymbol, hasWaterSymbol, WATER_SYMBOLS } from "../components/Map/WaterSymbol";
 import { playWaterEffect, hasWaterEffect, EFFECT_VIEW } from "./waterEffects";
@@ -97,7 +98,16 @@ export default function EsriLessonMap({
     [governorateQuery, setGovernorateQuery] = useState(""),
     [status, setStatus] = useState("loading"),
     [retry, setRetry] = useState(0),
-    [notice, setNotice] = useState("");
+    [notice, setNotice] = useState(""),
+    // Small maps (phones, short screens; see responsive-fixes.css): the three
+    // map tools sit in a menu opened by «أدوات الخريطة».
+    [toolsOpen, setToolsOpen] = useState(false),
+    // The «تعذر تحميل Esri» alert can be closed; it comes back on a new error.
+    [alertClosed, setAlertClosed] = useState(false);
+  const toolsToggle = useRef(null);
+  useEffect(() => {
+    if (status !== "error") setAlertClosed(false);
+  }, [status]);
   const [textbookMeta, setTextbookMeta] = useState(null);
   const galleryItems = BASEMAPS.filter((b) => !b.image || textbookMeta);
   const chosen = BASEMAPS.find((b) => b.id === basemap) || BASEMAPS[0];
@@ -791,9 +801,39 @@ export default function EsriLessonMap({
         className="esri-leaflet-host"
         aria-label="خريطة مصر؛ استخدم أزرار التكبير أو اسحب الخريطة"
       />
+      {/* Small maps only (CSS): one button opens the three tools below. */}
+      <button
+        ref={toolsToggle}
+        type="button"
+        className="map-tools-toggle"
+        aria-expanded={toolsOpen}
+        aria-controls="map-secondary-tools"
+        hidden={hideTools}
+        onClick={() => setToolsOpen((v) => !v)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape" && toolsOpen) {
+            e.stopPropagation();
+            setToolsOpen(false);
+          }
+        }}
+      >
+        <SlidersHorizontal size={20} weight="bold" aria-hidden="true" />
+        <span className="map-tool-text">أدوات الخريطة</span>
+      </button>
       {/* Stacked: أسماء المعالم, المحافظات, then (a little apart) معرض الخرائط.
           The first two switch on and off and show ✓ while on. */}
-      <div className="esri-map-toolbar is-stacked" hidden={hideTools}>
+      <div
+        id="map-secondary-tools"
+        className={`esri-map-toolbar is-stacked ${toolsOpen ? "is-open" : ""}`}
+        hidden={hideTools}
+        onKeyDown={(e) => {
+          if (e.key === "Escape" && toolsOpen) {
+            e.stopPropagation();
+            setToolsOpen(false);
+            toolsToggle.current?.focus();
+          }
+        }}
+      >
         {onToggleNames && (
           <button
             className="map-tool"
@@ -811,7 +851,7 @@ export default function EsriLessonMap({
           className="map-tool"
           aria-pressed={governorates}
           aria-controls="governorate-tools"
-          onClick={() => { if (!governorates) { setGallery(false); onToolOpen?.(); } setGovernorates((v) => !v); setGovernorateQuery(""); }}
+          onClick={() => { if (!governorates) { setGallery(false); setToolsOpen(false); onToolOpen?.(); } setGovernorates((v) => !v); setGovernorateQuery(""); }}
         >
           <Stack size={20} aria-hidden="true" />
           <span className="map-tool-text">المحافظات</span>
@@ -822,7 +862,7 @@ export default function EsriLessonMap({
           className="map-tool is-gallery"
           aria-expanded={gallery}
           aria-controls="basemap-gallery"
-          onClick={() => { if (!gallery) { setGovernorates(false); onToolOpen?.(); } setGallery((v) => !v); }}
+          onClick={() => { if (!gallery) { setGovernorates(false); setToolsOpen(false); onToolOpen?.(); } setGallery((v) => !v); }}
         >
           <SquaresFour size={21} aria-hidden="true" />
           <span className="map-tool-text">معرض الخرائط</span>
@@ -898,12 +938,15 @@ export default function EsriLessonMap({
         </div>
       )}
       <div className="esri-map-alerts">
-        {status === "error" && basemap !== "local" && (
-          <div className="esri-map-warning" role="status">
+        {status === "error" && basemap !== "local" && !alertClosed && (
+          <div className="esri-map-warning is-esri" role="status">
             <span>تعذر تحميل Esri؛ نعرض خريطة محلية وليست صورة قمر صناعي.</span>
-            <button onClick={() => setRetry((n) => n + 1)}>
+            <button aria-label="إعادة محاولة تحميل خريطة Esri" onClick={() => setRetry((n) => n + 1)}>
               <ArrowClockwise size={16} aria-hidden="true" />
-              إعادة المحاولة
+              <span className="esri-retry-text">إعادة المحاولة</span>
+            </button>
+            <button className="esri-alert-close" aria-label="إغلاق التنبيه" onClick={() => setAlertClosed(true)}>
+              <X size={16} aria-hidden="true" />
             </button>
           </div>
         )}

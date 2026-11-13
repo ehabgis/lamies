@@ -3,6 +3,7 @@ import { ArrowCounterClockwise, CheckCircle, ChatCircleText, PaperPlaneTilt, Pen
 import RobotGuide from "../components/Map/RobotGuide";
 import { LessonSymbol } from "../components/Map/WaterSymbol";
 import { api } from "./api";
+import { getConsent, identity, isCurrent, onConsent, registerReset, setConsent, track } from "./privateState";
 import { play } from "./sfx";
 import "./question-help.css";
 
@@ -26,10 +27,15 @@ function helpTab() {
 }
 export const helpHeaders = () => ({ "x-help-session": helpTab() });
 
+// Typed answers, feedback and help cards, per person, lesson and question.
+// A new person in this tab starts empty, with a new tab id (privateState.js).
 const memory = new Map();
-let consentGiven = false;
+registerReset(() => {
+  memory.clear();
+  helpTab.id = undefined;
+});
 export function questionMemory(lessonId, qid) {
-  const key = `${lessonId}:${qid}`;
+  const key = `${identity()}|${lessonId}:${qid}`;
   if (!memory.has(key)) memory.set(key, { answer: undefined, feedback: null, lastKey: null, cards: [], open: false, solution: null, apply: null, wrong: 0 });
   return memory.get(key);
 }
@@ -57,15 +63,21 @@ export function useQuestionHelp({ q, lessonId, demo, enabled = true }) {
     setLoading(true);
     refresh();
     const shown = mem.cards.map((c) => c.text).filter(Boolean);
+    const request = track();
     try {
       const r = await api(`${base}/help`, {
         method: "POST",
         headers: helpHeaders(),
-        body: { questionId: q.id, level, trigger, answer, message, consent: consentGiven, shown },
+        signal: request.signal,
+        body: { questionId: q.id, level, trigger, answer, message, consent: getConsent(), shown },
       });
+      // The person changed while waiting: this answer is not theirs to see.
+      if (!isCurrent(request.generation)) return;
+      if (r.consent !== undefined) setConsent(r.consent);
       if (r.level === "solution") mem.solution = r;
       else mem.cards.push({ ...r, trigger, asked: message || null });
     } catch (e) {
+      if (!isCurrent(request.generation)) return;
       // No connection at all: the question's own prepared hint keeps it going.
       mem.cards.push({
         // Shown at the level that was asked for, as the same kind of card.
@@ -77,6 +89,7 @@ export function useQuestionHelp({ q, lessonId, demo, enabled = true }) {
         source: "prepared",
       });
     } finally {
+      request.done();
       busy.current = false;
       if (alive.current) {
         setLoading(false);
@@ -116,7 +129,21 @@ export function HelpCard({ help, q, resources, onRetry, onMore, answer }) {
   // («أحاول مرة أخرى» / «اشرح لي أكثر»).
   const { mem, loading } = help;
   const [message, setMessage] = useState("");
-  const [consent, setConsent] = useState(consentGiven);
+  // Consent lives on the server for this session; this only mirrors it.
+  const [consent, setConsentShown] = useState(getConsent);
+  const [consentBusy, setConsentBusy] = useState(false);
+  useEffect(() => onConsent(setConsentShown), []);
+  const giveConsent = async (value) => {
+    setConsentBusy(true);
+    try {
+      const r = await api("/ai/consent", { method: "POST", headers: helpHeaders(), body: { consent: value } });
+      setConsent(r.consent);
+    } catch {
+      setConsent(false);
+    } finally {
+      setConsentBusy(false);
+    }
+  };
   const box = useRef(null);
   // A new explanation, or the answer, is brought into view without moving focus.
   const count = mem.cards.length + (mem.solution ? 1 : 0);
@@ -199,10 +226,8 @@ export function HelpCard({ help, q, resources, onRetry, onMore, answer }) {
                 <input
                   type="checkbox"
                   checked={consent}
-                  onChange={(e) => {
-                    consentGiven = e.target.checked;
-                    setConsent(e.target.checked);
-                  }}
+                  disabled={consentBusy}
+                  onChange={(e) => giveConsent(e.target.checked)}
                 />
                 أوافق على إرسال السؤال إلى المعلم المتصل، دون اسمي.
               </label>

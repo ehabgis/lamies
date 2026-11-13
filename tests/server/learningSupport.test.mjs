@@ -19,7 +19,7 @@ async function start(options = {}) {
     const r = await fetch(base + path, { method: "POST", headers: { "Content-Type": "application/json", "x-help-session": tab }, body: JSON.stringify(body) });
     return { status: r.status, data: await r.json() };
   };
-  return { call, close: () => { server.closeAllConnections(); server.close(); rmSync(dir, { recursive: true, force: true }); } };
+  return { call, close: () => { server.closeAllConnections(); server.close(); app.close(); rmSync(dir, { recursive: true, force: true }); } };
 }
 const L1 = "/api/demo/lessons/lesson-1";
 
@@ -156,6 +156,16 @@ test("the model writes the text only with consent; a failure falls back to the p
     assert.equal(noConsent.data.source, "prepared");
     assert.equal(noConsent.data.canAsk, true);
     assert.equal(calls, 0);
+    // consent:true from the browser without the session's consent: no call.
+    const unbound = await call(`${L1}/help`, { questionId: q, level: "more", consent: true, message: "مش فاهم" }, "tab-model01");
+    assert.equal(unbound.data.source, "prepared");
+    assert.equal(unbound.data.consent, false);
+    assert.equal(calls, 0);
+    assert.deepEqual((await call("/api/ai/consent", { consent: true }, "tab-model01")).data, { consent: true });
+    // Another tab has no consent from this one.
+    const other = await call(`${L1}/help`, { questionId: q, level: "more", consent: true, message: "مش فاهم" }, "tab-model99");
+    assert.equal(other.data.source, "prepared");
+    assert.equal(calls, 0);
     const withConsent = await call(`${L1}/help`, { questionId: q, level: "more", consent: true, message: "مش فاهم" }, "tab-model01");
     assert.equal(withConsent.data.source, "ai");
     assert.equal(calls, 1);
@@ -173,6 +183,7 @@ test("the model writes the text only with consent; a failure falls back to the p
   const leaky = async () => ({ ok: true, json: async () => ({ success: true, result: { response: "الإجابة هي النحاس." } }) });
   const s2 = await start({ aiKey: "", aiProvider: "cloudflare", cloudflareAccountId: "a", cloudflareToken: "t", aiStudentEnabled: true, fetchImpl: leaky });
   try {
+    await s2.call("/api/ai/consent", { consent: true }, "tab-model02");
     const r = await s2.call(`${L1}/help`, { questionId: "book-l1-blank-1", level: "review", consent: true }, "tab-model02");
     assert.equal(r.data.source, "prepared");
     assert(!r.data.text.includes("النحاس"));
@@ -182,6 +193,7 @@ test("the model writes the text only with consent; a failure falls back to the p
   const down = async () => { throw Error("offline"); };
   const s3 = await start({ aiKey: "", aiProvider: "cloudflare", cloudflareAccountId: "a", cloudflareToken: "t", aiStudentEnabled: true, fetchImpl: down });
   try {
+    await s3.call("/api/ai/consent", { consent: true }, "tab-model03");
     const r = await s3.call(`${L1}/help`, { questionId: "book-l1-blank-1", level: "review", consent: true }, "tab-model03");
     assert.equal(r.status, 200);
     assert.equal(r.data.source, "prepared");

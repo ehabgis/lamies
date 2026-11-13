@@ -4,6 +4,7 @@ import { PaperPlaneTilt, SpeakerHigh } from "phosphor-react";
 import * as narrator from "./narrator";
 import { api } from "./api";
 import { useSession } from "./Session";
+import { isCurrent, setConsent as setSessionConsent, track } from "./privateState";
 export default function AIAssistant({
   lessonId,
   resource,
@@ -47,7 +48,11 @@ export default function AIAssistant({
     setError("");
     setBusy(true);
     setConsent(false);
+    const request = track();
     try {
+      // The tick for this message also records consent for this session on
+      // the server, which checks it before calling the model.
+      if (consent) setSessionConsent((await api("/ai/consent", { method: "POST", body: { consent: true } })).consent);
       const data = await api("/ai", {
         method: "POST",
         body: {
@@ -60,14 +65,17 @@ export default function AIAssistant({
           ...assessment,
           previousResponse: history.at(-1)?.message,
         },
+        signal: request.signal,
       });
+      if (!isCurrent(request.generation)) return;
       setHistory((h) => [...h, { question: message, ...data }]);
       setMessage("");
       if (data.question) onQuestion?.(data.question);
     } catch (e) {
-      setError(e.message);
+      if (isCurrent(request.generation)) setError(e.message);
     } finally {
-      setBusy(false);
+      request.done();
+      if (isCurrent(request.generation)) setBusy(false);
     }
   }
   return (

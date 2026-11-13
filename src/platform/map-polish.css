@@ -334,7 +334,7 @@
 }
 
 /* ---------- Landscape phones: give height back to the map ---------- */
-@media (max-height: 500px) and (min-width: 650px) {
+@media (max-height: 500px) and (min-width: 560px) {
   /* Dock leaves the bottom-right corner to the map attribution. */
   .floating-learning-dock {
     bottom: 10px;

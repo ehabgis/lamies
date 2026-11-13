@@ -290,7 +290,7 @@
 }
 
 /* Landscape phones: name, tabs and details on one compact row */
-@media (max-height: 500px) and (min-width: 650px) {
+@media (max-height: 500px) and (min-width: 560px) {
   .map-shell .studio-titlebar.map-header-v2 {
     flex-wrap: nowrap;
     padding: 2px 2px 4px;
@@ -422,7 +422,7 @@
     font-size: 11px !important;
   }
 }
-@media (max-height: 500px) and (min-width: 650px) {
+@media (max-height: 500px) and (min-width: 560px) {
   .map-shell .studio-workspace > .classroom-legend,
   .map-shell .studio-workspace > .classroom-legend.mobile-open {
     width: auto !important;
@@ -635,7 +635,7 @@
     visibility: hidden;
   }
 }
-@media (max-height: 500px) and (min-width: 650px) {
+@media (max-height: 500px) and (min-width: 560px) {
   .map-shell .site-3d-panel {
     top: 6px;
     bottom: 76px;
@@ -676,7 +676,7 @@
     font-size: 12.5px;
   }
 }
-@media (max-height: 500px) and (min-width: 650px) {
+@media (max-height: 500px) and (min-width: 560px) {
   .map-shell .water-source-key {
     bottom: 84px;
   }
@@ -924,7 +924,7 @@
     max-width: 72px;
   }
 }
-@media (max-height: 500px) and (min-width: 650px) {
+@media (max-height: 500px) and (min-width: 560px) {
   .explorer-text,
   .explorer-stars {
     display: none;
@@ -1199,13 +1199,13 @@
     max-height: calc(100% - 200px) !important;
   }
 }
-@media (max-height: 500px) and (min-width: 650px) {
+@media (max-height: 500px) and (min-width: 560px) {
   .map-shell .studio-workspace > .classroom-legend.is-long,
   .map-shell .studio-workspace > .classroom-legend.is-long.mobile-open {
     max-height: calc(100% - 90px) !important;
   }
 }
-@media (max-height: 500px) and (min-width: 650px) {
+@media (max-height: 500px) and (min-width: 560px) {
   .map-shell .studio-workspace > .classroom-legend.is-long,
   .map-shell .studio-workspace > .classroom-legend.is-long.mobile-open {
     top: 8px !important;

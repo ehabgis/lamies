@@ -71,6 +71,7 @@ import "./montage.css";
 import "./site-card.css";
 import "./lesson-cards.css";
 import "./map-compact.css";
+import "./responsive-fixes.css";
 import { play, resourceSound } from "./sfx";
 const kindNames = {
   mineral: "خام معدني",
@@ -312,6 +313,12 @@ export default function LessonPage({ demo = false }) {
   // while speaking, and the map key's title glows twice to show where to look.
   useEffect(() => {
     if (!stateReady || !hello) return undefined;
+    // Short screens (landscape phones, 200% zoom) have no room for the greeting
+    // bubble (hidden there by responsive-fixes.css): no bubble, no spoken line.
+    if (window.matchMedia?.("(max-height: 500px)").matches) {
+      setHello(false);
+      return undefined;
+    }
     let alive = true;
     const off = narrator.subscribe((s) => alive && setHelloTalking(s.state === "speaking"));
     const say = () => narrator.speak(GREETING);
@@ -532,6 +539,9 @@ export default function LessonPage({ demo = false }) {
   }
   function openLearning(kind) {
     play("open");
+    // One learning panel at a time: questions/activities replace the smart
+    // teacher (its conversation is kept), as the teacher button closes them.
+    setTeacher(false);
     setLegendOpen(false);
     setInfoOpen(false);
     setPanel(null);
@@ -1220,6 +1230,8 @@ export default function LessonPage({ demo = false }) {
               onClose={() => {
                 setTeacher(false);
                 setMeasured(null);
+                // Back to the dock's «المعلم الذكي» button (hidden on phones while open).
+                requestAnimationFrame(() => document.getElementById("dock-teacher")?.focus({ preventScroll: true }));
               }}
             />
           )}
@@ -1381,6 +1393,7 @@ export default function LessonPage({ demo = false }) {
           </button>
           <button
             className="p-button"
+            id="dock-teacher"
             aria-pressed={teacher}
             onClick={() => {
               play("open");

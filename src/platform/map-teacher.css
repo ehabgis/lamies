@@ -16,9 +16,18 @@
   color: #0b2a5b;
   overflow: hidden;
 }
-/* Keep the question form clickable when the map fallback alert overlaps it. */
-.map-shell .mt-panel:has(.mt-ask):not(.is-tucked) {
+/* While open, the panel is above the learning dock (1800) and the map alerts
+   (1850), so its question form is never under them. */
+.map-shell .mt-panel:not(.is-tucked) {
   z-index: 1851;
+}
+/* Computers: the map key is open by default, which also marks the panel
+   «is-tucked» (a phone-only state), so the rule above did not apply and the
+   greeting bubble covered the question form at 1024–1100px. */
+@media (min-width: 851px) {
+  .map-shell .mt-panel {
+    z-index: 1851;
+  }
 }
 .mt-panel > header {
   display: flex;
@@ -344,6 +353,77 @@
 .mt-consent input {
   width: 18px;
   height: 18px;
+}
+
+/* Responsive fixes (2026-11-13). The platform's form rules
+   (`.lamis-platform label {display:block}` and `.lamis-platform input
+   {min-height:48px; margin…}` in platform.css) also reached the consent box,
+   which then took ~120px and pushed the question form out of the panel on
+   phones. Scoped here so other forms keep their style. */
+.map-shell .mt-panel > header,
+.map-shell .mt-panel .mt-consent,
+.map-shell .mt-panel .mt-type {
+  flex-shrink: 0;
+}
+.map-shell .mt-panel .mt-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 12px 0;
+  line-height: 1.45;
+  cursor: pointer;
+}
+.map-shell .mt-panel .mt-consent input[type="checkbox"] {
+  display: block;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  margin: 1px 0 0;
+  padding: 0;
+  accent-color: #0a62d6;
+}
+/* Phones and tablets: the panel sits on the map's bottom edge and the dock
+   steps aside while it is open (it comes back on close, with focus on its
+   «المعلم الذكي» button). The lesson text scrolls inside the panel; the
+   header, consent box and question form always stay in view. */
+@media (max-width: 850px) {
+  .map-shell .mt-panel:not(.is-tucked) {
+    bottom: 8px;
+    max-height: min(calc(100% - 16px), max(52%, 320px));
+  }
+  .map-shell:has(.mt-panel) .floating-learning-dock {
+    display: none;
+  }
+}
+/* Short screens (landscape phones, 200% zoom): the whole map height, a
+   slimmer header. */
+@media (max-height: 500px) {
+  .map-shell .mt-panel:not(.is-tucked) {
+    top: 8px;
+    bottom: 8px;
+    max-height: none;
+  }
+  .map-shell:has(.mt-panel) .floating-learning-dock {
+    display: none;
+  }
+  .map-shell .mt-panel > header {
+    padding: 4px 10px;
+  }
+  .map-shell .mt-panel .mt-robot {
+    width: 30px;
+  }
+  .map-shell .mt-panel h2 {
+    font-size: 16px;
+  }
+  .map-shell .mt-panel .mt-x {
+    width: 34px;
+    height: 34px;
+  }
+  .map-shell .mt-panel .mt-type {
+    padding: 6px 10px 8px;
+  }
 }
 .mt-note {
   display: block;

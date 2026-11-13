@@ -11,6 +11,24 @@
     --page-title-max: 21px;
   }
 }
+/* Responsive batch 2 (2026-11-13). The name stays on one line and never
+   wider than the screen: a little smaller on the narrowest phones (320–420)
+   and on laptop widths (851–1440), where it shares the map header with the
+   three lesson tabs and the explorer chip. */
+@media (max-width: 420px) {
+  :root {
+    --brand-size: clamp(17px, 5.6vw, 24px);
+  }
+}
+@media (min-width: 851px) and (max-width: 1440px) {
+  :root {
+    --brand-size: clamp(26px, 2.4vw, 36px);
+  }
+}
+.platform-header .platform-brand,
+.platform-header .platform-brand > div {
+  min-width: 0;
+}
 
 /* The program's name in each page header. */
 .entry-experience .entry-platform-brand > div,

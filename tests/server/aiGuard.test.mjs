@@ -72,6 +72,40 @@ async function start({ limits = {}, delay = 0, usage = { prompt_tokens: 400, com
   };
 }
 
+test("ai_usage: old days are pruned (older than 14 days) and today's counts and limits are untouched", async () => {
+  const { DatabaseSync } = await import("node:sqlite");
+  const { createAiGuard } = await import("../../server/aiGuard.mjs");
+  const db = new DatabaseSync(":memory:");
+  let t = Date.parse("2026-11-13T09:00:00Z");
+  const guard = createAiGuard({ db, now: () => t, log: () => {}, limits: { ...LIMITS, studentDaily: 3 } });
+  const user = { id: "u1", role: "student" };
+  const use = () => { const g = guard.admit({ route: "ask", user, model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast", inputChars: 1000, maxTokens: 100 }); if (g.ok) g.ticket.finish({ promptTokens: 100, completionTokens: 20 }); return g.ok; };
+  // Rows from earlier days (as left by earlier days of use).
+  const put = db.prepare("INSERT INTO ai_usage(day,scope,key,requests,neurons) VALUES(?,?,?,?,?)");
+  put.run("2026-10-29", "global", "", 50, 500); // 15 days before: pruned
+  put.run("2026-10-30", "global", "", 40, 400); // 14 days before: kept (not older than 14 days)
+  put.run("2026-11-12", "account", "u:u1", 3, 30); // yesterday: kept, and not today's quota
+  assert.equal(use(), true);
+  assert.equal(use(), true);
+  const days = db.prepare("SELECT day FROM ai_usage GROUP BY day ORDER BY day").all().map((r) => r.day);
+  assert.deepEqual(days, ["2026-10-30", "2026-11-12", "2026-11-13"]);
+  // Today's per-account count is exact (yesterday's 3 do not count); the third passes, the fourth not.
+  assert.equal(db.prepare("SELECT requests FROM ai_usage WHERE day='2026-11-13' AND scope='account'").get().requests, 2);
+  assert.equal(use(), true);
+  assert.equal(use(), false);
+  // Settled with the reported usage: today's global total is 3 calls × the actual neurons.
+  const actual = (100 * 26668 + 20 * 204805) / 1e6;
+  const g = db.prepare("SELECT requests, neurons FROM ai_usage WHERE day='2026-11-13' AND scope='global'").get();
+  assert.equal(g.requests, 3);
+  assert.ok(Math.abs(g.neurons - 3 * actual) < 1e-6);
+  // Next day: a new quota; pruning moves with the date.
+  t = Date.parse("2026-11-14T00:00:01Z");
+  assert.equal(use(), true);
+  // 2026-10-30 is now more than 14 days old (before 2026-10-31): pruned.
+  assert.deepEqual(db.prepare("SELECT day FROM ai_usage GROUP BY day ORDER BY day").all().map((r) => r.day), ["2026-11-12", "2026-11-13", "2026-11-14"]);
+  db.close();
+});
+
 test("the provider refuses to call the model without a guard ticket", async () => {
   let calls = 0;
   const ai = createAiProvider({ cfAccount: ACCOUNT, cfToken: "tok", fetchImpl: async () => { calls++; return { ok: true, json: async () => ({}) }; } });

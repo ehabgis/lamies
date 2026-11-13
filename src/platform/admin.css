@@ -298,6 +298,63 @@
 .cms details {
   margin-top: 16px;
 }
+.cms-bundled {
+  margin: 18px 0;
+  padding: 14px 18px;
+  border-radius: 9px;
+  background: #fff8e6;
+  color: #6a4a0c;
+  border: 1px solid #f0d9a4;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.cms-bundled p {
+  margin: 6px 0 0;
+}
+.cms-editor h2 {
+  scroll-margin-top: 16px;
+}
+.cms-affects {
+  border: 2px solid #9cc7e6;
+  border-radius: 12px;
+  padding: 18px;
+  margin: 18px 0;
+}
+.cms-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin: 0 0 16px;
+}
+.cms-summary div {
+  background: #f4f8fc;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.cms-summary dt {
+  font-size: 0.78rem;
+  color: #5f7289;
+}
+.cms-summary dd {
+  margin: 4px 0 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.cms fieldset.cms-readonly {
+  background: #f7f8fa;
+  border-style: dashed;
+}
+.cms fieldset.cms-readonly legend {
+  color: #6a4a0c;
+}
+.cms fieldset.cms-readonly :disabled {
+  cursor: not-allowed;
+}
+.cms-editor h2:focus-visible {
+  outline: 3px solid #1d6fb8;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
 .cms summary {
   cursor: pointer;
   font-weight: 600;

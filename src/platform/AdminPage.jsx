@@ -13,6 +13,7 @@ import {
   ListBullets,
 } from "phosphor-react";
 import { api } from "./api";
+import { draftFromNode, isBundledLesson, unapprovedSources, revealEditor, bundledReview } from "./adminDraft.js";
 import "./admin.css";
 
 const KINDS = {
@@ -98,6 +99,49 @@ function JsonField({ label, value, onChange }) {
     </Field>
   );
 }
+// A bundled lesson's own content fields are not what students see (they get
+// the content that comes with the app). They stay visible and their data is
+// saved unchanged, but they cannot be edited, so nobody expects an edit here
+// to change the student's lesson.
+function ReadOnlyWhen({ bundled, children }) {
+  if (!bundled) return children;
+  return (
+    <fieldset disabled className="cms-readonly" aria-describedby="cms-readonly-why">
+      <legend>للقراءة فقط · لا تؤثر في درس الطالب</legend>
+      <p id="cms-readonly-why" className="cms-help">
+        الأهداف والمقدمة والملخص والمفاهيم والحقائق والمراجع والموارد والأسئلة
+        أدناه محفوظة في سجل الدرس، لكن الطالب يرى بدلها المحتوى المضمّن في
+        التطبيق. لا تُحذف هذه البيانات ولا تتغير عند الحفظ.
+      </p>
+      {children}
+    </fieldset>
+  );
+}
+
+function BundledSummary({ review }) {
+  const rows = [
+    ["حالة النشر", review.published ? "منشور للطلاب" : "مسودة · لا يراه الطلاب"],
+    ["المراجعة التربوية", review.reviewed ? "تمت المراجعة" : "تحتاج مراجعة"],
+    [
+      "مصادر المعلم الذكي",
+      review.usesBundledSources
+        ? "لا مصادر محفوظة · مصادر النسخة المضمّنة غير معتمدة"
+        : `${review.approved} معتمد من ${review.total}`,
+    ],
+    ["جاهز للنشر", review.canPublish ? "نعم" : "لا · يحتاج مراجعة ومصدرًا معتمدًا واحدًا على الأقل"],
+  ];
+  return (
+    <dl className="cms-summary">
+      {rows.map(([k, v]) => (
+        <div key={k}>
+          <dt>{k}</dt>
+          <dd>{v}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 function QuestionDetails({ q, update }) {
   const getLabel = (o) => (typeof o === "object" ? o.label : o);
   const getId = (o) => (typeof o === "object" ? o.id : o);
@@ -353,9 +397,24 @@ export default function AdminPage({ user }) {
       role: "student",
       teacherId: "",
     });
+  // No form until the admin picks a node or «إضافة محتوى»: an open blank
+  // "new lesson" form looked like the chosen unit opened as an empty lesson.
+  const [editorOpen, setEditorOpen] = useState(false),
+    [revealTick, setRevealTick] = useState(0);
   const dialog = useRef(null),
-    importInput = useRef(null);
+    importInput = useRef(null),
+    editorHeading = useRef(null);
+  useEffect(() => {
+    if (revealTick) revealEditor(editorHeading.current);
+  }, [revealTick]);
+  const openDraft = (d) => {
+    setDraft(d);
+    setHistory([]);
+    setEditorOpen(true);
+    setRevealTick((t) => t + 1);
+  };
   const content = draft.content || {};
+  const bundledLesson = isBundledLesson(draft);
   const superadmin = user?.role === "super_admin";
   const run = async (fn) => {
     setBusy(true);
@@ -402,6 +461,107 @@ export default function AdminPage({ user }) {
         ),
       },
     }));
+  // Smart-teacher sources and the review flag: they reach the student for
+  // every lesson (only approved sources go to the smart teacher, and
+  // publishing needs one), so they stay editable for bundled lessons too.
+  const renderSources = () => (
+    <>
+      {bundledLesson && !(content.sources || []).length && (
+        <p className="cms-help">
+          لا توجد مصادر محفوظة لهذا الدرس، فيستعمل مصادر النسخة المضمّنة وهي غير
+          معتمدة: لا يستند إليها المعلم الذكي، ولا يمكن نشر الدرس قبل إضافة مصدر
+          معتمد.
+        </p>
+      )}
+      {(content.sources || []).map((source, index) => (
+        <fieldset key={source.id || index}>
+          <legend>المصدر المعرفي {index + 1}</legend>
+          <Field label="عنوان المصدر">
+            <input
+              value={source.title || ""}
+              onChange={(e) =>
+                edit(
+                  "sources",
+                  content.sources.map((v, j) =>
+                    j === index
+                      ? { ...v, title: e.target.value }
+                      : v,
+                  ),
+                )
+              }
+            />
+          </Field>
+          <Field label="النص المعتمد الذي يستند إليه المعلم الذكي">
+            <textarea
+              value={source.text || ""}
+              onChange={(e) =>
+                edit(
+                  "sources",
+                  content.sources.map((v, j) =>
+                    j === index
+                      ? { ...v, text: e.target.value }
+                      : v,
+                  ),
+                )
+              }
+            />
+          </Field>
+          <label className="cms-check">
+            <input
+              type="checkbox"
+              checked={source.approved === true}
+              onChange={(e) =>
+                edit(
+                  "sources",
+                  content.sources.map((v, j) =>
+                    j === index
+                      ? { ...v, approved: e.target.checked }
+                      : v,
+                  ),
+                )
+              }
+            />
+            مصدر مُراجع ومعتمد
+          </label>
+        </fieldset>
+      ))}
+      <JsonField
+        label="مصادر المعلم الذكي · بيانات متقدمة: id، title، text، approved"
+        value={content.sources || []}
+        onChange={(v) => edit("sources", v)}
+      />
+      <button
+        type="button"
+        onClick={() =>
+          edit("sources", [
+            ...(content.sources || []),
+            {
+              id: crypto.randomUUID(),
+              title: "مصدر جديد",
+              text: "",
+              approved: false,
+            },
+          ])
+        }
+      >
+        إضافة مصدر معرفي
+      </button>
+      <label className="cms-check">
+        <input
+          type="checkbox"
+          checked={content.reviewRequired === false}
+          onChange={(e) =>
+            edit("reviewRequired", !e.target.checked)
+          }
+        />
+        تمت مراجعة الحقائق والمواقع والوسائط تربويًا
+      </label>
+      <p className="cms-help">
+        النشر قرار مستقل. تأكد من صحة المراجع وحقوق الصور والفيديو
+        قبل إتاحة الدرس.
+      </p>
+    </>
+  );
   async function save(e) {
     e.preventDefault();
     await run(async () => {
@@ -416,10 +576,7 @@ export default function AdminPage({ user }) {
         },
       );
       await load();
-      setDraft({
-        ...(data.node || data),
-        enabled: (data.node || data).enabled ?? !(data.node || data).disabled,
-      });
+      setDraft(draftFromNode(data.node || data));
       setNotice("تم حفظ المحتوى. لا يظهر للطلاب إلا بعد النشر.");
     });
   }
@@ -522,10 +679,7 @@ export default function AdminPage({ user }) {
             <button
               className="cms-primary"
               disabled={busy}
-              onClick={() => {
-                setDraft(blank());
-                setHistory([]);
-              }}
+              onClick={() => openDraft(blank())}
             >
               <Plus size={18} />
               إضافة محتوى
@@ -569,15 +723,9 @@ export default function AdminPage({ user }) {
                   .map((n) => (
                     <button
                       key={n.id}
-                      className={draft.id === n.id ? "selected" : ""}
-                      onClick={() => {
-                        setDraft({
-                          ...n,
-                          enabled: n.enabled ?? !n.disabled,
-                          content: n.content || {},
-                        });
-                        setHistory([]);
-                      }}
+                      className={editorOpen && draft.id === n.id ? "selected" : ""}
+                      aria-pressed={editorOpen && draft.id === n.id}
+                      onClick={() => openDraft(draftFromNode(n))}
                     >
                       <span>
                         <small>{KINDS[n.kind] || n.kind}</small>
@@ -601,9 +749,12 @@ export default function AdminPage({ user }) {
                 )}
               </div>
             </aside>
+            {editorOpen ? (
             <form className="cms-panel cms-editor" onSubmit={save}>
               <div className="cms-section-title">
-                <h2>{draft.id ? "تحرير المحتوى" : "محتوى جديد"}</h2>
+                <h2 ref={editorHeading} tabIndex={-1}>
+                  {draft.id ? "تحرير المحتوى" : "محتوى جديد"}
+                </h2>
                 {draft.id && <small dir="ltr">{draft.id}</small>}
               </div>
               <div className="cms-grid">
@@ -679,6 +830,10 @@ export default function AdminPage({ user }) {
                   />
                 </Field>
               </div>
+              <p className="cms-help">
+                مصدر المحتوى والعام الدراسي وإصدار المنهج بيانات إدارية للمراجعة
+                لا تظهر للطالب.
+              </p>
               <label className="cms-check">
                 <input
                   type="checkbox"
@@ -687,8 +842,36 @@ export default function AdminPage({ user }) {
                 />
                 المحتوى مفعّل
               </label>
+              {isBundledLesson(draft) && (
+                <div role="note" className="cms-bundled">
+                  <strong>محتوى هذا الدرس مضمّن في التطبيق.</strong>
+                  <p>
+                    يؤثر في درس الطالب من هذه الصفحة: العنوان، وحالة النشر،
+                    والتفعيل، والترتيب، والموضع في المنهج، والمراجعة التربوية،
+                    ومصادر المعلم الذكي المعتمدة. أما الأهداف والمقدمة والملخص
+                    والمفاهيم والحقائق والمراجع والموارد والأسئلة فيراها الطالب
+                    من النسخة المضمّنة، لذلك تظهر أدناه للقراءة فقط. استعمل
+                    «معاينة المسودة» لرؤية ما سيراه الطالب.
+                  </p>
+                  {unapprovedSources(draft).length > 0 && (
+                    <p>
+                      {unapprovedSources(draft).length} من مصادر المعلم الذكي
+                      مستوردة من النسخة التجريبية وغير معتمدة
+                      (<span dir="ltr">approved: false</span>). راجع نص كل مصدر
+                      مع المعلم قبل اعتماده؛ لا يُعتمد شيء تلقائيًا.
+                    </p>
+                  )}
+                </div>
+              )}
+              {bundledLesson && (
+                <section className="cms-affects">
+                  <h3>ما يؤثر في درس الطالب</h3>
+                  <BundledSummary review={bundledReview(draft)} />
+                  {renderSources()}
+                </section>
+              )}
               {draft.kind === "lesson" && (
-                <>
+                <ReadOnlyWhen bundled={bundledLesson}>
                   <section>
                     <h3>بناء الدرس</h3>
                     <Field label="الأهداف · هدف في كل سطر">
@@ -781,93 +964,7 @@ export default function AdminPage({ user }) {
                         }
                       />
                     </Field>
-                    {(content.sources || []).map((source, index) => (
-                      <fieldset key={source.id || index}>
-                        <legend>المصدر المعرفي {index + 1}</legend>
-                        <Field label="عنوان المصدر">
-                          <input
-                            value={source.title || ""}
-                            onChange={(e) =>
-                              edit(
-                                "sources",
-                                content.sources.map((v, j) =>
-                                  j === index
-                                    ? { ...v, title: e.target.value }
-                                    : v,
-                                ),
-                              )
-                            }
-                          />
-                        </Field>
-                        <Field label="النص المعتمد الذي يستند إليه المعلم الذكي">
-                          <textarea
-                            value={source.text || ""}
-                            onChange={(e) =>
-                              edit(
-                                "sources",
-                                content.sources.map((v, j) =>
-                                  j === index
-                                    ? { ...v, text: e.target.value }
-                                    : v,
-                                ),
-                              )
-                            }
-                          />
-                        </Field>
-                        <label className="cms-check">
-                          <input
-                            type="checkbox"
-                            checked={source.approved === true}
-                            onChange={(e) =>
-                              edit(
-                                "sources",
-                                content.sources.map((v, j) =>
-                                  j === index
-                                    ? { ...v, approved: e.target.checked }
-                                    : v,
-                                ),
-                              )
-                            }
-                          />
-                          مصدر مُراجع ومعتمد
-                        </label>
-                      </fieldset>
-                    ))}
-                    <JsonField
-                      label="مصادر المعلم الذكي · بيانات متقدمة: id، title، text، approved"
-                      value={content.sources || []}
-                      onChange={(v) => edit("sources", v)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        edit("sources", [
-                          ...(content.sources || []),
-                          {
-                            id: crypto.randomUUID(),
-                            title: "مصدر جديد",
-                            text: "",
-                            approved: false,
-                          },
-                        ])
-                      }
-                    >
-                      إضافة مصدر معرفي
-                    </button>
-                    <label className="cms-check">
-                      <input
-                        type="checkbox"
-                        checked={content.reviewRequired === false}
-                        onChange={(e) =>
-                          edit("reviewRequired", !e.target.checked)
-                        }
-                      />
-                      تمت مراجعة الحقائق والمواقع والوسائط تربويًا
-                    </label>
-                    <p className="cms-help">
-                      النشر قرار مستقل. تأكد من صحة المراجع وحقوق الصور والفيديو
-                      قبل إتاحة الدرس.
-                    </p>
+                    {!bundledLesson && renderSources()}
                   </section>
                   <section>
                     <div className="cms-section-title">
@@ -1254,7 +1351,7 @@ export default function AdminPage({ user }) {
                       />
                     </details>
                   </section>
-                </>
+                </ReadOnlyWhen>
               )}
               <footer className="cms-save">
                 <button className="cms-primary" disabled={busy}>
@@ -1315,10 +1412,7 @@ export default function AdminPage({ user }) {
                                     body: JSON.stringify({ historyId: v.id }),
                                   },
                                 );
-                                setDraft({
-                                  ...d.node,
-                                  enabled: d.node.enabled ?? !d.node.disabled,
-                                });
+                                setDraft(draftFromNode(d.node));
                                 await load();
                                 setNotice("تمت استعادة الإصدار.");
                               }),
@@ -1332,6 +1426,15 @@ export default function AdminPage({ user }) {
                 </section>
               )}
             </form>
+            ) : (
+              <section className="cms-panel cms-editor cms-editor-empty">
+                <h2>تحرير المحتوى</h2>
+                <p className="cms-help">
+                  اختر عنصرًا من هيكل المنهج لعرض بياناته وتحريرها، أو اضغط
+                  «إضافة محتوى» لإنشاء عنصر جديد.
+                </p>
+              </section>
+            )}
           </div>
         </>
       )}

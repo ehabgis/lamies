@@ -24,6 +24,7 @@ import { lessonBook } from "./lessonBook.mjs";
 import { migrate as migrateProgress, logEvent, questionKind, childReport, newLinkCode, useLinkCode, previewLinkCode } from "./progressLog.mjs";
 import { serveClient } from "./staticFiles.mjs";
 import { createTutorProvider } from "./tutorProvider.mjs";
+import { createAiGuard, limitsFromEnv } from "./aiGuard.mjs";
 export function hashPassword(password) {
   const salt = randomBytes(16).toString("hex");
   return salt + ":" + scryptSync(password, salt, 64).toString("hex");
@@ -79,6 +80,11 @@ export function createApp({
   aiProvider = process.env.AI_PROVIDER || (cloudflareAccountId && cloudflareToken ? "cloudflare" : "openai"),
   cloudflareModel = process.env.CLOUDFLARE_AI_MODEL,
   aiStudentEnabled = process.env.AI_STUDENT_ENABLED === "true",
+  // Visitors follow AI_STUDENT_ENABLED unless AI_VISITOR_ENABLED=false (M6).
+  aiVisitorEnabled = process.env.AI_VISITOR_ENABLED !== "false",
+  // Usage limits (aiGuard.mjs); environment variables by default.
+  aiLimits = limitsFromEnv(),
+  aiLog = console.log,
   fetchImpl = fetch,
   clientDir = resolve("dist"),
 } = {}) {
@@ -101,9 +107,11 @@ export function createApp({
   });
   // With Cloudflare, students and visitors use the model only when
   // AI_STUDENT_ENABLED=true; staff accounts always may (as in /api/ai).
-  const aiAllowed = (u) => ai.available && (!useCloudflare || aiStudentEnabled || ["super_admin", "content_admin", "teacher"].includes(u?.role));
+  const aiAllowed = (u) => ai.available && (u || aiVisitorEnabled) && (!useCloudflare || aiStudentEnabled || ["super_admin", "content_admin", "teacher"].includes(u?.role));
   const learning = createLearningSupport({ db, ai });
   const lessonChat = createLessonChat({ ai });
+  // Every model call goes through this gate (aiGuard.mjs, M6).
+  const guard = createAiGuard({ db, limits: aiLimits, log: aiLog });
   mkdirSync(uploadDir, { recursive: true });
   const limits = new Map();
   // Consent to send questions to the model, held by the server for the
@@ -321,7 +329,9 @@ export function createApp({
     if (!entry || entry.until < now) {
       if (limits.size > 10000) {
         for (const [k, v] of limits) if (v.until < now) limits.delete(k);
-        if (limits.size > 10000) fail(429, "الخدمة مشغولة؛ حاول لاحقًا");
+        // Still full (e.g. many made-up tab ids): drop the oldest windows
+        // instead of refusing everyone, so sign-in and lessons keep working.
+        while (limits.size > 10000) limits.delete(limits.keys().next().value);
       }
       limits.set(key, { count: 1, until: now + 60000 });
       return;
@@ -416,6 +426,11 @@ export function createApp({
   }
   async function handler(req, res) {
     let status = 200;
+    // Stops a model call when the browser goes away (aiGuard ticket signal).
+    const clientGone = new AbortController();
+    res.on("close", () => {
+      if (!res.writableEnded) clientGone.abort();
+    });
     const headers = {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
@@ -613,6 +628,12 @@ export function createApp({
         return /^[a-z0-9-]{8,64}$/i.test(tab) ? `v:${tab}` : null;
       };
       const hasConsent = () => consentGet(consentKey());
+      // The M6 gate for this request: who asks is the signed-in account, or
+      // the visitor (whose tab id only splits the shared visitor pool).
+      const admitFor = (route) => (messages, maxTokens) => {
+        const tab = String(req.headers["x-help-session"] || "");
+        return guard.admit({ route, user, visitorTab: /^[a-z0-9-]{8,64}$/i.test(tab) ? tab : null, model: ai.model, inputChars: JSON.stringify(messages).length, maxTokens, clientSignal: clientGone.signal });
+      };
       // «المعلم الذكي» for the whole lesson: a typed question, with or without a resource.
       const askRoute = async (lessonTitle, content) => {
         rate(`ask:${helpActor()}`, 30);
@@ -620,7 +641,7 @@ export function createApp({
         if (typeof b.message !== "string" || !b.message.trim() || b.message.length > 500) fail(400, "اكتب سؤالك عن الدرس (حتى 500 حرف).");
         if (b.history !== undefined && (!Array.isArray(b.history) || JSON.stringify(b.history).length > 8000)) fail(400, "المحادثة طويلة");
         const consent = hasConsent();
-        const r = await lessonChat.ask({ content, lessonTitle, message: b.message.trim(), history: b.history, resourceId: b.resourceId, consent: b.consent === true && consent, aiAllowed: aiAllowed(user) });
+        const r = await lessonChat.ask({ content, lessonTitle, message: b.message.trim(), history: b.history, resourceId: b.resourceId, consent: b.consent === true && consent, aiAllowed: aiAllowed(user), admit: admitFor("ask") });
         return send({ ...r, consent });
       };
       const supportRoute = async (kind, lessonId, content) => {
@@ -631,7 +652,7 @@ export function createApp({
           rate(`help:${helpActor()}`, 30);
           if (b.message !== undefined && (typeof b.message !== "string" || b.message.length > 500)) fail(400, "الاستفسار طويل");
           const consent = hasConsent();
-          const r = await learning.help({ actor: helpActor(), user, lessonId, content, q, level: b.level, trigger: b.trigger === "asked" ? "asked" : "auto", answer: b.answer, message: b.message, consent: b.consent === true && consent, aiAllowed: aiAllowed(user), shown: b.shown });
+          const r = await learning.help({ actor: helpActor(), user, lessonId, content, q, level: b.level, trigger: b.trigger === "asked" ? "asked" : "auto", answer: b.answer, message: b.message, consent: b.consent === true && consent, aiAllowed: aiAllowed(user), shown: b.shown, admit: admitFor("help") });
           if (r.error) fail(r.error, r.message);
           return send({ ...r, consent });
         }
@@ -688,6 +709,11 @@ export function createApp({
         if (b.consent) consentSet(key, user ? session.expires : Date.now() + VISITOR_CONSENT_MS);
         else consents.delete(key);
         return send({ consent: hasConsent() });
+      }
+      // Today's AI usage and limits for administrators (counts only).
+      if (path === "/api/admin/ai-usage" && method === "GET") {
+        admin();
+        return send(guard.today());
       }
       if (path === "/api/ai/status" && method === "GET")
         return send({
@@ -1369,7 +1395,9 @@ export function createApp({
         // The per-message tick is not enough: this session must hold consent.
         if (!hasConsent())
           fail(400, "الموافقة على إرسال السؤال لخدمة الذكاء الاصطناعي مطلوبة");
-        const output = await tutor.ask(context, b.message);
+        const gate = guard.admit({ route: "tutor", user, model: tutor.model, inputChars: JSON.stringify(context).length + b.message.length + 1500, maxTokens: 500, clientSignal: clientGone.signal });
+        if (!gate.ok) fail(429, gate.message, "limit");
+        const output = await tutor.ask(context, b.message, gate.ticket);
         if (
           !output ||
           typeof output.message !== "string" ||

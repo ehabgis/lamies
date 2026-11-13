@@ -26,7 +26,7 @@ export function lessonContext(content, question, previous = "", resourceId = nul
     .filter((x) => x.s > 0)
     .sort((a, b) => b.s - a.s)
     .slice(0, 4)
-    .map(({ r }) => ({ name: r.label, places: (r.locations || []).map((l) => l.name).slice(0, 6), info: [r.description, r.importance, ...(r.extraFacts || [])].filter(Boolean).join(" ") }));
+    .map(({ r }) => ({ name: r.label, places: (r.locations || []).map((l) => l.name).slice(0, 6), info: [r.description, r.importance, ...(r.extraFacts || [])].filter(Boolean).join(" ").slice(0, 600) }));
   const concepts = (content.concepts || [])
     .map((c) => ({ c, s: score(c.term, 3) + score(c.definition) }))
     .filter((x) => x.s > 0)
@@ -37,7 +37,9 @@ export function lessonContext(content, question, previous = "", resourceId = nul
 }
 
 export function createLessonChat({ ai }) {
-  async function ask({ content, lessonTitle, message, history, resourceId, consent, aiAllowed = true }) {
+  // admit(messages, maxTokens) → { ok, ticket } | { ok: false, message }: the M6
+  // guard (aiGuard.mjs); the model is called only with its ticket.
+  async function ask({ content, lessonTitle, message, history, resourceId, consent, aiAllowed = true, admit }) {
     const turns = cleanHistory(history);
     const lastUser = [...turns].reverse().find((t) => t.role === "user")?.text || "";
     const ctx = lessonContext(content, message, lastUser, resourceId);
@@ -55,9 +57,7 @@ export function createLessonChat({ ai }) {
       prepared = "مش لاقي التفصيلة دي في نص الدرس. تقدر تسأل معلمك في الفصل، أو تسألني عن حاجة تانية في الدرس.";
     const out = { answer: prepared, source: "prepared", canAsk: Boolean(ai?.available) && aiAllowed };
     if (!out.canAsk || consent !== true) return out;
-    try {
-      const text = await ai.chat(
-        [
+    const messages = [
           {
             role: "system",
             content: [
@@ -76,9 +76,12 @@ export function createLessonChat({ ai }) {
             role: "user",
             content: JSON.stringify({ approvedLesson: { resources: ctx.resources, concepts: ctx.concepts }, question: message }),
           },
-        ],
-        { maxTokens: 300 },
-      );
+        ];
+    // Over a limit: the lesson text stays, with a short Arabic note.
+    const gate = admit ? admit(messages, 300) : { ok: false };
+    if (!gate.ok) return Object.assign(out, { limited: true, note: gate.message || "" });
+    try {
+      const text = await ai.chat(messages, { maxTokens: 300, ticket: gate.ticket });
       if (text) Object.assign(out, { answer: text, source: "ai" });
     } catch {
       out.note = "تعذّر الاتصال بالمعلم الذكي الآن؛ هذه معلومات من الدرس.";

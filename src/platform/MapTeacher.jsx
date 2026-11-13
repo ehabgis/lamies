@@ -4,6 +4,7 @@ import { X, BookOpen, MapPin, Compass, Ruler, ChatText, PaperPlaneRight, ArrowRi
 import RobotGuide from "../components/Map/RobotGuide";
 import { api } from "./api";
 import { helpHeaders } from "./QuestionHelp";
+import { getConsent, isCurrent, onConsent, privateKey, registerReset, setConsent, track } from "./privateState";
 import { play } from "./sfx";
 import "./map-teacher.css";
 
@@ -20,23 +21,25 @@ const HELPS = [
   ["measure", "قياس المسافة", Ruler],
 ];
 
-// The lesson conversation, one per lesson, kept for the visit (and the tab).
+// The lesson conversation, one per person, kind of lesson (demo or class) and
+// lesson, kept for the visit (and the tab). Cleared when the person changes.
 const chats = new Map();
-let chatConsent = false;
-function chatFor(lessonId) {
-  if (!chats.has(lessonId)) {
+registerReset(() => chats.clear());
+const chatKey = (scope, lessonId) => privateKey("lamis.chat", scope, lessonId);
+function chatFor(key) {
+  if (!chats.has(key)) {
     let saved = [];
     try {
-      saved = JSON.parse(sessionStorage.getItem(`lamis.chat.${lessonId}`) || "[]");
+      saved = JSON.parse(sessionStorage.getItem(key) || "[]");
     } catch {}
-    chats.set(lessonId, Array.isArray(saved) ? saved : []);
+    chats.set(key, Array.isArray(saved) ? saved : []);
   }
-  return chats.get(lessonId);
+  return chats.get(key);
 }
-function keepChat(lessonId, list) {
-  chats.set(lessonId, list);
+function keepChat(key, list) {
+  chats.set(key, list);
   try {
-    sessionStorage.setItem(`lamis.chat.${lessonId}`, JSON.stringify(list.slice(-20)));
+    sessionStorage.setItem(key, JSON.stringify(list.slice(-20)));
   } catch {}
 }
 const first = (text) => String(text || "").split(/[.،؛]/)[0].trim();
@@ -61,42 +64,81 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, reviewRe
   const [typed, setTyped] = useState("");
   const [query, setQuery] = useState("");
   // «المعلم الذكي» for the whole lesson: any question, a resource chosen or not.
-  const [chat, setChat] = useState(() => chatFor(lessonId));
+  const scope = demo ? "demo" : "class";
+  const [chat, setChat] = useState(() => chatFor(chatKey(scope, lessonId)));
   const [thinking, setThinking] = useState(false);
   const [canAsk, setCanAsk] = useState(false);
-  const [consent, setConsent] = useState(chatConsent);
-  useEffect(() => setChat(chatFor(lessonId)), [lessonId]);
+  // Consent lives on the server for this session; this only mirrors it.
+  const [consent, setConsentShown] = useState(getConsent);
+  const [consentBusy, setConsentBusy] = useState(false);
+  useEffect(() => setChat(chatFor(chatKey(scope, lessonId))), [scope, lessonId]);
+  useEffect(() => onConsent(setConsentShown), []);
+  // Another person now uses this tab: show nothing of the previous one.
+  useEffect(
+    () =>
+      registerReset(() => {
+        setChat([]);
+        setThinking(false);
+        setCanAsk(false);
+      }),
+    [],
+  );
   useEffect(() => {
     let on = true;
-    api("/ai/chat-status").then((s) => on && setCanAsk(Boolean(s.canAsk))).catch(() => {});
+    api("/ai/chat-status", { headers: helpHeaders() })
+      .then((s) => {
+        if (!on) return;
+        setCanAsk(Boolean(s.canAsk));
+        setConsent(s.consent);
+      })
+      .catch(() => {});
     return () => {
       on = false;
     };
   }, []);
+  async function changeConsent(value) {
+    setConsentBusy(true);
+    try {
+      const r = await api("/ai/consent", { method: "POST", headers: helpHeaders(), body: { consent: value } });
+      setConsent(r.consent);
+    } catch {
+      setConsent(false);
+    } finally {
+      setConsentBusy(false);
+    }
+  }
   async function sendChat(text) {
     if (thinking) return;
+    const key = chatKey(scope, lessonId);
     const history = chat.map(({ role, text: t }) => ({ role, text: t })).slice(-8);
     const mine = [...chat, { role: "user", text }];
-    keepChat(lessonId, mine);
+    keepChat(key, mine);
     setChat(mine);
     setView("chat");
     setThinking(true);
+    const request = track();
+    // An answer that arrives after the person changed is dropped, not shown.
+    const keep = (next) => {
+      if (!isCurrent(request.generation)) return;
+      keepChat(key, next);
+      setChat(next);
+    };
     try {
       const r = await api(`${demo ? "/demo" : ""}/lessons/${lessonId}/ask`, {
         method: "POST",
         headers: helpHeaders(),
-        body: { message: text, history, resourceId: resource?.id || null, consent: chatConsent },
+        signal: request.signal,
+        body: { message: text, history, resourceId: resource?.id || null, consent: getConsent() },
       });
+      if (!isCurrent(request.generation)) return;
       if (r.canAsk !== undefined) setCanAsk(r.canAsk);
-      const next = [...mine, { role: "assistant", text: r.answer, note: r.note || (r.source === "prepared" ? (r.canAsk ? "إجابة من نص الدرس. علّم على الموافقة تحت عشان يجاوبك المعلم المتصل." : "إجابة من نص الدرس؛ المعلم المتصل غير مفعّل هنا.") : "") }];
-      keepChat(lessonId, next);
-      setChat(next);
+      if (r.consent !== undefined) setConsent(r.consent);
+      keep([...mine, { role: "assistant", text: r.answer, note: r.note || (r.source === "prepared" ? (r.canAsk ? "إجابة من نص الدرس. علّم على الموافقة تحت عشان يجاوبك المعلم المتصل." : "إجابة من نص الدرس؛ المعلم المتصل غير مفعّل هنا.") : "") }]);
     } catch (e) {
-      const next = [...mine, { role: "assistant", text: "معلش، مقدرتش أوصل للمعلم الذكي دلوقتي. راجع بطاقة المورد على الخريطة، وجرّب تسأل تاني بعد شوية.", note: e.message }];
-      keepChat(lessonId, next);
-      setChat(next);
+      keep([...mine, { role: "assistant", text: "معلش، مقدرتش أوصل للمعلم الذكي دلوقتي. راجع بطاقة المورد على الخريطة، وجرّب تسأل تاني بعد شوية.", note: e.message }]);
     } finally {
-      setThinking(false);
+      request.done();
+      if (isCurrent(request.generation)) setThinking(false);
     }
   }
   const sites = resources.flatMap((r) => (r.locations || []).map((l) => ({ ...l, resource: r })));
@@ -182,7 +224,17 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, reviewRe
 
   // On phones the panel tucks down to its title while the map key is open.
   return (
-    <aside className={`mt-panel ${keyOpen ? "is-tucked" : ""}`} aria-label="المعلم الذكي" dir="rtl">
+    <aside
+      className={`mt-panel ${keyOpen ? "is-tucked" : ""}`}
+      aria-label="المعلم الذكي"
+      dir="rtl"
+      onKeyDown={(e) => {
+        // Escape closes the teacher (not the map key behind it).
+        if (e.key !== "Escape") return;
+        e.stopPropagation();
+        onClose();
+      }}
+    >
       <header>
         <span className="mt-robot" aria-hidden="true">
           <RobotGuide />
@@ -330,17 +382,15 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, reviewRe
         )}
       </div>
 
-      {canAsk && !consent && (
+      {canAsk && (
         <label className="mt-consent">
           <input
             type="checkbox"
             checked={consent}
-            onChange={(e) => {
-              chatConsent = e.target.checked;
-              setConsent(e.target.checked);
-            }}
+            disabled={consentBusy}
+            onChange={(e) => changeConsent(e.target.checked)}
           />
-          أوافق على إرسال سؤالي للمعلم الذكي، من غير اسمي.
+          أوافق على إرسال سؤالي للمعلم الذكي، من غير اسمي. (تقدر تلغي العلامة في أي وقت.)
         </label>
       )}
       <form

@@ -12,11 +12,18 @@ async function start(options = {}) {
   const server = http.createServer(app.handler);
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   const base = `http://127.0.0.1:${server.address().port}`;
+  const headers = { "Content-Type": "application/json", "x-help-session": "tab-chat0001" };
   const ask = async (lesson, body) => {
-    const r = await fetch(`${base}/api/demo/lessons/${lesson}/ask`, { method: "POST", headers: { "Content-Type": "application/json", "x-help-session": "tab-chat0001" }, body: JSON.stringify(body) });
+    const r = await fetch(`${base}/api/demo/lessons/${lesson}/ask`, { method: "POST", headers, body: JSON.stringify(body) });
     return { status: r.status, data: await r.json() };
   };
-  return { ask, close: () => { server.closeAllConnections(); server.close(); rmSync(dir, { recursive: true, force: true }); } };
+  // Consent is held by the server for this visitor tab (privateState / M5).
+  const agree = async (consent = true) => {
+    const r = await fetch(`${base}/api/ai/consent`, { method: "POST", headers, body: JSON.stringify({ consent }) });
+    assert.equal(r.status, 200);
+    return r.json();
+  };
+  return { ask, agree, close: () => { server.closeAllConnections(); server.close(); app.close(); rmSync(dir, { recursive: true, force: true }); } };
 }
 
 test("a lesson question needs no resource; the answer uses the lesson text of both resources", async () => {
@@ -42,9 +49,16 @@ test("with consent, Cloudflare Workers AI gets the question, the conversation an
     sent = { url, body: JSON.parse(init.body) };
     return { ok: true, json: async () => ({ success: true, result: { response: "مياه النيل تجري على سطح الأرض، والمياه الجوفية توجد في باطن الأرض." } }) };
   };
-  const { ask, close } = await start({ aiProvider: "cloudflare", cloudflareAccountId: "acc", cloudflareToken: "tok", aiStudentEnabled: true, fetchImpl });
+  const { ask, agree, close } = await start({ aiProvider: "cloudflare", cloudflareAccountId: "acc", cloudflareToken: "tok", aiStudentEnabled: true, fetchImpl });
   try {
+    // The browser's consent:true alone does not reach the model.
+    const unbound = await ask("lesson-2", { message: "ما المياه الجوفية؟", consent: true });
+    assert.equal(unbound.data.source, "prepared");
+    assert.equal(unbound.data.consent, false);
+    assert.equal(sent, undefined, "no model call without the session's consent");
+    assert.deepEqual(await agree(), { consent: true });
     const first = await ask("lesson-2", { message: "إيه الفرق بين مياه النيل والمياه الجوفية؟", consent: true });
+    assert.equal(first.data.consent, true);
     assert.equal(first.data.source, "ai");
     assert.match(sent.url, /\/accounts\/acc\/ai\/run\//);
     const follow = await ask("lesson-2", {
@@ -74,6 +88,7 @@ test("with consent, Cloudflare Workers AI gets the question, the conversation an
     const noConsent = await s2.ask("lesson-2", { message: "ما المياه الجوفية؟" });
     assert.equal(noConsent.data.source, "prepared");
     assert.equal(noConsent.data.canAsk, true);
+    await s2.agree();
     const failed = await s2.ask("lesson-2", { message: "ما المياه الجوفية؟", consent: true });
     assert.equal(failed.data.source, "prepared");
     assert(failed.data.note);
@@ -114,8 +129,9 @@ test("without the model, a follow-up is answered about the last thing named, and
 test("with AI_STUDENT_ENABLED off, visitors get the lesson text and no model call", async () => {
   let calls = 0;
   const fetchImpl = async () => { calls += 1; return { ok: true, json: async () => ({ success: true, result: { response: "رد" } }) }; };
-  const { ask, close } = await start({ aiProvider: "cloudflare", cloudflareAccountId: "a", cloudflareToken: "t", aiStudentEnabled: false, fetchImpl });
+  const { ask, agree, close } = await start({ aiProvider: "cloudflare", cloudflareAccountId: "a", cloudflareToken: "t", aiStudentEnabled: false, fetchImpl });
   try {
+    await agree();
     const r = await ask("lesson-2", { message: "ما المياه الجوفية؟", consent: true });
     assert.equal(r.data.source, "prepared");
     assert.equal(r.data.canAsk, false);

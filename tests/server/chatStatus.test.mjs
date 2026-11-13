@@ -54,8 +54,8 @@ async function start(options) {
 test("chat status: no model configured means no consent box for anyone", async () => {
   const s = await start({ aiProvider: "openai" });
   try {
-    assert.deepEqual(await s.status(), { canAsk: false });
-    assert.deepEqual(await s.status(await s.login("teacher@example.test")), { canAsk: false });
+    assert.deepEqual(await s.status(), { canAsk: false, consent: false });
+    assert.deepEqual(await s.status(await s.login("teacher@example.test")), { canAsk: false, consent: false });
   } finally {
     await s.close();
   }
@@ -64,9 +64,9 @@ test("chat status: no model configured means no consent box for anyone", async (
 test("chat status: with Cloudflare and AI_STUDENT_ENABLED off, only staff may ask", async () => {
   const s = await start({ aiProvider: "cloudflare", cloudflareAccountId: "a".repeat(32), cloudflareToken: "tok", aiStudentEnabled: false });
   try {
-    assert.deepEqual(await s.status(), { canAsk: false }, "visitor");
-    assert.deepEqual(await s.status(await s.login("pupil@example.test")), { canAsk: false }, "student");
-    assert.deepEqual(await s.status(await s.login("teacher@example.test")), { canAsk: true }, "teacher");
+    assert.deepEqual(await s.status(), { canAsk: false, consent: false }, "visitor");
+    assert.deepEqual(await s.status(await s.login("pupil@example.test")), { canAsk: false, consent: false }, "student");
+    assert.deepEqual(await s.status(await s.login("teacher@example.test")), { canAsk: true, consent: false }, "teacher");
     // The Render health check keeps its plain answer.
     assert.deepEqual(await s.health(), { ok: true });
     assert.equal(s.calls(), 0, "checking the status never calls the model");
@@ -78,8 +78,8 @@ test("chat status: with Cloudflare and AI_STUDENT_ENABLED off, only staff may as
 test("chat status: with AI_STUDENT_ENABLED on, students and visitors may ask", async () => {
   const s = await start({ aiProvider: "cloudflare", cloudflareAccountId: "a".repeat(32), cloudflareToken: "tok", aiStudentEnabled: true });
   try {
-    assert.deepEqual(await s.status(), { canAsk: true }, "visitor");
-    assert.deepEqual(await s.status(await s.login("pupil@example.test")), { canAsk: true }, "student");
+    assert.deepEqual(await s.status(), { canAsk: true, consent: false }, "visitor");
+    assert.deepEqual(await s.status(await s.login("pupil@example.test")), { canAsk: true, consent: false }, "student");
     assert.equal(s.calls(), 0);
   } finally {
     await s.close();

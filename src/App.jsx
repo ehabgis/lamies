@@ -64,6 +64,7 @@ function RouteLoader() {
 
 function AppContent() {
   const location = useLocation();
+  const { accountKey } = useSession();
   const { setRoutePathname, speak, speechSupported } = useVoiceNarration();
   const announcedPathRef = useRef("");
   const isWelcomeRoute =
@@ -130,7 +131,8 @@ function AppContent() {
       )}
       {!isQuietRoute && <GlobalVoiceToggleButton />}
       <ScrollToTop />
-      <div className="relative z-10">
+      {/* Built again when the account changes: no page keeps the previous person's answers. */}
+      <div className="relative z-10" key={accountKey}>
         <Suspense fallback={<RouteLoader />}>
           <Routes>
             <Route path="/" element={<EntryPage />} />

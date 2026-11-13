@@ -33,8 +33,11 @@ function verify(password, stored) {
   const derived = scryptSync(password, salt, 64);
   return timingSafeEqual(derived, Buffer.from(hash, "hex"));
 }
-const fail = (status, message) => {
-  throw Object.assign(new Error(message), { status });
+// `reason` (optional) tells the browser why without details: "csrf" (this tab's
+// token is not the session's: another account signed in) or "session" (the
+// session cookie is no longer valid).
+const fail = (status, message, reason) => {
+  throw Object.assign(new Error(message), { status, reason });
 };
 const token = () => randomBytes(32).toString("hex");
 const digest = (x) => createHash("sha256").update(x).digest("hex");
@@ -103,6 +106,31 @@ export function createApp({
   const lessonChat = createLessonChat({ ai });
   mkdirSync(uploadDir, { recursive: true });
   const limits = new Map();
+  // Consent to send questions to the model, held by the server for the
+  // session that gave it (2026-11-13). A browser's `consent:true` alone never
+  // reaches the model: another account in the same tab, or a stale tab, has
+  // no consent here. Keys are a hash of the stored session digest (never the
+  // cookie), or the visitor's tab id. Memory only: a restart, or another
+  // server instance, asks again.
+  const consents = new Map();
+  const CONSENT_MAX = 20000;
+  const VISITOR_CONSENT_MS = 12 * 3600000;
+  const consentGet = (key) => {
+    const c = key && consents.get(key);
+    if (c && c.until > Date.now()) return true;
+    if (c) consents.delete(key);
+    return false;
+  };
+  const consentSet = (key, until) => {
+    consents.delete(key);
+    if (consents.size >= CONSENT_MAX) {
+      const now = Date.now();
+      for (const [k, v] of consents) if (v.until <= now) consents.delete(k);
+      // Still full: the oldest consent goes first (Map keeps insertion order).
+      while (consents.size >= CONSENT_MAX) consents.delete(consents.keys().next().value);
+    }
+    consents.set(key, { until });
+  };
   function visible(node) {
     if (!node || node.status !== "published" || node.disabled) return false;
     let current = node;
@@ -431,23 +459,47 @@ export function createApp({
             .get(session.user_id)
         : null;
       viewer = user;
-      if (
-        writable &&
-        ![
-          "/api/auth/login",
-          "/api/auth/register",
-          ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/answers`),
-          ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/help`),
-          ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/apply`),
-          ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/ask`),
-          ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/expedition/check`),
-          ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/build-map/check`),
-          ...DEMO_IDS.map((id) => `/api/demo/lessons/${id}/trace/check`),
-        ].includes(path)
-      ) {
-        if (!user) fail(401, "سجّل الدخول أولًا");
-        if (req.headers["x-csrf-token"] !== session.csrf)
-          fail(403, "رمز حماية الطلب غير صالح");
+      // Signing out with a session that already ended is not an error: the
+      // browser clears its side either way.
+      if (path === "/api/auth/logout" && method === "POST" && !user) {
+        headers["Set-Cookie"] =
+          "lamis_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0";
+        return send({ ok: true });
+      }
+      // Writes need a signed-in session and its CSRF token, except:
+      // - signing in or up;
+      // - the open demo routes and giving consent, for real visitors only
+      //   (2026-11-13). Who is a visitor is decided here from the session
+      //   cookie, never from a header the browser sends:
+      //     no session cookie            → visitor, no token needed;
+      //     a valid session              → signed in: its CSRF token is required
+      //                                    (a stale tab of another account is
+      //                                    refused, reason "csrf");
+      //     a cookie that is not a valid → refused (401, reason "session") and
+      //       session (expired, signed     the cookie is cleared; the request is
+      //       out, disabled account)       never handled as a visitor's.
+      const visitorRoutes = [
+        "/api/ai/consent",
+        ...DEMO_IDS.flatMap((id) =>
+          ["answers", "help", "apply", "ask", "expedition/check", "build-map/check", "trace/check"].map(
+            (r) => `/api/demo/lessons/${id}/${r}`,
+          ),
+        ),
+      ];
+      const clearSessionCookie = () => {
+        headers["Set-Cookie"] =
+          "lamis_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0";
+      };
+      if (writable && !["/api/auth/login", "/api/auth/register"].includes(path)) {
+        const visitorRoute = visitorRoutes.includes(path);
+        if (!user) {
+          if (!visitorRoute) fail(401, "سجّل الدخول أولًا");
+          if (cookie) {
+            clearSessionCookie();
+            fail(401, "انتهت جلستك. سجّل الدخول من جديد، أو تابع التجربة كزائر.", "session");
+          }
+        } else if (req.headers["x-csrf-token"] !== session.csrf)
+          fail(403, "رمز حماية الطلب غير صالح", "csrf");
       }
       const auth = () => {
         if (!user) fail(401, "سجّل الدخول أولًا");
@@ -552,13 +604,24 @@ export function createApp({
         const tab = String(req.headers["x-help-session"] || "");
         return user ? `u:${user.id}` : /^[a-z0-9-]{8,64}$/i.test(tab) ? `v:${tab}` : `ip:${req.socket.remoteAddress}`;
       };
+      // Whose consent counts for this request: this session, or this visitor
+      // tab. A visitor without a tab id cannot hold consent (an address may be
+      // a whole school).
+      const consentKey = () => {
+        if (session && user) return `s:${digest(session.token)}`;
+        const tab = String(req.headers["x-help-session"] || "");
+        return /^[a-z0-9-]{8,64}$/i.test(tab) ? `v:${tab}` : null;
+      };
+      const hasConsent = () => consentGet(consentKey());
       // «المعلم الذكي» for the whole lesson: a typed question, with or without a resource.
       const askRoute = async (lessonTitle, content) => {
         rate(`ask:${helpActor()}`, 30);
         const b = await body(req);
         if (typeof b.message !== "string" || !b.message.trim() || b.message.length > 500) fail(400, "اكتب سؤالك عن الدرس (حتى 500 حرف).");
         if (b.history !== undefined && (!Array.isArray(b.history) || JSON.stringify(b.history).length > 8000)) fail(400, "المحادثة طويلة");
-        return send(await lessonChat.ask({ content, lessonTitle, message: b.message.trim(), history: b.history, resourceId: b.resourceId, consent: b.consent === true, aiAllowed: aiAllowed(user) }));
+        const consent = hasConsent();
+        const r = await lessonChat.ask({ content, lessonTitle, message: b.message.trim(), history: b.history, resourceId: b.resourceId, consent: b.consent === true && consent, aiAllowed: aiAllowed(user) });
+        return send({ ...r, consent });
       };
       const supportRoute = async (kind, lessonId, content) => {
         const b = await body(req);
@@ -567,9 +630,10 @@ export function createApp({
         if (kind === "help") {
           rate(`help:${helpActor()}`, 30);
           if (b.message !== undefined && (typeof b.message !== "string" || b.message.length > 500)) fail(400, "الاستفسار طويل");
-          const r = await learning.help({ actor: helpActor(), user, lessonId, content, q, level: b.level, trigger: b.trigger === "asked" ? "asked" : "auto", answer: b.answer, message: b.message, consent: b.consent === true, aiAllowed: aiAllowed(user), shown: b.shown });
+          const consent = hasConsent();
+          const r = await learning.help({ actor: helpActor(), user, lessonId, content, q, level: b.level, trigger: b.trigger === "asked" ? "asked" : "auto", answer: b.answer, message: b.message, consent: b.consent === true && consent, aiAllowed: aiAllowed(user), shown: b.shown });
           if (r.error) fail(r.error, r.message);
-          return send(r);
+          return send({ ...r, consent });
         }
         const r = learning.checkApply({ actor: helpActor(), user, lessonId, q, answer: b.answer });
         if (r.error) fail(r.error, r.message);
@@ -611,7 +675,20 @@ export function createApp({
       // teacher can ask for consent before the first question. /api/health
       // stays the plain Render health check above.
       if (path === "/api/ai/chat-status" && method === "GET")
-        return send({ canAsk: aiAllowed(user) });
+        return send({ canAsk: aiAllowed(user), consent: hasConsent() });
+      // Give or withdraw consent for this session (or visitor tab). Signed-in
+      // accounts need their CSRF token (checked above with the other
+      // visitor routes); visitors have no session to forge.
+      if (path === "/api/ai/consent" && method === "POST") {
+        const key = consentKey();
+        if (!key) fail(400, "افتح الصفحة من المتصفح مرة أخرى ثم وافق");
+        rate(`consent:${key}`, 30);
+        const b = await body(req);
+        if (typeof b.consent !== "boolean") fail(400, "اختر الموافقة أو إلغاءها");
+        if (b.consent) consentSet(key, user ? session.expires : Date.now() + VISITOR_CONSENT_MS);
+        else consents.delete(key);
+        return send({ consent: hasConsent() });
+      }
       if (path === "/api/ai/status" && method === "GET")
         return send({
           configured: tutor.configured,
@@ -667,9 +744,14 @@ export function createApp({
           fail(401, "البريد أو كلمة المرور غير صحيحة");
         return send(startSession(u));
       }
-      if (path === "/api/auth/me" && method === "GET")
-        return send({ user: safeUser(user), csrfToken: session?.csrf || null });
+      if (path === "/api/auth/me" && method === "GET") {
+        // A cookie that is no longer a valid session is cleared here, so the
+        // open demo keeps working for this browser as a visitor.
+        if (cookie && !user) clearSessionCookie();
+        return send({ user: safeUser(user), csrfToken: user ? session.csrf : null });
+      }
       if (path === "/api/auth/logout" && method === "POST") {
+        consents.delete(consentKey());
         db.prepare("DELETE FROM sessions WHERE token=?").run(session.token);
         headers["Set-Cookie"] =
           "lamis_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0";
@@ -1284,6 +1366,9 @@ export function createApp({
             ? b.mode
             : "explain",
         };
+        // The per-message tick is not enough: this session must hold consent.
+        if (!hasConsent())
+          fail(400, "الموافقة على إرسال السؤال لخدمة الذكاء الاصطناعي مطلوبة");
         const output = await tutor.ask(context, b.message);
         if (
           !output ||
@@ -1313,7 +1398,10 @@ export function createApp({
       fail(404, "المسار غير موجود");
     } catch (e) {
       send(
-        { error: e.status ? e.message : "تعذر إتمام الطلب" },
+        {
+          error: e.status ? e.message : "تعذر إتمام الطلب",
+          ...(e.status && e.reason ? { reason: e.reason } : {}),
+        },
         e.status || 500,
       );
     }

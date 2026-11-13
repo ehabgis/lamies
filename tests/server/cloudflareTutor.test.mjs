@@ -75,6 +75,15 @@ test("Cloudflare tutor is staff-only by default and answers from reviewed, publi
     assert.equal(calls, 0);
     app.db.prepare("UPDATE nodes SET status='published' WHERE id='egypt-treasures'").run();
     lesson.run("published", JSON.stringify(content));
+    // The per-message tick needs this session's consent on the server too.
+    assert.equal((await ask(admin)).status, 400);
+    assert.equal(calls, 0);
+    const consent = await fetch(base + "/api/ai/consent", {
+      method: "POST",
+      headers: { ...admin, "Content-Type": "application/json" },
+      body: JSON.stringify({ consent: true }),
+    });
+    assert.deepEqual(await consent.json(), { consent: true });
     const response = await ask(admin, { questionId: "q1", attempt: "ATTEMPT_PRIVATE", previousResponse: "PREVIOUS_PRIVATE" });
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), { message: output.message, sourceIds: ["iron"], question: null });

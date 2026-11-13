@@ -377,14 +377,17 @@ export default function JourneyPage({ demo = false }) {
                             </small>
                           </div>
                           <div className="journey-lesson-ways">
-                            {lesson.demoLessonId && (
+                            {(lesson.demoLessonId || lesson.bundled) && (
                               <button
                                 type="button"
                                 className="journey-study"
                                 disabled={unavailable}
-                                onClick={() => {
+                                onClick={async () => {
                                   play("open");
-                                  navigate(`/demo/${lesson.demoLessonId}/book`);
+                                  // A student's published lesson: its book in their classroom.
+                                  if (lesson.bundled) {
+                                    if (await saveEnrollment()) navigate(`/classroom/${lesson.id}/book`);
+                                  } else navigate(`/demo/${lesson.demoLessonId}/book`);
                                 }}
                               >
                                 <BookOpen size={22} aria-hidden="true" /> ذاكر الدرس

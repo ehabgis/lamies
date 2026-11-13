@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -17,6 +17,7 @@ import {
   BookBookmark,
 } from "phosphor-react";
 import { api } from "./api";
+import { useLessonPlace } from "./lessonPlace";
 import BrandMark from "./BrandMark";
 import RobotGuide from "../components/Map/RobotGuide";
 import ResourcePin from "../components/Map/ResourcePin";
@@ -41,6 +42,7 @@ const loadProgress = (id) => {
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export default function ExpeditionPage({ demo = true }) {
+  const place = useLessonPlace();
   const { id = "lesson-1" } = useParams();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
@@ -50,7 +52,7 @@ export default function ExpeditionPage({ demo = true }) {
   const cardRef = useRef(null);
 
   useEffect(() => {
-    api(`/demo/lessons/${id}/expedition`)
+    api(`${place.api}/${id}/expedition`)
       .then((r) => setData(r.expedition))
       .catch((e) => setError(e.message));
     return () => narrator.stop();
@@ -111,7 +113,7 @@ export default function ExpeditionPage({ demo = true }) {
 
   async function check(body) {
     try {
-      return await api(`/demo/lessons/${id}/expedition/check`, { method: "POST", body });
+      return await api(`${place.api}/${id}/expedition/check`, { method: "POST", body });
     } catch (e) {
       setRobot(`تعذر التحقق الآن: ${e.message}. حاول مرة أخرى.`);
       return null;
@@ -510,7 +512,7 @@ export default function ExpeditionPage({ demo = true }) {
       title={data.lessonTitle}
       stars={stars}
       onSettings={() => setSettingsOpen(true)}
-      lessonPath={`/demo/${id}`}
+      lessonPath={`${place.page}/${id}`}
     >
       <ol className="exp-path" aria-label="مسار التعلم">
         {progressStages.map((s, i) => {
@@ -568,6 +570,11 @@ export default function ExpeditionPage({ demo = true }) {
 
 export function Frame({ title, children, stars, onSettings, lessonPath = "/demo/lesson-1", extraNav, className = "", current = "trips", back = true }) {
   const navigate = useNavigate();
+  // In a student's classroom the bar leads to their journey, their lesson
+  // and «إنجازاتي»; the visitor's trips and local achievements stay in the sample.
+  const { pathname } = useLocation();
+  const place = useLessonPlace();
+  const classroomId = place.classroom ? pathname.split("/")[2] : null;
   return (
     <div className={`lamis-platform expedition ${className}`} dir="rtl">
       <header className="exp-top">
@@ -602,16 +609,17 @@ export function Frame({ title, children, stars, onSettings, lessonPath = "/demo/
       </header>
       <main className="exp-main">{children}</main>
       <nav className="exp-bottom" aria-label="التنقل">
-        <Link to="/">
-          <House size={22} aria-hidden="true" /> الرئيسية
+        <Link to={place.classroom ? "/journey" : "/"}>
+          <House size={22} aria-hidden="true" /> {place.classroom ? "رحلتي" : "الرئيسية"}
         </Link>
         <Link to={lessonPath}>
           <BookOpen size={22} aria-hidden="true" /> الدروس
         </Link>
-        <Link to={LESSONS_HREF} className="exp-book-link">
+        <Link to={classroomId ? `/classroom/${classroomId}/book` : LESSONS_HREF} className="exp-book-link">
           <BookBookmark size={22} aria-hidden="true" /> كتابي التفاعلي
         </Link>
         {extraNav}
+        {!place.classroom && (
         <Link
           to="/demo/trips"
           className={current === "trips" ? "is-current" : ""}
@@ -619,8 +627,9 @@ export function Frame({ title, children, stars, onSettings, lessonPath = "/demo/
         >
           <MapTrifold size={22} aria-hidden="true" /> الرحلات
         </Link>
+        )}
         <Link
-          to="/achievements"
+          to={place.classroom ? "/my-progress" : "/achievements"}
           className={current === "achievements" ? "is-current" : ""}
           aria-current={current === "achievements" ? "page" : undefined}
         >

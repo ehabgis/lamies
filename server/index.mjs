@@ -21,7 +21,7 @@ import { resolve, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { database, unpack, roles, kinds } from "./db.mjs";
 import { lessonBook } from "./lessonBook.mjs";
-import { migrate as migrateProgress, logEvent, questionKind, childReport, newLinkCode, useLinkCode, previewLinkCode } from "./progressLog.mjs";
+import { migrate as migrateProgress, logEvent, childReport, newLinkCode, useLinkCode, previewLinkCode, REQUIREMENTS } from "./progressLog.mjs";
 import { serveClient } from "./staticFiles.mjs";
 import { createTutorProvider } from "./tutorProvider.mjs";
 import { createAiGuard, limitsFromEnv } from "./aiGuard.mjs";
@@ -94,6 +94,29 @@ export function createApp({
   });
   const db = database(dbPath);
   migrateProgress(db);
+  // 2026-11-13: the three lessons of «كنوز مصر» open in a student's
+  // /classroom with their bundled content once an admin has reviewed and
+  // published them. Nothing is published here.
+  // - Lesson 1, only while it is still the untouched seed draft (version 1),
+  //   is marked bundled; a lesson an admin has edited is left as it is.
+  // - Lessons 2 and 3 get their catalog nodes, as bundled drafts; an
+  //   existing node is never changed.
+  db.prepare(
+    "UPDATE nodes SET content=json_set(content,'$.bundled',json('true')) WHERE id='lesson-1' AND kind='lesson' AND status='draft' AND version=1 AND json_extract(content,'$.bundled') IS NULL",
+  ).run();
+  if (db.prepare("SELECT 1 FROM nodes WHERE id='egypt-treasures' AND kind='unit'").get()) {
+    const addLesson = db.prepare(
+      "INSERT OR IGNORE INTO nodes(id,parent_id,kind,title,status,sort_order,content) VALUES(?,?,?,?,'draft',?,?)",
+    );
+    for (const [i, id] of ["lesson-2", "lesson-3"].entries())
+      addLesson.run(id, "egypt-treasures", "lesson", REQUIREMENTS[id].title, i + 2, JSON.stringify({
+        bundled: true,
+        reviewRequired: true,
+        sources: (fullContent(id)?.sources || []).map((s) => ({ ...s, approved: false })),
+        questions: [],
+        notice: "محتوى هذا الدرس مضمّن في التطبيق؛ راجع مصادره هنا ثم قرّر نشره.",
+      }));
+  }
   // One set of settings for every smart-teacher feature: the /api/ai tutor
   // above, and the help cards and lesson chat (aiProvider.mjs).
   const useCloudflare = String(aiProvider).trim().toLowerCase() === "cloudflare";
@@ -164,6 +187,26 @@ export function createApp({
     let p = n;
     while (p && p.kind !== "year") p = p.parent_id ? node(p.parent_id) : null;
     return p?.id === chosen.yearId;
+  }
+  // The three lessons of «كنوز مصر» are bundled with the app (server/demo.mjs:
+  // the textbook layer, places, activities and media), the same content the
+  // visitor's sample shows. Their catalog node keeps what the CMS decides:
+  // title, publication, review and approved sources.
+  // Opt-in (content.bundled): a lesson an admin rewrote in the CMS keeps
+  // its own content.
+  const bundled = (n) =>
+    n?.kind === "lesson" && DEMO_IDS.includes(n.id) && JSON.parse(n.content || "{}").bundled === true;
+  function lessonContent(n) {
+    const own = JSON.parse(n.content || "{}");
+    if (!bundled(n)) return own;
+    const full = fullContent(n.id);
+    return {
+      ...full,
+      reviewRequired: own.reviewRequired !== false,
+      sources: own.sources?.length ? own.sources : full.sources.map((s) => ({ ...s, approved: false })),
+      completionXp: own.completionXp ?? 30,
+      ...(own.notice ? { notice: own.notice } : {}),
+    };
   }
   function lessonFor(id, user) {
     const n = node(id);
@@ -278,7 +321,9 @@ export function createApp({
         !n.content.sources?.some((s) => s.approved === true && s.id && s.text)
       )
         fail(400, "راجع الدرس وأضف مصدرًا معتمدًا قبل النشر");
-      if (!qs.length) fail(400, "أضف أسئلة مع إجابات معتمدة قبل النشر");
+      // A bundled lesson's questions and answers come with the app.
+      if (!qs.length && !(DEMO_IDS.includes(n.id) && n.content.bundled === true))
+        fail(400, "أضف أسئلة مع إجابات معتمدة قبل النشر");
     }
     return n;
   }
@@ -366,6 +411,10 @@ export function createApp({
         .all(u.id),
     }));
   }
+  const questionCount = (lessonId) => {
+    const n = node(lessonId);
+    return n ? (lessonContent(n).questions || []).filter((q) => !q.duplicateOf).length : 0;
+  };
   function progressFor(id) {
     const rewards = db
       .prepare(
@@ -396,18 +445,12 @@ export function createApp({
         correctCount: answers.filter(
           (a) => a.lessonId === lessonId && a.correct,
         ).length,
-        totalQuestions: (
-          JSON.parse(node(lessonId)?.content || "{}").questions || []
-        ).length,
+        totalQuestions: questionCount(lessonId),
         percent: Math.round(
           (100 *
             answers.filter((a) => a.lessonId === lessonId && a.correct)
               .length) /
-            Math.max(
-              1,
-              (JSON.parse(node(lessonId)?.content || "{}").questions || [])
-                .length,
-            ),
+            Math.max(1, questionCount(lessonId)),
         ),
         state: JSON.parse(
           states.find((s) => s.lessonId === lessonId)?.state || "{}",
@@ -537,8 +580,29 @@ export function createApp({
       };
       if (path === "/api/demo/catalog" && method === "GET")
         return send({ nodes: demoCatalog(), demo: true });
+      // The bundled lessons' activities (book, journey, trace, build-map) answer
+      // in two places, with the same content and grading:
+      // - /api/demo/lessons/… for the visitor's sample: nothing is recorded;
+      // - /api/lessons/… for a signed-in account that may open the lesson
+      //   (published, and in a student's enrolment): a student's results go
+      //   to their learning record.
+      const actMatch = path.match(
+        /^\/api\/(demo\/)?lessons\/([^/]+)\/(book|expedition|trace|build-map)(?:\/(check))?$/,
+      );
+      let record = () => {};
+      if (actMatch) {
+        if (!DEMO_IDS.includes(actMatch[2])) fail(404, "لا يوجد هذا النشاط لهذا الدرس");
+        if (!actMatch[1]) {
+          auth();
+          if (!bundled(lessonFor(actMatch[2], user))) fail(404, "لا يوجد هذا النشاط لهذا الدرس");
+          record = (kind, itemId) => logEvent(db, user, actMatch[2], kind, itemId, true);
+        }
+      }
+      const actPath = actMatch
+        ? `/api/demo/lessons/${actMatch[2]}/${actMatch[3]}${actMatch[4] ? "/check" : ""}`
+        : "";
       // «كتابي التفاعلي»: the lesson's explanation screens (no questions).
-      const bookMatch = path.match(/^\/api\/demo\/lessons\/([^/]+)\/book$/);
+      const bookMatch = actPath.match(/^\/api\/demo\/lessons\/([^/]+)\/book$/);
       if (bookMatch && method === "GET") {
         const book = lessonBook(bookMatch[1]);
         if (!book) fail(404, "لا يوجد شرح لهذا الدرس بعد");
@@ -546,7 +610,7 @@ export function createApp({
       }
       // Exploration activity (رحلة الاستكشاف): public content without answers,
       // graded here. Stateless, like the rest of the demo.
-      const expMatch = path.match(
+      const expMatch = actPath.match(
         /^\/api\/demo\/lessons\/([^/]+)\/expedition(?:\/(check))?$/,
       );
       if (expMatch) {
@@ -566,15 +630,15 @@ export function createApp({
                 ? checkProjectQuest(expMatch[1], b)
                 : checkExpedition(expMatch[1], b);
           if (!result) fail(400, "الخطوة غير موجودة");
-          // A signed-in student's journey steps go to their learning record.
+          // A student's journey steps in their classroom go to their learning record.
           if (result.correct && (b.step === "final" || (b.step === "use" && expMatch[1] !== "lesson-1")))
-            logEvent(db, user, expMatch[1], "journey", b.step === "final" ? "final" : b.missionId, true);
+            record("journey", b.step === "final" ? "final" : b.missionId);
           return send(result);
         }
         fail(405, "العملية غير متاحة");
       }
       // «تتبّع وارسم خريطتك»: drawings compared with the Nile here.
-      const traceMatch = path.match(/^\/api\/demo\/lessons\/([^/]+)\/trace(?:\/(check))?$/);
+      const traceMatch = actPath.match(/^\/api\/demo\/lessons\/([^/]+)\/trace(?:\/(check))?$/);
       if (traceMatch) {
         if (method === "GET" && !traceMatch[2]) {
           const activity = traceMapPublic(traceMatch[1]);
@@ -586,13 +650,13 @@ export function createApp({
           const tb = await body(req);
           const result = checkTraceMap(traceMatch[1], tb);
           if (!result) fail(400, "المحاولة غير صالحة");
-          if (tb.step === "draw" && tb.stage === "alone" && result.passed) logEvent(db, user, traceMatch[1], "trace", "alone", true);
+          if (tb.step === "draw" && tb.stage === "alone" && result.passed) record("trace", "alone");
           return send(result);
         }
         fail(405, "العملية غير متاحة");
       }
       // «ابنِ خريطتك»: symbols placed on an empty map, graded by distance here.
-      const buildMatch = path.match(
+      const buildMatch = actPath.match(
         /^\/api\/demo\/lessons\/([^/]+)\/build-map(?:\/(check))?$/,
       );
       if (buildMatch) {
@@ -606,7 +670,7 @@ export function createApp({
           const bb = await body(req);
           const result = checkBuildMap(buildMatch[1], bb);
           if (!result) fail(400, "المحاولة غير صالحة");
-          if (result.correct && bb.itemId) logEvent(db, user, buildMatch[1], "build-map", bb.itemId, true);
+          if (result.correct && bb.itemId) record("build-map", bb.itemId);
           return send(result);
         }
         fail(405, "العملية غير متاحة");
@@ -678,8 +742,8 @@ export function createApp({
           const check = learning.check({ actor: helpActor(), user, lessonId: demoMatch[1], q, answer: b.answer });
           if (check.empty) return send({ demo: true, empty: true, correct: false, questionId: q.id, ...check });
           const result = demoAnswer(b.questionId, b.answer, demoMatch[1], Math.max(1, check.wrong));
-          // After the answer was shown, the original question is completed, not credited.
-          if (check.counted) logEvent(db, user, demoMatch[1], questionKind(demoMatch[1], b.questionId), b.questionId, check.credit);
+          // The sample keeps nothing in an account: a signed-in student's
+          // answers are recorded only in their classroom (/api/lessons/…).
           return send({ ...result, ...check, explanation: check.correct ? result.explanation : "" });
         }
         if (method === "POST" && demoMatch[2] === "ask") {
@@ -792,11 +856,15 @@ export function createApp({
         return send({
           nodes: ns.map((n) => {
             const out = unpack(n);
-            if (n.kind === "lesson")
+            if (n.kind === "lesson") {
+              const c = bundled(n) ? lessonContent(n) : out.content;
               out.content = {
-                objectives: out.content.objectives || [],
-                intro: out.content.intro || "",
+                objectives: c.objectives || [],
+                intro: c.intro || "",
               };
+              // Its map, activities and book open in the student's classroom.
+              if (bundled(n)) out.bundled = true;
+            }
             return out;
           }),
         });
@@ -1127,8 +1195,13 @@ export function createApp({
       if (lm) {
         auth();
         const n = lessonFor(lm[1], user),
-          lesson = unpack(n),
-          qs = lesson.content.questions || [];
+          lesson = unpack(n);
+        // A bundled lesson opens here with its full content and activities.
+        if (bundled(n)) {
+          lesson.content = lessonContent(n);
+          lesson.bundled = true;
+        }
+        const qs = lesson.content.questions || [];
         if (method === "GET" && !lm[2]) {
           db.prepare(
             "INSERT INTO learning_state(user_id,lesson_id,state,updated_at) VALUES(?,?,'{}',?) ON CONFLICT(user_id,lesson_id) DO UPDATE SET updated_at=excluded.updated_at",
@@ -1235,7 +1308,16 @@ export function createApp({
         if (method === "POST" && lm[2] === "ask") return await askRoute(lesson.title, lesson.content);
         if (method === "POST" && lm[2] === "complete") {
           if (!qs.length) fail(400, "الدرس لا يحتوي على تقييم معتمد");
-          const solved = db
+          // A bundled lesson is complete as in the learning record: its
+          // journey, its main activity and five short questions.
+          if (bundled(n) && user.role === "student") {
+            if (childReport(db, user).lessons.find((l) => l.id === n.id)?.status !== "done")
+              fail(409, "أكمل رحلة الدرس ونشاطه الرئيسي وخمسة أسئلة قصيرة أولًا");
+          } else if (bundled(n)) {
+            // Staff preview: nothing to award.
+            fail(409, "إكمال الدرس للطلاب فقط");
+          }
+          const solved = bundled(n) ? qs.map((q) => q.id) : db
             .prepare(
               "SELECT question_id FROM answers WHERE user_id=? AND lesson_id=? AND correct=1",
             )

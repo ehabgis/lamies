@@ -266,6 +266,10 @@ export default function LessonPage({ demo = false }) {
     [assessment, setAssessment] = useState(null),
     [notice, setNotice] = useState(""),
     [stateReady, setStateReady] = useState(false);
+  // The bundled lessons (and their journeys, activities and book) open the
+  // same way in the visitor's sample and in a student's classroom.
+  const rich = demo || Boolean(lesson?.bundled);
+  const place = demo ? "/demo" : "/classroom";
   useEffect(() => {
     let active = true;
     setLesson(null);
@@ -354,7 +358,7 @@ export default function LessonPage({ demo = false }) {
   // Choosing the Aswan reservoir (marker or site chip) starts its camera
   // journey, when its video is there (sites/hydro-aswan-reservoir.mp4).
   useEffect(() => {
-    if (demo && location?.id === RESERVOIR_ID && location.media?.video) {
+    if (rich && location?.id === RESERVOIR_ID && location.media?.video) {
       setInfoOpen(false);
       setReservoir({ site: location, phase: "approach" });
     } else setReservoir(null);
@@ -451,7 +455,7 @@ export default function LessonPage({ demo = false }) {
       ? q.type === "map"
       : modal === "activities"
         ? // In the demo, single map questions are covered by «ابنِ خريطتك».
-          (!["choice", "boolean"].includes(q.type) || q.kind) && !(demo && q.type === "map")
+          (!["choice", "boolean"].includes(q.type) || q.kind) && !(rich && q.type === "map")
         : ["choice", "boolean"].includes(q.type) && !q.kind,
   );
   // One card per activity type in the picker; opening it walks through that type only.
@@ -477,14 +481,14 @@ export default function LessonPage({ demo = false }) {
     const narrow = window.matchMedia("(max-width: 850px)").matches;
     // Lesson 2 on a phone: let the child watch the map effect, then show the card.
     const watch =
-      narrow && demo && id === "lesson-2" && hasWaterEffect(r.id) &&
+      narrow && rich && id === "lesson-2" && hasWaterEffect(r.id) &&
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     clearTimeout(cardTimer.current);
     setLegendOpen(false);
     // The card opens straight from the key, as in lesson 2; its site list
     // lets the child move to each place.
     // With «المعلم الذكي» open, its panel explains instead of the info card.
-    setInfoOpen(!watch && !teacher && !(demo && id === "lesson-3" && ["high-speed-rail", CAPITAL_ID, TOSHKA_ID, GALALA_ID].includes(r.id)) && !(demo && id === "lesson-1" && r.id === GOLD_ID));
+    setInfoOpen(!watch && !teacher && !(rich && id === "lesson-3" && ["high-speed-rail", CAPITAL_ID, TOSHKA_ID, GALALA_ID].includes(r.id)) && !(rich && id === "lesson-1" && r.id === GOLD_ID));
     if (watch) cardTimer.current = setTimeout(() => setInfoOpen(true), EFFECT_MS - 1500);
     setVideoOpen(false);
     setResource(r);
@@ -496,22 +500,22 @@ export default function LessonPage({ demo = false }) {
     setGalala(null);
     setGold(null);
     // The train's trip draws its own lines and stations; no single place to open.
-    if (demo && id === "lesson-3" && r.id === "high-speed-rail") {
+    if (rich && id === "lesson-3" && r.id === "high-speed-rail") {
       setLocation(null);
-    } else if (demo && id === "lesson-3" && r.id === GALALA_ID) {
+    } else if (rich && id === "lesson-3" && r.id === GALALA_ID) {
       setLocation(null);
       narrator.stop();
       setGalala(Date.now());
-    } else if (demo && id === "lesson-1" && r.id === GOLD_ID && r.locations?.length) {
+    } else if (rich && id === "lesson-1" && r.id === GOLD_ID && r.locations?.length) {
       // «من الصخر إلى الذهب»: the mine glows, then the rock and the lens.
       setLocation({ ...r.locations[0], resource: r });
       narrator.stop();
       setGold(Date.now());
-    } else if (demo && id === "lesson-3" && r.id === TOSHKA_ID) {
+    } else if (rich && id === "lesson-3" && r.id === TOSHKA_ID) {
       // Toshka: the map flies over the project area; its card offers the fields.
       setLocation(null);
       setToshka({ mode: "area", nonce: Date.now(), hint: false });
-    } else if (demo && id === "lesson-3" && r.id === CAPITAL_ID && r.locations?.length) {
+    } else if (rich && id === "lesson-3" && r.id === CAPITAL_ID && r.locations?.length) {
       // The capital: fly there on this map, then tilt into its scene.
       const site = { ...r.locations[0], resource: r };
       setLocation(site);
@@ -607,7 +611,7 @@ export default function LessonPage({ demo = false }) {
         ? "اختر موردًا من مفتاح الخريطة؛ ستظهر مواقعه فقط."
         : GREETING;
   // Lesson 3: the high-speed train opens «رحلة القطار السريع» on the map itself.
-  const railTrip = demo && id === "lesson-3" && resource?.id === "high-speed-rail";
+  const railTrip = rich && id === "lesson-3" && resource?.id === "high-speed-rail";
   const resourceDetails = resource && (
       <section className="classroom-resource site-card" aria-labelledby="site-card-title">
         <header className="site-card-head">
@@ -1033,7 +1037,7 @@ export default function LessonPage({ demo = false }) {
         <aside
           id="lesson-legend"
           hidden={!legendOpen}
-          className={`classroom-legend ${resources.length > 11 ? "is-long" : ""} ${demo && id === "lesson-2" ? "is-names-only" : ""} ${pulse ? "legend-focus" : ""} ${legendOpen ? "mobile-open" : ""}`}
+          className={`classroom-legend ${resources.length > 11 ? "is-long" : ""} ${rich && id === "lesson-2" ? "is-names-only" : ""} ${pulse ? "legend-focus" : ""} ${legendOpen ? "mobile-open" : ""}`}
           aria-label="مفتاح الخريطة"
         >
           <button
@@ -1078,8 +1082,8 @@ export default function LessonPage({ demo = false }) {
             onToggleNames={() => setShowLocationNames((v) => !v)}
             resetKey={resetMap}
             focusRequest={focusRequest}
-            waterLesson={demo && id === "lesson-2"}
-            railLesson={demo && id === "lesson-3"}
+            waterLesson={rich && id === "lesson-2"}
+            railLesson={rich && id === "lesson-3"}
             hideTools={toolsHidden}
             banner={
               demoNote && (
@@ -1143,8 +1147,8 @@ export default function LessonPage({ demo = false }) {
             onReset={showAll}
             onToolOpen={() => { setLegendOpen(false); setInfoOpen(false); setPanel(null); setHello(false); }}
             onSelect={(site) => {
-              if (demo && id === "lesson-3" && [CAPITAL_ID, TOSHKA_ID, GALALA_ID].includes(site.resource.id)) return pick(site.resource);
-              if (demo && id === "lesson-1" && site.resource.id === GOLD_ID) return pick(site.resource);
+              if (rich && id === "lesson-3" && [CAPITAL_ID, TOSHKA_ID, GALALA_ID].includes(site.resource.id)) return pick(site.resource);
+              if (rich && id === "lesson-1" && site.resource.id === GOLD_ID) return pick(site.resource);
               play(resourceSound(site.resource));
               clearTimeout(open3dTimer.current);
               setView3d(null);
@@ -1385,12 +1389,12 @@ export default function LessonPage({ demo = false }) {
             <Target />
             <span className="ux-long">أسئلة الدرس</span><span className="ux-short" aria-hidden="true">الأسئلة</span>
           </button>
-          {demo && (
+          {rich && (
             <button
               className="dock-book"
               onClick={() => {
                 play("open");
-                navigate(`/demo/${id}/book`);
+                navigate(`${place}/${id}/book`);
               }}
             >
               <BookBookmark />
@@ -1507,16 +1511,16 @@ export default function LessonPage({ demo = false }) {
                   <ActivityPicker
                     expedition={
                       {
-                        "lesson-1": { href: "/demo/lesson-1/expedition", title: "رحلة كنوز مصر", text: "اكتشف المعادن ومصادر الطاقة خطوة بخطوة على الخريطة" },
-                        "lesson-2": { href: "/demo/lesson-2/expedition", title: "رحلة المياه", text: "ساعد المزرعة والواحة والمدينة الساحلية في العثور على المياه" },
-                        "lesson-3": { href: "/demo/lesson-3/expedition", title: "نكتشف مشروعات مصر", text: "زر الدلتا الجديدة وبركة غليون وبنبان" },
-                      }[id] || null
+                        "lesson-1": { href: `${place}/lesson-1/expedition`, title: "رحلة كنوز مصر", text: "اكتشف المعادن ومصادر الطاقة خطوة بخطوة على الخريطة" },
+                        "lesson-2": { href: `${place}/lesson-2/expedition`, title: "رحلة المياه", text: "ساعد المزرعة والواحة والمدينة الساحلية في العثور على المياه" },
+                        "lesson-3": { href: `${place}/lesson-3/expedition`, title: "نكتشف مشروعات مصر", text: "زر الدلتا الجديدة وبركة غليون وبنبان" },
+                      }[rich ? id : ""] || null
                     }
                     activities={filtered}
                     solved={solved}
-                    buildMapHref={demo ? `/demo/${id}/build-map` : null}
-                    traceHref={demo && id === "lesson-2" ? `/demo/${id}/trace` : null}
-                    hasBuildMap={!demo && questions.some((q) => q.type === "map")}
+                    buildMapHref={rich ? `${place}/${id}/build-map` : null}
+                    traceHref={rich && id === "lesson-2" ? `${place}/${id}/trace` : null}
+                    hasBuildMap={!rich && questions.some((q) => q.type === "map")}
                     onBuildMap={() => {
                       setIndex(0);
                       setPickActivity(false);

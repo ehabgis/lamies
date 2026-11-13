@@ -14,6 +14,7 @@ import {
   ArrowCounterClockwise,
 } from "phosphor-react";
 import { api } from "./api";
+import { useLessonPlace } from "./lessonPlace";
 import RobotGuide from "../components/Map/RobotGuide";
 import WaterQuestMap from "./WaterQuestMap";
 import { SceneMedia, UseScene } from "./WaterScenes";
@@ -52,6 +53,7 @@ const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)"
 
 // «رحلة المياه»: one situation per mission → find the source → use it.
 export default function WaterQuestPage({ id = "lesson-2" }) {
+  const place = useLessonPlace();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const [p, setP] = useState(() => loadProgress(id));
@@ -62,7 +64,7 @@ export default function WaterQuestPage({ id = "lesson-2" }) {
   const talkRef = useRef(null);
 
   useEffect(() => {
-    api(`/demo/lessons/${id}/expedition`)
+    api(`${place.api}/${id}/expedition`)
       .then((r) => setData(r.expedition))
       .catch((e) => setError(e.message));
     return () => narrator.stop();
@@ -93,7 +95,7 @@ export default function WaterQuestPage({ id = "lesson-2" }) {
 
   const nav = (
     <>
-      <Link to={`/demo/${id}`}>
+      <Link to={`${place.page}/${id}`}>
         <MapTrifold size={22} aria-hidden="true" /> الخريطة التفاعلية
       </Link>
     </>
@@ -102,7 +104,7 @@ export default function WaterQuestPage({ id = "lesson-2" }) {
     <Frame
       title={data?.lessonTitle || "الدرس الثاني: موارد المياه"}
       stars={data ? stars : undefined}
-      lessonPath="/explore"
+      lessonPath={place.classroom ? `/classroom/${id}` : "/explore"}
       onSettings={data ? () => setSettings(true) : undefined}
       extraNav={nav}
       className="water-quest"
@@ -148,7 +150,7 @@ export default function WaterQuestPage({ id = "lesson-2" }) {
 
   async function check(body) {
     try {
-      return await api(`/demo/lessons/${id}/expedition/check`, { method: "POST", body: { missionId: mission.id, ...body } });
+      return await api(`${place.api}/${id}/expedition/check`, { method: "POST", body: { missionId: mission.id, ...body } });
     } catch (e) {
       setRobot(`تعذر التحقق الآن: ${e.message}. حاول مرة أخرى.`);
       return null;

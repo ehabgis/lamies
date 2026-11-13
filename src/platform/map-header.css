@@ -1194,17 +1194,14 @@
 @media (max-width: 1250px) {
   .map-shell .studio-workspace > .classroom-legend.is-long,
   .map-shell .studio-workspace > .classroom-legend.is-long.mobile-open {
-    width: min(300px, calc(100% - 20px)) !important;
+    /* Width: see the «Lesson 3 key narrower» rule below (236px), which always
+       won over the 300px set here (removed 2026-11-13, measured in Chrome). */
     right: auto !important;
     max-height: calc(100% - 200px) !important;
   }
 }
-@media (max-height: 500px) and (min-width: 560px) {
-  .map-shell .studio-workspace > .classroom-legend.is-long,
-  .map-shell .studio-workspace > .classroom-legend.is-long.mobile-open {
-    max-height: calc(100% - 90px) !important;
-  }
-}
+/* (A max-height: calc(100% - 90px) for short screens stood here; the rule
+   just below sets max-height: none for the same screens, so it never applied.) */
 @media (max-height: 500px) and (min-width: 560px) {
   .map-shell .studio-workspace > .classroom-legend.is-long,
   .map-shell .studio-workspace > .classroom-legend.is-long.mobile-open {
@@ -1237,15 +1234,9 @@
 .map-shell .esri-map-toolbar[hidden] {
   display: none !important;
 }
-@media (min-width: 851px) {
-  .map-shell .studio-workspace > .classroom-legend.is-long {
-    width: 330px !important;
-    max-width: 330px !important;
-  }
-  .map-shell .classroom-legend.is-long > button:not(.mobile-panel-close) > span {
-    white-space: nowrap;
-  }
-}
+/* (Computers had lesson 3's key at 330px with one-line names here; the
+   «Lesson 3 key narrower» review rule below — 236px, names may wrap — always
+   won, so those declarations were removed on 2026-11-13.) */
 /* Lesson 3 key narrower (2026-11-05 review): a long name or the title may
    take two lines so the key covers less of the map. */
 .map-shell .studio-workspace > .classroom-legend.is-long,

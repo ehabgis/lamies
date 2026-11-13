@@ -11,6 +11,7 @@
   grid-template-rows: minmax(0, 1fr);
   gap: 16px;
   height: calc(100vh - 175px);
+  height: calc(100dvh - 175px);
   min-height: 440px;
 }
 .tm-board,

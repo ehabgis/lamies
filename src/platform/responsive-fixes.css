@@ -372,13 +372,18 @@
     padding: 0;
   }
 }
+/* The same while the governorates picker («المحافظات», also a map-wide sheet
+   there) is open: it covered two zoom buttons at 375px and all four on short
+   screens. */
 @media (max-width: 850px), (max-height: 500px) {
-  .map-shell .studio-workspace:has(> .classroom-legend.mobile-open:not([hidden])) .esri-map-zoom {
+  .map-shell .studio-workspace:has(> .classroom-legend.mobile-open:not([hidden])) .esri-map-zoom,
+  .map-shell .esri-map-surface:has(.esri-governorates-picker) .esri-map-zoom {
     display: flex;
     flex-direction: row;
     gap: 4px;
   }
-  .map-shell .studio-workspace:has(> .classroom-legend.mobile-open:not([hidden])) .esri-map-zoom button {
+  .map-shell .studio-workspace:has(> .classroom-legend.mobile-open:not([hidden])) .esri-map-zoom button,
+  .map-shell .esri-map-surface:has(.esri-governorates-picker) .esri-map-zoom button {
     width: 40px;
     min-width: 40px;
     height: 40px;
@@ -387,16 +392,20 @@
   }
 }
 @media (max-width: 600px) {
-  .map-shell .studio-workspace:has(> .classroom-legend.mobile-open:not([hidden])) .esri-map-zoom {
+  .map-shell .studio-workspace:has(> .classroom-legend.mobile-open:not([hidden])) .esri-map-zoom,
+  .map-shell .esri-map-surface:has(.esri-governorates-picker) .esri-map-zoom {
     top: 60px;
     right: 8px;
     left: auto;
   }
 }
+/* Short screens: from 264px, clear of «الكل/المفتاح» and of lesson 3's
+   narrower key (x 18–254 there). */
 @media (min-width: 601px) and (max-height: 500px) {
-  .map-shell .studio-workspace:has(> .classroom-legend.mobile-open:not([hidden])) .esri-map-zoom {
+  .map-shell .studio-workspace:has(> .classroom-legend.mobile-open:not([hidden])) .esri-map-zoom,
+  .map-shell .esri-map-surface:has(.esri-governorates-picker) .esri-map-zoom {
     top: 8px;
-    left: 216px;
+    left: 264px;
     right: auto;
   }
 }

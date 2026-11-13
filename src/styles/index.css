@@ -653,6 +653,7 @@ body.quiet-fullscreen-route { padding-bottom: 0; }
 .simple-map-canvas.magical-map-treasure {
   min-height: 690px !important;
   height: calc(100vh - 180px);
+  height: calc(100dvh - 180px);
   max-height: 820px;
   aspect-ratio: auto !important;
   border: 0 !important;
@@ -3768,6 +3769,7 @@ body::before {
   overflow: hidden;
   backdrop-filter: blur(14px);
   max-height: calc(100vh - 150px);
+  max-height: calc(100dvh - 150px);
   display: flex;
   flex-direction: column;
 }

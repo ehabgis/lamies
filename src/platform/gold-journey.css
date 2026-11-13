@@ -421,6 +421,7 @@
 }
 .gold-window .gold-player video {
   max-height: calc(100vh - 300px);
+  max-height: calc(100dvh - 300px);
 }
 .gold-window .gold-missing {
   border-radius: 14px;
@@ -473,6 +474,7 @@
   }
   .gold-window .gold-player video {
     max-height: calc(100vh - 120px);
+    max-height: calc(100dvh - 120px);
   }
   .gold.is-video .gold-card {
     display: flex;
@@ -491,6 +493,7 @@
   }
   .gold-window .gold-player video {
     max-height: calc(100vh - 380px);
+    max-height: calc(100dvh - 380px);
   }
 }
 .gold-done.is-playing p svg {

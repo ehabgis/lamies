@@ -241,10 +241,11 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, reviewRe
         </span>
         <h2>
           المعلم الذكي
-          {lessonTitle && <small className="mt-lesson">درس «{lessonTitle}»</small>}
+          {lessonTitle && <small className="mt-lesson">{lessonTitle}</small>}
         </h2>
+        {/* A small cross with a comfortable 44px area around it. */}
         <button ref={closeRef} type="button" className="mt-x" aria-label="إغلاق المعلم الذكي" onClick={onClose}>
-          <X size={20} weight="bold" />
+          <X size={16} weight="bold" />
         </button>
       </header>
 
@@ -252,8 +253,7 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, reviewRe
         {view === "menu" ? (
           <>
             <p className="mt-hello">
-              <b>أهلًا يا {name}!</b>
-              اكتب سؤالك عن الدرس تحت، أو اختار مساعدة على الخريطة.
+              أهلًا يا {name}! اكتبي سؤالك عن الدرس، أو اختاري مساعدة على الخريطة.
             </p>
             {chat.length > 0 && (
               <button type="button" className="mt-back" onClick={() => setView("chat")}>
@@ -274,6 +274,7 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, reviewRe
                 </ul>
               </>
             )}
+            <b className="mt-helps-title">مساعدة على الخريطة</b>
             <ul className="mt-helps">
               {HELPS.map(([id, label, Icon]) => (
                 <li key={id}>
@@ -283,7 +284,6 @@ export default function MapTeacher({ name, lessonId, lessonTitle, demo, reviewRe
                 </li>
               ))}
             </ul>
-            <small className="mt-tip">تقدر تسأل عن أي حاجة في الدرس، حتى لو ما اخترتش رمزًا.</small>
           </>
         ) : (
           <>

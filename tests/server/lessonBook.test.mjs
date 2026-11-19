@@ -12,11 +12,17 @@ test("the lesson book has its screens, cards and no answers", () => {
     "الطاقة المتجددة",
     "دور الدولة والمواطنين",
   ]);
-  assert.deepEqual(one.sections[1].cards.map((c) => c.resource.id), ["iron", "copper", "gold", "phosphate", "manganese"]);
-  assert.deepEqual(one.sections[3].cards.map((c) => c.resource.id), ["coal", "oil", "gas"]);
+  assert.deepEqual(one.sections[1].cards.map((c) => c.resource.id), ["iron", "manganese", "phosphate", "gold"]);
+  assert.deepEqual(one.sections[3].cards.map((c) => c.resource.id), ["oil", "coal", "gas"]);
   assert.deepEqual(one.sections[4].cards.map((c) => c.resource.id), ["hydro", "solar", "wind"]);
+  // The open book: a layout per screen, and each mineral has a place and a use.
+  assert.deepEqual(one.sections.map((s) => s.spread), ["goals", "minerals", "energy", "sources", "sources", "roles"]);
+  const iron = one.sections[1].cards[0];
+  assert.deepEqual([iron.regions[0], iron.use], ["الواحات البحرية", "صناعة الصلب"]);
+  assert(one.sections[1].cards.every((c) => c.regions.length && c.use));
+  assert.deepEqual(one.sections[2].kinds.map((k) => k.to), ["renewable", "non-renewable"]);
   const roles = one.sections[5].columns;
-  assert(roles[0].list.length >= 3 && roles[1].list.length >= 3, "state and citizens roles are listed");
+  assert(roles[0].list.length === 4 && roles[1].list.length === 3, "state and citizens roles are listed");
   for (const id of ["lesson-2", "lesson-3"]) {
     const b = lessonBook(id);
     assert(b.sections.length >= 5);

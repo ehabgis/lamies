@@ -21,54 +21,61 @@ function roles(text) {
 const concept = (book, term) => book.concepts.find((c) => c.term === term)?.definition;
 
 const LESSONS = {
+  // Lesson 1 is an open book (2026-11-19 design): each screen has a text page
+  // (right) and a page to choose from (left). `spread` names the layout.
   "lesson-1": (book) => {
     const r = roles(book.realLife);
     return [
-      goals(book),
+      { ...goals(book), spread: "goals", cards: ["iron", "manganese", "phosphate", "gold", "oil", "coal", "gas", "hydro", "solar", "wind"] },
       {
         id: "minerals",
         title: "الثروة المعدنية",
         icon: "minerals",
-        lead: "تمتلك مصر كميات هائلة من الثروة المعدنية تتوزع بشكل غير متساوٍ، ويسهم استثمارها الجيد في رفع مستوى الدخل والمعيشة. " + book.examples[0],
-        cards: ["iron", "copper", "gold", "phosphate", "manganese"],
-        layout: "rows",
-        boxes: [
-          { tone: "concept", title: "مفاهيم أتعلمها: التعدين", text: concept(book, "التعدين"), icon: "cart" },
-          { tone: "value", title: "قيمة في معلومة", text: "ترشيد استهلاك المعادن حق من حقوق الأجيال القادمة؛ لأنها من الموارد غير المتجددة.", icon: "plant" },
-        ],
+        spread: "minerals",
+        lead: "تتنوع الخامات المعدنية في مصر، ولكل معدن استخدامات مختلفة.",
+        pickTitle: "اختر معدنًا",
+        cards: ["iron", "manganese", "phosphate", "gold"],
       },
       {
         id: "energy",
         title: "مصادر الطاقة وأهميتها",
         icon: "energy",
-        lead: "تتنوع مصادر الطاقة في مصر؛ منها المتجدد ومنها غير المتجدد.",
-        columns: [
-          { title: "الطاقة المتجددة", tone: "green", text: concept(book, "الطاقة المتجددة"), list: ["الطاقة الشمسية", "طاقة الرياح", "الطاقة الكهرومائية"] },
-          { title: "الطاقة غير المتجددة", tone: "amber", text: concept(book, "الطاقة غير المتجددة"), list: ["البترول", "الفحم", "الغاز الطبيعي"] },
-          { title: "استخدام الطاقة قديمًا", tone: "sand", list: ["طهي الطعام", "التدفئة", "تسيير المراكب الشراعية بطاقة الرياح"], text: book.funFacts[0] },
-          { title: "أهمية الطاقة حديثًا", tone: "blue", list: ["توليد الكهرباء", "إدارة المصانع", "النقل والمواصلات", "توفير فرص العمل"] },
+        spread: "energy",
+        lead: "تتنوع مصادر الطاقة في مصر بين متجددة وغير متجددة.",
+        uses: [
+          { id: "old", title: "قديمًا", text: "الطهي والتدفئة وتسيير المراكب الشراعية." },
+          { id: "now", title: "حديثًا", text: "توليد الكهرباء وتشغيل المصانع ووسائل النقل." },
+        ],
+        kinds: [
+          { to: "renewable", title: "الطاقة المتجددة", tone: "green", chips: ["الشمس", "الرياح", "المياه"] },
+          { to: "non-renewable", title: "الطاقة غير المتجددة", tone: "amber", chips: ["البترول", "الفحم", "الغاز الطبيعي"] },
         ],
       },
       {
         id: "non-renewable",
         title: "الطاقة غير المتجددة",
         icon: "oil",
+        spread: "sources",
+        tone: "amber",
         lead: concept(book, "الطاقة غير المتجددة"),
-        cards: ["coal", "oil", "gas"],
-        layout: "wide",
+        pickTitle: "اختر مصدرًا",
+        cards: ["oil", "coal", "gas"],
       },
       {
         id: "renewable",
         title: "الطاقة المتجددة",
         icon: "wind",
+        spread: "sources",
+        tone: "green",
+        lead: concept(book, "الطاقة المتجددة"),
+        pickTitle: "اختر مصدرًا",
         cards: ["hydro", "solar", "wind"],
-        layout: "wide",
-        note: "الطاقة المتجددة نظيفة وصديقة للبيئة، وتسهم في الحد من التغيرات المناخية.",
       },
       {
         id: "roles",
         title: "دور الدولة والمواطنين",
         icon: "people",
+        spread: "roles",
         lead: "نحافظ معًا على الثروة المعدنية ومصادر الطاقة.",
         columns: [
           { title: "دور الدولة", tone: "blue", icon: "state", list: r.state },
@@ -146,6 +153,15 @@ const LESSONS = {
   ],
 };
 
+// «من استخداماته» for each mineral: one short use taken from its textbook
+// description in demo.mjs (iron's line is the owner's design text).
+const USES = {
+  iron: "صناعة الصلب",
+  manganese: "صناعة الصلب والدهانات",
+  phosphate: "صناعة الأسمدة والمبيدات الحشرية",
+  gold: "صناعة الحلي وعلاج بعض الأمراض",
+};
+
 function goals(book) {
   return {
     id: "goals",
@@ -179,6 +195,9 @@ export function lessonBook(lessonId) {
           photo: media.flatMap((m) => m.images || [])[0] || null,
           video: media.find((m) => m.video)?.video || null,
           mappable: Boolean(r.locations?.length),
+          // For the open book: where it is found and one short use.
+          regions: (r.locations || []).map((l) => l.name).filter(Boolean),
+          use: USES[r.id] || null,
         };
       }),
   }));

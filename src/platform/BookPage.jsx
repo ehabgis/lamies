@@ -3,6 +3,10 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import {
   ArrowLeft,
   ArrowRight,
+  CaretLeft,
+  CheckCircle,
+  Factory,
+  Fire,
   Bank,
   BookOpen,
   Buildings,
@@ -32,6 +36,7 @@ import { api } from "./api";
 import { useLessonPlace } from "./lessonPlace";
 import BrandMark from "./BrandMark";
 import { LessonSymbol } from "../components/Map/WaterSymbol";
+import RobotGuide from "../components/Map/RobotGuide";
 import * as narrator from "./narrator";
 import { play } from "./sfx";
 import "./book.css";
@@ -69,8 +74,6 @@ const ICON = {
 // last screen leads to the lesson map and activities.
 export default function BookPage() {
   const place = useLessonPlace();
-  // The unit's lessons: the student's journey, or the visitor's sample.
-  const lessonsHref = place.classroom ? "/journey" : LESSONS_HREF;
   const { id } = useParams();
   const navigate = useNavigate();
   const [search, setSearch] = useSearchParams();
@@ -78,6 +81,8 @@ export default function BookPage() {
   const [error, setError] = useState("");
   const [speaking, setSpeaking] = useState(false);
   const [indexOpen, setIndexOpen] = useState(false);
+  // The card chosen on the open book's left page (first one by default).
+  const [pick, setPick] = useState(0);
   const heading = useRef(null);
   const first = useRef(true);
 
@@ -100,6 +105,7 @@ export default function BookPage() {
   useEffect(() => {
     if (!section) return;
     narrator.stop();
+    setPick(0);
     if (first.current) {
       first.current = false;
       return;
@@ -112,6 +118,22 @@ export default function BookPage() {
     play("select");
     setIndexOpen(false);
     setSearch(i ? { s: String(i) } : {});
+  };
+  const choose = (i) => {
+    narrator.stop();
+    play("select");
+    setPick(i);
+    // Phones stack the pages, so show the facts that just changed above.
+    if (window.matchMedia?.("(max-width: 760px)").matches) {
+      const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      requestAnimationFrame(() =>
+        document.querySelector(".bk-fact, .bk-source")?.scrollIntoView({ block: "start", behavior: smooth ? "smooth" : "auto" }),
+      );
+    }
+  };
+  const goTo = (sid) => {
+    const i = sections.findIndex((s) => s.id === sid);
+    if (i >= 0) go(i);
   };
   const mapHref = (rid) => `${place.page}/${id}${rid ? `?resource=${encodeURIComponent(rid)}` : ""}`;
 
@@ -157,9 +179,16 @@ export default function BookPage() {
               );
             })}
           </ol>
+          <Link className="bk-explore" to={mapHref()} onClick={() => play("project")}>
+            <MapTrifold size={22} aria-hidden="true" /> استكشف الخريطة
+          </Link>
         </nav>
 
-        <main className="bk-page" aria-labelledby="bk-title">
+        <main className="bk-page" aria-labelledby="bk-lesson-title">
+          <header className="bk-hero">
+            <small>كنوز مصر</small>
+            <h1 id="bk-lesson-title">{book.title}</h1>
+          </header>
           <button
             type="button"
             className="bk-index-open"
@@ -169,28 +198,28 @@ export default function BookPage() {
           >
             <ListBullets size={20} aria-hidden="true" /> محتويات الدرس · {at + 1} من {sections.length}
           </button>
-          <h1 id="bk-title" ref={heading} tabIndex={-1} className="bk-title">
-            {section.title}
-          </h1>
-          <Section section={section} mapHref={mapHref} />
+          {section.spread ? (
+            <Spread section={section} pick={pick} choose={choose} goTo={goTo} mapHref={mapHref} heading={heading} />
+          ) : (
+            <div className="bk-sheet">
+              <h2 id="bk-title" ref={heading} tabIndex={-1} className="bk-title">
+                {section.title}
+              </h2>
+              <Section section={section} mapHref={mapHref} />
+            </div>
+          )}
         </main>
       </div>
 
       <footer className="bk-bar">
-        {prev ? (
-          <button type="button" className="bk-side-btn" onClick={() => go(at - 1)}>
-            <ArrowRight size={20} aria-hidden="true" /> السابق
-          </button>
-        ) : (
-          <Link className="bk-side-btn" to={lessonsHref}>
-            <ArrowRight size={20} aria-hidden="true" /> دروس الوحدة
-          </Link>
-        )}
+        <button type="button" className="bk-side-btn" onClick={() => go(at - 1)} disabled={!prev}>
+          <ArrowRight size={20} aria-hidden="true" /> السابق
+        </button>
         <button
           type="button"
           className="bk-listen"
           aria-pressed={speaking}
-          onClick={() => (speaking ? narrator.stop() : narrator.speak(spokenText(section)))}
+          onClick={() => (speaking ? narrator.stop() : narrator.speak(spokenText(section, pick)))}
           disabled={!narrator.available()}
         >
           {speaking ? <Stop size={22} weight="fill" aria-hidden="true" /> : <SpeakerHigh size={22} aria-hidden="true" />}
@@ -198,7 +227,7 @@ export default function BookPage() {
         </button>
         {next ? (
           <button type="button" className="bk-side-btn is-next" onClick={() => go(at + 1)}>
-            التالي: {next.title} <ArrowLeft size={20} aria-hidden="true" />
+            التالي <ArrowLeft size={20} aria-hidden="true" />
           </button>
         ) : (
           <button
@@ -239,7 +268,7 @@ function Frame({ id, children }) {
             <BookOpen size={22} aria-hidden="true" /> <span>كتابي التفاعلي</span>
           </Link>
           <Link to={`${place.page}/${id}`}>
-            <MapTrifold size={22} aria-hidden="true" /> <span>الخريطة التعليمية</span>
+            <MapTrifold size={22} aria-hidden="true" /> <span>الخريطة التفاعلية</span>
           </Link>
         </nav>
       </header>
@@ -369,16 +398,273 @@ function Card({ card, wide, moreIcon, mapHref }) {
   );
 }
 
-function spokenText(s) {
-  return [
-    s.title,
-    s.lead,
-    ...(s.columns || []).flatMap((c) => [c.title, c.text, ...(c.list || [])]),
-    ...(s.cards || []).flatMap((c) => [c.resource.label, c.text, c.place]),
-    ...(s.boxes || []).flatMap((b) => [b.title, b.text]),
-    s.note,
-  ]
+// What «استمع للشرح» reads: the visible text only (on the open book, the
+// chosen card, not every card).
+function spokenText(s, pick = 0) {
+  const card = s.spread && s.spread !== "goals" ? s.cards?.[pick] : null;
+  const parts = s.spread
+    ? [
+        s.title,
+        s.spread === "goals" ? "في نهاية الدرس أستطيع أن" : s.spread === "sources" ? null : s.lead,
+        ...(s.spread === "goals" ? s.columns?.[0]?.list || [] : []),
+        ...(s.uses || []).flatMap((u) => [u.title, u.text]),
+        ...(s.kinds || []).flatMap((k) => [k.title, k.chips.join("، ")]),
+        ...(s.spread === "roles" ? s.columns.flatMap((c) => [c.title, ...c.list]) : []),
+        ...(card ? cardWords(s, card) : []),
+      ]
+    : [
+        s.title,
+        s.lead,
+        ...(s.columns || []).flatMap((c) => [c.title, c.text, ...(c.list || [])]),
+        ...(s.cards || []).flatMap((c) => [c.resource.label, c.text, c.place]),
+        ...(s.boxes || []).flatMap((b) => [b.title, b.text]),
+        s.note,
+      ];
+  return parts
     .filter(Boolean)
     .map((t) => (/[.؟!:]$/.test(t) ? t : `${t}.`))
     .join(" ");
+}
+function cardWords(s, c) {
+  if (s.spread === "minerals")
+    return [c.resource.label, `من مناطق استخراجه: ${c.regions[0]}`, `من استخداماته: ${c.use}`];
+  return [c.resource.label, firstSentence(c.text), c.place];
+}
+// "البترول يُستخرج منه … . مصدر طاقة غير متجدد." → its first sentence.
+const firstSentence = (t) => String(t || "").split(/(?<=\.)\s/)[0];
+
+// ---------------------------------------------------------- open book
+// Two pages: the text page on the right (with the robot) and the page to
+// choose from on the left. Every choice is a real button, so the keyboard
+// and screen readers work the same as a tap.
+function Spread({ section: s, pick, choose, goTo, mapHref, heading }) {
+  const card = s.cards?.[pick] || s.cards?.[0];
+  const title = (
+    <div className={`bk-pg-head ${s.tone ? `tone-${s.tone}` : ""}`}>
+      <span className="bk-robot" aria-hidden="true">
+        <RobotGuide />
+      </span>
+      <h2 id="bk-title" ref={heading} tabIndex={-1}>
+        {s.title}
+      </h2>
+    </div>
+  );
+  let right;
+  let left;
+  if (s.spread === "goals") {
+    right = (
+      <>
+        {title}
+        <h3 className="bk-pg-sub">في نهاية الدرس أستطيع أن:</h3>
+        <ol className="bk-goals">
+          {s.columns[0].list.map((g, i) => (
+            <li key={g}>
+              <b aria-hidden="true">{i + 1}</b>
+              <span>{g}</span>
+            </li>
+          ))}
+        </ol>
+      </>
+    );
+    left = (
+      <>
+        <h3 className="bk-pg-sub">في هذا الدرس نتعرّف على</h3>
+        <ul className="bk-symbols">
+          {s.cards.map((c) => (
+            <li key={c.resource.id}>
+              <span aria-hidden="true">
+                <LessonSymbol resource={c.resource} />
+              </span>
+              {c.resource.label}
+            </li>
+          ))}
+        </ul>
+      </>
+    );
+  } else if (s.spread === "minerals") {
+    right = (
+      <>
+        {title}
+        <p className="bk-pg-lead">{s.lead}</p>
+        <div className="bk-fact" aria-live="polite">
+          <h3>
+            <span className="bk-fact-icon" aria-hidden="true">
+              <LessonSymbol resource={card.resource} />
+            </span>
+            {card.resource.label}
+          </h3>
+          <dl>
+            <div>
+              <dt>من مناطق استخراجه</dt>
+              <dd>{card.regions[0]}</dd>
+            </div>
+            <div>
+              <dt>من استخداماته</dt>
+              <dd>{card.use}</dd>
+            </div>
+          </dl>
+          {card.mappable && <OnMap href={mapHref(card.resource.id)} />}
+        </div>
+      </>
+    );
+    left = <Picker title={s.pickTitle} cards={s.cards} pick={pick} choose={choose} grid />;
+  } else if (s.spread === "energy") {
+    right = (
+      <>
+        {title}
+        <p className="bk-pg-lead">{s.lead}</p>
+        <h3 className="bk-pg-sub">كيف نستخدم الطاقة؟</h3>
+        <ul className="bk-uses">
+          {s.uses.map((u) => {
+            const Icon = u.id === "old" ? Fire : Factory;
+            return (
+              <li key={u.id} className={`is-${u.id}`}>
+                <span className="bk-use-pic" aria-hidden="true">
+                  <Icon size={40} weight="duotone" />
+                </span>
+                <span>
+                  <strong>{u.title}</strong>
+                  {u.text}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </>
+    );
+    left = (
+      <>
+        <h3 className="bk-pg-sub">تعرّف على نوعَي الطاقة</h3>
+        <div className="bk-kinds">
+          {s.kinds.map((k) => (
+            <button key={k.to} type="button" className={`bk-kind tone-${k.tone}`} onClick={() => goTo(k.to)}>
+              <strong>
+                {k.tone === "green" ? <Leaf size={28} weight="duotone" aria-hidden="true" /> : <GasPump size={28} weight="duotone" aria-hidden="true" />}
+                {k.title}
+              </strong>
+              <span className="bk-chips">
+                {k.chips.map((c) => (
+                  <span key={c}>{c}</span>
+                ))}
+              </span>
+              <CaretLeft size={22} weight="bold" aria-hidden="true" className="bk-kind-go" />
+            </button>
+          ))}
+        </div>
+      </>
+    );
+  } else if (s.spread === "sources") {
+    right = (
+      <>
+        {title}
+        <div className="bk-source" aria-live="polite">
+          <span className="bk-pill">{card.resource.label}</span>
+          <p>{firstSentence(card.text)}</p>
+          {s.tone === "green" && card.place && (
+            <p className="bk-place">
+              <MapPin size={22} weight="fill" aria-hidden="true" />
+              <span>{card.place}</span>
+            </p>
+          )}
+          <Picture card={card} />
+          {card.mappable && <OnMap href={mapHref(card.resource.id)} />}
+        </div>
+      </>
+    );
+    left = <Picker title={s.pickTitle} cards={s.cards} pick={pick} choose={choose} />;
+  } else {
+    const [state, people] = s.columns;
+    // Both pages share rows (CSS subgrid), so the two headings line up.
+    right = (
+      <>
+        <div className="bk-roles-top">
+          {title}
+          <p className="bk-pg-lead">{s.lead}</p>
+        </div>
+        <Roles col={state} Icon={Bank} />
+      </>
+    );
+    left = (
+      <>
+        <span className="bk-roles-top" aria-hidden="true" />
+        <Roles col={people} Icon={UsersThree} />
+      </>
+    );
+  }
+  return (
+    <div className={`bk-book is-${s.spread}`}>
+      <section className="bk-pg is-right" aria-labelledby="bk-title">
+        {right}
+      </section>
+      <section className="bk-pg is-left" aria-label={s.pickTitle || "تابع الصفحة"}>
+        {left}
+      </section>
+    </div>
+  );
+}
+
+function Picker({ title, cards, pick, choose, grid }) {
+  return (
+    <>
+      <h3 className="bk-pg-sub">{title}</h3>
+      <ul className={grid ? "bk-pick is-grid" : "bk-pick is-list"}>
+        {cards.map((c, i) => (
+          <li key={c.resource.id}>
+            <button type="button" aria-pressed={i === pick} onClick={() => choose(i)}>
+              <span className="bk-pick-pic" aria-hidden="true">
+                {c.photo ? <img src={c.photo} alt="" loading="lazy" /> : <LessonSymbol resource={c.resource} />}
+              </span>
+              <span className="bk-pick-name">{c.resource.label}</span>
+              {grid ? (
+                i === pick && <CheckCircle size={26} weight="fill" className="bk-pick-check" aria-hidden="true" />
+              ) : (
+                <CaretLeft size={20} weight="bold" aria-hidden="true" />
+              )}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+// A photo when the teacher's site file exists; until then the resource symbol.
+function Picture({ card }) {
+  return (
+    <figure className="bk-pic">
+      {card.photo ? (
+        <img src={card.photo} alt={card.resource.label} loading="lazy" />
+      ) : (
+        <span className="bk-pic-symbol" aria-hidden="true">
+          <LessonSymbol resource={card.resource} />
+        </span>
+      )}
+    </figure>
+  );
+}
+
+function OnMap({ href }) {
+  return (
+    <Link className="bk-on-map" to={href}>
+      <MapTrifold size={22} aria-hidden="true" /> شاهد على الخريطة
+    </Link>
+  );
+}
+
+function Roles({ col, Icon }) {
+  return (
+    <div className={`bk-roles tone-${col.tone}`}>
+      <h3>
+        <Icon size={28} weight="duotone" aria-hidden="true" /> {col.title}
+      </h3>
+      <ul>
+        {col.list.map((x) => (
+          <li key={x}>
+            <CheckCircle size={22} weight="fill" aria-hidden="true" />
+            <span>{x}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }

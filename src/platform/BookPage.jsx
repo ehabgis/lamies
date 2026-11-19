@@ -38,6 +38,7 @@ import { useLessonPlace } from "./lessonPlace";
 import BrandMark from "./BrandMark";
 import { LessonSymbol } from "../components/Map/WaterSymbol";
 import RobotGuide from "../components/Map/RobotGuide";
+import CitizenLab, { citizenScenes } from "./CitizenLab";
 import * as narrator from "./narrator";
 import { play } from "./sfx";
 import "./book.css";
@@ -366,6 +367,8 @@ function Frame({ id, title, children }) {
 // get one here from what they hold, so every lesson reads as the same book
 // (no data changes: the same text, cards and lists, only arranged).
 function asSpread(s, lessonId) {
+  // «دور الدولة والمواطنين»: the state's list beside «أنا مواطن مسؤول».
+  if (s.id === "roles" && citizenScenes(s).scenes.length) return { ...s, spread: "citizens" };
   if (s.spread === "sources") return { ...s, spread: "showcase" };
   if (s.spread) return s;
   if (s.id === "goals") return { ...s, spread: "goals", cards: [] };
@@ -582,6 +585,18 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading, extra, onZoo
         <Panels items={extrasOf(s)} />
       </>
     );
+  } else if (s.spread === "citizens") {
+    const lab = citizenScenes(s);
+    const state = s.columns.find((c) => c.icon === "state");
+    right = (
+      <>
+        {head}
+        {s.lead && <p className="bk-pg-lead">{s.lead}</p>}
+        {state && <Roles col={state} Icon={Bank} />}
+        {lab.rest.length > 0 && <Roles col={{ title: lab.title, tone: "green", list: lab.rest }} Icon={UsersThree} />}
+      </>
+    );
+    left = <CitizenLab key={s.id} scenes={lab.scenes} />;
   } else if (s.spread === "roles") {
     const [state, people] = s.columns;
     right = (

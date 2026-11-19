@@ -1,0 +1,772 @@
+/* «أنا مواطن مسؤول» — the citizens' situations inside the book. Colours are
+   the book's own (navy, royal blue, green for citizens, cream paper). */
+.cz-lab {
+  --cz-navy: #0b1f4d;
+  --cz-royal: #1d4fc4;
+  --cz-green: #178a4a;
+  --cz-green-soft: #e9f7ef;
+  --cz-red: #c2410c;
+  --cz-red-soft: #fff1e6;
+  --cz-paper: #fffdf8;
+  --cz-line: #e6d8b8;
+  --cz-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  color: var(--cz-navy);
+}
+.cz-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 6px 12px;
+}
+.cz-kicker {
+  margin: 0;
+  color: var(--cz-green);
+  font-size: 14px;
+  font-weight: 900;
+}
+.cz-head h3 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1.3;
+}
+.cz-sub {
+  margin: 0;
+  color: #3f4f68;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* progress: one round button per situation */
+.cz-steps {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cz-count {
+  font-size: 15px;
+  font-weight: 900;
+}
+.cz-steps ol {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cz-steps button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 2px solid var(--cz-line);
+  border-radius: 50%;
+  background: var(--cz-paper);
+  color: var(--cz-navy);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease;
+}
+.cz-steps button.is-done {
+  border-color: var(--cz-green);
+  color: var(--cz-green);
+}
+.cz-steps button[aria-current="step"] {
+  border-color: var(--cz-royal);
+  background: var(--cz-royal);
+  color: #fff;
+  box-shadow: 0 0 0 3px rgb(29 79 196 / 0.2);
+}
+.cz-steps button:focus-visible,
+.cz-option:focus-visible,
+.cz-btn:focus-visible {
+  outline: 3px solid #0a62d6;
+  outline-offset: 2px;
+}
+.cz-ask:focus,
+.cz-feedback:focus,
+.cz-finish h4:focus {
+  outline: none;
+}
+
+.cz-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  animation: cz-in 0.4s var(--cz-ease);
+}
+@keyframes cz-in {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+}
+.cz-rolebar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 10px;
+}
+.cz-role {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+}
+.cz-role span {
+  color: var(--cz-green);
+  font-weight: 900;
+}
+
+/* the picture */
+.cz-scene {
+  position: relative;
+  flex: 1 1 190px;
+  min-height: 180px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--cz-line);
+  border-radius: 16px;
+  background: #eaf3ff;
+  box-shadow:
+    inset 0 0 0 4px rgb(255 255 255 / 0.55),
+    0 6px 14px rgb(60 40 10 / 0.14);
+}
+.cz-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  font-family: Cairo, system-ui, sans-serif;
+}
+.cz-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+  animation: cz-pop 0.35s var(--cz-ease);
+}
+/* the sun sits top right in the house scene */
+.cz-badge.at-solar {
+  right: auto;
+  left: 10px;
+}
+.cz-badge.is-good {
+  background: var(--cz-green);
+}
+.cz-badge.is-bad {
+  background: var(--cz-red);
+}
+@keyframes cz-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+/* watch → choose → result */
+.cz-phases {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cz-phases li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #f1ece0;
+  color: #6b6152;
+  font-size: 13px;
+  font-weight: 800;
+  transition: background-color 0.25s ease;
+}
+.cz-phases li.is-past {
+  background: #e3efff;
+  color: var(--cz-royal);
+}
+.cz-phases li.is-on {
+  background: var(--cz-royal);
+  color: #fff;
+}
+
+.cz-ask {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.6;
+}
+.cz-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.cz-option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 2px solid #9cbcf0;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--cz-navy);
+  font: inherit;
+  font-size: 16.5px;
+  font-weight: 900;
+  line-height: 1.4;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #d9e7f6;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    opacity 0.18s ease;
+}
+.cz-option:not(:disabled):active {
+  transform: translateY(2px) scale(0.98);
+  box-shadow: 0 1px 0 #d9e7f6;
+}
+.cz-option:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.cz-option[aria-disabled="true"] {
+  cursor: default;
+}
+.cz-option.is-right {
+  border-color: var(--cz-green);
+  background: var(--cz-green-soft);
+  color: #0f5f33;
+  box-shadow: 0 0 0 3px rgb(23 138 74 / 0.2);
+  animation: cz-yes 0.4s var(--cz-ease);
+}
+.cz-option.is-wrong {
+  border-color: var(--cz-red);
+  background: var(--cz-red-soft);
+  color: #8a2c08;
+  animation: cz-no 0.4s ease;
+}
+@keyframes cz-yes {
+  40% {
+    transform: scale(1.04);
+  }
+}
+@keyframes cz-no {
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+.cz-live:empty {
+  display: none;
+}
+.cz-feedback {
+  display: grid;
+  gap: 4px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border-inline-start: 5px solid;
+  animation: cz-pop 0.3s var(--cz-ease);
+}
+.cz-feedback.is-good {
+  border-color: var(--cz-green);
+  background: var(--cz-green-soft);
+}
+.cz-feedback.is-bad {
+  border-color: var(--cz-red);
+  background: var(--cz-red-soft);
+}
+.cz-feedback strong {
+  font-size: 18px;
+  font-weight: 900;
+}
+.cz-feedback.is-good strong {
+  color: #0f5f33;
+}
+.cz-feedback.is-bad strong {
+  color: #8a2c08;
+}
+.cz-feedback p {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 700;
+  line-height: 1.65;
+}
+.cz-why {
+  color: #0f5f33;
+}
+.cz-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 6px 18px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--cz-royal);
+  color: #fff;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.18s ease;
+}
+.cz-btn.is-soft {
+  border: 2px solid var(--cz-royal);
+  background: #fff;
+  color: var(--cz-royal);
+}
+.cz-btn:active {
+  transform: scale(0.96);
+}
+
+.cz-finish {
+  display: grid;
+  flex: 1;
+  align-content: center;
+  justify-items: center;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--cz-green-soft);
+  text-align: center;
+  animation: cz-pop 0.4s var(--cz-ease);
+}
+.cz-stars {
+  display: flex;
+  gap: 6px;
+  color: #f5b301;
+  font-size: 34px;
+}
+.cz-finish h4 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+}
+.cz-finish p {
+  margin: 0;
+  font-weight: 800;
+}
+.cz-finish ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: start;
+}
+.cz-finish li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  color: #0f5f33;
+}
+
+@media (hover: hover) {
+  .cz-option:not(:disabled):hover {
+    transform: translateY(-2px);
+    border-color: var(--cz-royal);
+    box-shadow: 0 6px 14px rgb(11 47 87 / 0.14);
+  }
+  .cz-steps button:hover {
+    transform: scale(1.08);
+  }
+}
+
+/* ============================================ the drawings */
+.cz-svg g,
+.cz-svg rect,
+.cz-svg circle,
+.cz-svg line {
+  transform-box: fill-box;
+}
+.cz-svg * {
+  transition:
+    opacity 0.5s ease,
+    fill 0.6s ease,
+    transform 0.6s var(--cz-ease);
+}
+
+/* lamp: the glow goes out, the switch drops, the meter calms */
+.cz-lamp .cz-bulb {
+  fill: #ffe27a;
+}
+.cz-lamp .cz-meter {
+  transform-origin: center bottom;
+  animation: cz-spin 2.4s linear infinite;
+}
+.cz-lamp[data-state="right"] .cz-glow {
+  opacity: 0;
+}
+.cz-lamp[data-state="right"] .cz-bulb {
+  fill: #e9e2d0;
+}
+.cz-lamp[data-state="right"] .cz-switch {
+  transform: translateY(9px);
+}
+.cz-lamp[data-state="right"] .cz-meter {
+  animation-play-state: paused;
+}
+.cz-lamp[data-state="wrong"] .cz-meter {
+  animation-duration: 0.45s;
+}
+.cz-lamp[data-state="wrong"] .cz-glow {
+  animation: cz-buzz 0.9s ease-in-out 3;
+}
+.cz-lamp[data-state="wrong"] .cz-kid {
+  opacity: 0;
+  transform: translateX(40px);
+}
+@keyframes cz-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes cz-buzz {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* solar: panels land on the roof, sunlight reaches them, windows light up */
+.cz-solar .cz-win {
+  fill: #5b6b80;
+}
+.cz-solar .cz-panels {
+  opacity: 0;
+  transform: translateY(-40px);
+}
+.cz-solar .cz-rays,
+.cz-solar .cz-gen,
+.cz-solar .cz-haze {
+  opacity: 0;
+}
+.cz-solar[data-state="right"] .cz-panels {
+  opacity: 1;
+  transform: none;
+}
+.cz-solar[data-state="right"] .cz-rays {
+  opacity: 1;
+  transition-delay: 0.45s;
+  animation: cz-dash 1s linear 3;
+}
+.cz-solar[data-state="right"] .cz-win {
+  fill: #ffe27a;
+  transition-delay: 0.8s;
+}
+.cz-solar[data-state="wrong"] .cz-gen {
+  opacity: 1;
+}
+.cz-solar[data-state="wrong"] .cz-haze {
+  opacity: 0.22;
+  transition-delay: 0.4s;
+}
+.cz-solar[data-state="wrong"] .cz-smoke {
+  animation: cz-puff 1.4s ease-out 3 both;
+}
+.cz-solar[data-state="wrong"] .cz-smoke:nth-of-type(2) {
+  animation-delay: 0.35s;
+}
+.cz-solar[data-state="wrong"] .cz-smoke:nth-of-type(3) {
+  animation-delay: 0.7s;
+}
+@keyframes cz-dash {
+  to {
+    stroke-dashoffset: -26;
+  }
+}
+@keyframes cz-puff {
+  from {
+    opacity: 0.9;
+    transform: translateY(0) scale(0.6);
+  }
+  to {
+    opacity: 0.25;
+    transform: translateY(-34px) scale(1.4);
+  }
+}
+
+/* mine: the child steps back and the sign approves; or walks to the gate */
+.cz-mine .cz-ok,
+.cz-mine .cz-alert {
+  opacity: 0;
+  transform: scale(0.4);
+}
+.cz-mine .cz-arm {
+  transform-origin: right bottom;
+  animation: cz-dig 2.4s ease-in-out infinite;
+}
+.cz-mine[data-state="right"] .cz-ok {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.3s;
+}
+.cz-mine[data-state="right"] .cz-walker {
+  transform: translateX(38px);
+}
+.cz-mine[data-state="wrong"] .cz-walker {
+  transform: translateX(-48px);
+}
+.cz-mine[data-state="wrong"] .cz-alert {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.4s;
+  animation: cz-buzz 0.6s ease-in-out 0.6s 3;
+}
+@keyframes cz-dig {
+  50% {
+    transform: rotate(-10deg);
+  }
+}
+
+/* tap: the stream stops and the cup holds the water; or it keeps running */
+.cz-tap .cz-stream {
+  transform-origin: center top;
+  animation: cz-flow 0.5s linear infinite alternate;
+}
+.cz-tap .cz-cupwater {
+  transform-origin: center bottom;
+  transform: scaleY(0.25);
+}
+.cz-tap .cz-handle {
+  transform-origin: center;
+}
+.cz-tap .cz-swirl {
+  opacity: 0;
+  transform-origin: center;
+}
+.cz-tap .cz-drops {
+  opacity: 0;
+}
+.cz-tap[data-state="right"] .cz-stream {
+  transform: scaleY(0);
+  animation: none;
+}
+.cz-tap[data-state="right"] .cz-handle {
+  transform: rotate(90deg);
+}
+.cz-tap[data-state="right"] .cz-cupwater {
+  transform: none;
+  transition-delay: 0.3s;
+}
+.cz-tap[data-state="wrong"] .cz-swirl {
+  opacity: 1;
+  animation: cz-spin 0.8s linear infinite;
+}
+.cz-tap[data-state="wrong"] .cz-drops {
+  opacity: 1;
+  animation: cz-splash 0.5s ease-out infinite;
+}
+@keyframes cz-flow {
+  to {
+    opacity: 0.75;
+  }
+}
+@keyframes cz-splash {
+  to {
+    transform: translateY(-4px);
+    opacity: 0.4;
+  }
+}
+
+/* canal: the bag flies to the bin; or falls into the water, which darkens */
+.cz-canal .cz-water,
+.cz-river .cz-water {
+  fill: #4ea3e3;
+}
+.cz-canal .cz-murk {
+  opacity: 0;
+}
+.cz-canal .cz-fish {
+  animation: cz-swim 3s ease-in-out infinite alternate;
+}
+.cz-canal[data-state="right"] .cz-bag {
+  opacity: 0;
+  transform: translate(86px, -30px) scale(0.6);
+  transition: none;
+  animation: cz-to-bin 0.8s var(--cz-ease) both;
+}
+.cz-canal[data-state="right"] .cz-fish {
+  animation: cz-jump 0.8s ease-out 0.7s 2;
+}
+.cz-canal[data-state="wrong"] .cz-bag {
+  transform: translate(-60px, -50px) rotate(30deg);
+  opacity: 0.6;
+  transition: none;
+  animation: cz-to-water 0.9s ease-in both;
+}
+.cz-canal[data-state="wrong"] .cz-water {
+  fill: #7b8a5c;
+  transition-delay: 0.6s;
+}
+.cz-canal[data-state="wrong"] .cz-murk {
+  opacity: 1;
+  transition-delay: 0.7s;
+}
+.cz-canal[data-state="wrong"] .cz-fish {
+  opacity: 0;
+  transition-delay: 0.6s;
+  animation: none;
+}
+@keyframes cz-to-bin {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  55% {
+    opacity: 1;
+    transform: translate(48px, -70px) rotate(-20deg);
+  }
+  85% {
+    opacity: 1;
+    transform: translate(86px, -40px) scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(86px, -30px) scale(0.6);
+  }
+}
+@keyframes cz-to-water {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-36px, -70px) rotate(15deg);
+  }
+  100% {
+    opacity: 0.6;
+    transform: translate(-60px, -50px) rotate(30deg);
+  }
+}
+@keyframes cz-swim {
+  to {
+    transform: translateX(40px);
+  }
+}
+@keyframes cz-jump {
+  50% {
+    transform: translateY(-26px) rotate(-15deg);
+  }
+}
+
+/* river: the class gathers the litter and a plant grows; or the litter stays */
+.cz-river .cz-sprout {
+  transform-origin: center bottom;
+  transform: scaleY(0);
+}
+.cz-river[data-state="right"] .cz-litter {
+  opacity: 0;
+  transform: translate(var(--dx), var(--dy)) scale(0.3);
+  transition:
+    transform 0.7s var(--cz-ease),
+    opacity 0.3s ease 0.5s;
+  transition-delay: calc(var(--i) * 0.12s);
+}
+.cz-river[data-state="right"] .cz-water {
+  fill: #2f8fdc;
+  transition-delay: 0.8s;
+}
+.cz-river[data-state="right"] .cz-sprout {
+  transform: none;
+  transition-delay: 1s;
+}
+.cz-river .cz-drift {
+  opacity: 0;
+}
+.cz-river[data-state="wrong"] .cz-team {
+  opacity: 0.25;
+}
+.cz-river[data-state="wrong"] .cz-drift {
+  opacity: 1;
+  animation: cz-float 1.6s ease-in-out 3;
+}
+.cz-river[data-state="wrong"] .cz-water {
+  fill: #7d9bb0;
+  transition-delay: 0.5s;
+}
+@keyframes cz-float {
+  50% {
+    transform: translate(12px, -3px);
+  }
+}
+
+/* phones: the picture keeps a steady height and the options stack */
+@media (max-width: 760px) {
+  .cz-scene {
+    scroll-margin-top: 130px;
+    flex: none;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+  }
+  .cz-head h3 {
+    font-size: 23px;
+  }
+  .cz-options {
+    grid-template-columns: 1fr;
+  }
+  .cz-option {
+    min-height: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cz-body,
+  .cz-badge,
+  .cz-option.is-right,
+  .cz-option.is-wrong,
+  .cz-feedback,
+  .cz-finish,
+  .cz-svg * {
+    animation: none !important;
+  }
+  .cz-svg *,
+  .cz-option,
+  .cz-steps button,
+  .cz-btn,
+  .cz-phases li {
+    transition: none !important;
+  }
+  .cz-option:not(:disabled):hover,
+  .cz-steps button:hover {
+    transform: none;
+  }
+}

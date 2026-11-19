@@ -5,6 +5,7 @@
 // questions or answers are sent here.
 import { TEXTBOOK_UNIT3 } from "./textbook-unit3.mjs";
 import { demoLesson } from "./demo.mjs";
+import { mediaIndex, findMedia, IMAGE_EXT } from "./mediaFiles.mjs";
 
 // "أ، وب، وج." → ["أ", "ب", "ج"]
 const items = (text) =>
@@ -201,5 +202,9 @@ export function lessonBook(lessonId) {
         };
       }),
   }));
+  // The goals page's picture: the teacher's file sites/book-<lesson>-goals.jpg
+  // when it exists; until then the page shows the lesson's symbols.
+  const cover = findMedia("sites", mediaIndex("sites"), `book-${lessonId}-goals`, IMAGE_EXT);
+  if (cover) sections[0] = { ...sections[0], cover };
   return { id: lessonId, title: book.title, pages: book.pages, sections };
 }

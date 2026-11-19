@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRef } from "react";
-import { ArrowUp, ArrowDown, Star, Lightbulb, Check, X, ArrowLeft, ArrowCounterClockwise, CheckCircle, XCircle } from "phosphor-react";
+import { ArrowUp, ArrowDown, Star, Lightbulb, Check, X, ArrowLeft, ArrowCounterClockwise, CheckCircle, WarningCircle } from "phosphor-react";
 import { useQuestionHelp, HelpCard, helpHeaders } from "./QuestionHelp";
 import { ClassifyActivity, MatchActivity, OrderActivity } from "./ActivityKinds";
 
@@ -509,7 +509,7 @@ export default function Question({
             </>
           ) : q.type === "blank" ? (
             <span className="qh-wrong">
-              <XCircle size={22} weight="fill" aria-hidden="true" />
+              <WarningCircle size={22} weight="fill" aria-hidden="true" />
               {feedback.counted === false ? "عدّل إجابتك وجرب مرة تانية" : "إجابتك تحتاج مراجعة"}
             </span>
           ) : feedback.counted === false ? (

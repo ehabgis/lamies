@@ -266,3 +266,45 @@
   font-size: 14px !important;
   color: #4a6178 !important;
 }
+
+/* ---- 2026-11-19 review ---------------------------------------------- */
+/* «إجابتك تحتاج مراجعة» in dark red beside its warning icon. */
+.qh-wrong {
+  color: #9b1c1c;
+}
+.qh-wrong svg {
+  color: #9b1c1c;
+}
+/* The answer word alone in dark red and bold; the label and reason stay as usual. */
+.qh-body h4 .qh-answer {
+  color: #9b1c1c;
+  font-weight: 900;
+}
+/* The teacher's question back to the child, then the field and «إرسال». */
+.qh-follow {
+  color: #0b3a8c !important;
+  font-weight: 900 !important;
+}
+.qh-ask .qh-send {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+.qh-ask .qh-send:disabled {
+  background: #c9dbee;
+  border-color: #c9dbee;
+  color: #ffffff;
+}
+.qh-ask input {
+  border-color: #8fb4dd;
+  background: #ffffff;
+}
+.qh-ask input::placeholder {
+  color: #5b6f84;
+  opacity: 1;
+}

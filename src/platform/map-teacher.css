@@ -436,3 +436,130 @@
   color: #0a4fb0;
   font-style: italic;
 }
+
+/* ---- Window layout (2026-11-19 review): white with the robot's blue; a
+   taller window on computers so the greeting, the four helps and the
+   question field show at once; the field stays at the bottom and only the
+   conversation scrolls. */
+@media (min-width: 851px) {
+  .map-shell .mt-panel {
+    width: min(372px, calc(100% - 28px));
+    max-height: calc(100% - 96px);
+    bottom: 74px;
+  }
+}
+.map-shell .mt-panel > header {
+  gap: 10px;
+  padding: 10px 14px 8px;
+}
+.map-shell .mt-panel h2 {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 21px;
+  line-height: 1.2;
+}
+.map-shell .mt-panel .mt-lesson {
+  color: #4a6178;
+  font-size: 13.5px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+/* The cross looks small; the area around it stays easy to press. */
+.map-shell .mt-panel .mt-x {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: #4a6178;
+}
+.map-shell .mt-panel .mt-x svg {
+  width: 16px;
+  height: 16px;
+  padding: 6px;
+  box-sizing: content-box;
+  border: 1px solid #d6e3f0;
+  border-radius: 50%;
+  background: #ffffff;
+}
+.map-shell .mt-panel .mt-x:hover svg {
+  background: #eef5ff;
+}
+.map-shell .mt-panel .mt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.map-shell .mt-panel .mt-hello {
+  display: block;
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 800;
+  line-height: 1.6;
+  text-align: start;
+  color: #1d3550;
+}
+.mt-helps-title {
+  color: #0a4fb0;
+  font-size: 14px;
+  font-weight: 900;
+}
+/* Two rows of two, same size, icon on the right of the name. */
+.map-shell .mt-panel .mt-helps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.map-shell .mt-panel .mt-helps button {
+  justify-content: flex-start;
+  gap: 8px;
+  height: 100%;
+  min-height: 54px;
+  padding: 6px 10px;
+  border: 1px solid #bcd6f4;
+  border-radius: 14px;
+  background: #f1f7ff;
+  font-size: 14px;
+  line-height: 1.35;
+}
+.map-shell .mt-panel .mt-helps button svg {
+  flex: none;
+}
+.map-shell .mt-panel .mt-helps button:hover {
+  background: #e3effd;
+}
+/* The question field: white, a clear border, a readable hint; «إرسال» turns
+   strong blue as soon as something is typed. */
+.map-shell .mt-panel .mt-type {
+  flex: none;
+  background: #ffffff;
+}
+.map-shell .mt-panel .mt-type input {
+  border: 1.5px solid #8fb4dd;
+  background: #ffffff;
+  color: #0b2a5b;
+}
+.map-shell .mt-panel .mt-type input::placeholder {
+  color: #5b6f84;
+  opacity: 1;
+}
+.map-shell .mt-panel .mt-type input:focus {
+  border-color: #0a62d6;
+  outline: 3px solid rgb(10 98 214 / 0.18);
+}
+.map-shell .mt-panel .mt-type .mt-send {
+  background: #0a55c4;
+  color: #ffffff;
+  opacity: 1;
+}
+.map-shell .mt-panel .mt-type .mt-send:disabled {
+  background: #c9dbee;
+  color: #ffffff;
+  cursor: default;
+}
+.map-shell .mt-panel .mt-consent {
+  flex: none;
+}

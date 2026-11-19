@@ -137,7 +137,10 @@ export function createLearningSupport({ db, ai }) {
     if (seenTexts.has(fallback.trim()))
       fallback = prepared && !seenTexts.has(prepared.explain.trim())
         ? prepared.explain
-        : "هذا كل الشرح المعدّ لهذا السؤال. راجع بطاقة المورد على الخريطة، ثم جرّب مرة أخرى، ويمكنك سؤال معلمك في الفصل.";
+        : "أي جزء تحب أشرحه لك أكتر؟";
+    // A typed question with no online teacher gets a plain answer, not a repeat.
+    if (level === "more" && typeof message === "string" && message.trim())
+      fallback = "المعلم المتصل مش متاح دلوقتي، فمش هقدر أجاوب سؤالك بالتفصيل. ارجع للشرح اللي فوق، وجرّب تجاوب تاني، أو اسأل معلمك في الفصل.";
     out.text = fallback;
     out.canAsk = Boolean(ai?.available) && aiAllowed;
     if (!out.canAsk || consent !== true) return out;

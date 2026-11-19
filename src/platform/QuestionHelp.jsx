@@ -151,14 +151,19 @@ export function HelpCard({ help, q, resources, onRetry, onMore, answer }) {
     if (count && mem.open) box.current?.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   }, [count, loading]);
   const last = mem.cards[mem.cards.length - 1];
+  const canAsk = mem.cards.some((c) => c.canAsk);
   // These sit inside the question's own form, so no nested <form>.
-  const send = () => {
-    if (!message.trim() || loading) return;
-    help.ask({ level: "more", trigger: "asked", answer, message: message.trim() });
+  // «إرسال» is the child's own request to ask the smart teacher: when the
+  // online teacher is on, pressing it gives this session's consent (the line
+  // under the field says so) before the question goes out.
+  const send = async () => {
+    const text = message.trim();
+    if (!text || loading || consentBusy) return;
     setMessage("");
+    if (canAsk && !consent) await giveConsent(true);
+    help.ask({ level: "more", trigger: "asked", answer, message: text });
   };
   if (!mem.open && !mem.solution) return null;
-  const canAsk = mem.cards.some((c) => c.canAsk);
   const byId = (id) => (resources || []).find((r) => r.id === id);
   if (mem.solution)
     return (
@@ -206,6 +211,32 @@ export function HelpCard({ help, q, resources, onRetry, onMore, answer }) {
             <Sparkle size={18} weight="fill" aria-hidden="true" /> المعلم يجهز لك الشرح…
           </p>
         )}
+        {/* The smart teacher's window: the question back to the child, the
+            field for what was not understood, then «أرجع للسؤال». */}
+        {teacher && !loading && last?.text?.trim() !== "أي جزء تحب أشرحه لك أكتر؟" && (
+          <p className="qh-follow">أي جزء تحب أشرحه لك أكتر؟</p>
+        )}
+        {(teacher || (q.type !== "blank" && canAsk)) && (
+          <div className="qh-ask" role="group" aria-label="استفسار إضافي">
+            <input
+              value={message}
+              maxLength={300}
+              placeholder="اكتب ما لم تفهمه"
+              aria-label="اكتب ما لم تفهمه"
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  send();
+                }
+              }}
+            />
+            <button type="button" className="p-button qh-send" disabled={loading || consentBusy || !message.trim()} onClick={send}>
+              إرسال <PaperPlaneTilt size={16} weight="fill" aria-hidden="true" />
+            </button>
+          </div>
+        )}
+        {(teacher || q.type !== "blank") && canAsk && !consent && <small className="qh-note">سؤالك هيتبعت للمعلم الذكي من غير اسمك.</small>}
         <div className="qh-actions">
           <button type="button" className="p-button" onClick={onRetry}>
             <ArrowCounterClockwise size={18} aria-hidden="true" /> {teacher ? "أرجع للسؤال" : "أحاول مرة أخرى"}
@@ -216,43 +247,6 @@ export function HelpCard({ help, q, resources, onRetry, onMore, answer }) {
             </button>
           )}
         </div>
-        {teacher && !canAsk && !loading && !last?.failed && (
-          <small className="qh-note">كتابة الأسئلة للمعلم الذكي تعمل بعد ربطه بالخادم؛ هذا شرح معدّ من الدرس.</small>
-        )}
-        {canAsk && (
-          <div className="qh-ask" role="group" aria-label="استفسار إضافي">
-            {!consent ? (
-              <label className="qh-consent">
-                <input
-                  type="checkbox"
-                  checked={consent}
-                  disabled={consentBusy}
-                  onChange={(e) => giveConsent(e.target.checked)}
-                />
-                أوافق على إرسال السؤال إلى المعلم المتصل، دون اسمي.
-              </label>
-            ) : (
-              <>
-                <input
-                  value={message}
-                  maxLength={300}
-                  placeholder="اكتب ما لم تفهمه…"
-                  aria-label="استفسارك للمعلم"
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      send();
-                    }
-                  }}
-                />
-                <button type="button" className="p-secondary" aria-label="إرسال الاستفسار" disabled={loading || !message.trim()} onClick={send}>
-                  <PaperPlaneTilt size={18} aria-hidden="true" />
-                </button>
-              </>
-            )}
-          </div>
-        )}
       </div>
     </section>
   );
@@ -293,7 +287,7 @@ function SolutionCard({ help, q }) {
           <CheckCircle size={18} weight="fill" aria-hidden="true" /> تمت المراجعة بمساعدة
         </span>
         <h4>
-          الإجابة: <b>{s.answer}</b>
+          الإجابة الصحيحة: <b className="qh-answer">{s.answer}</b>
         </h4>
         <p>{s.text}</p>
         {!open && (

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -86,9 +86,13 @@ export default function BookPage() {
   const [pick, setPick] = useState(0);
   // The photo open in the enlarged view, or null.
   const [zoom, setZoom] = useState(null);
+  // The page being turned: a picture of the old pages over the new ones.
+  const [turn, setTurn] = useState(null);
+  const turning = useRef(false);
   const extra = useResourceMedia();
   const heading = useRef(null);
   const first = useRef(true);
+  const stage = useRef(null);
 
   useEffect(() => {
     setBook(null);
@@ -121,8 +125,21 @@ export default function BookPage() {
   }, [at, section?.id]);
 
   const go = (i) => {
+    if (turning.current || i < 0 || i >= sections.length) return;
     play("select");
     setIndexOpen(false);
+    if (i !== at) {
+      const dir = i > at ? "next" : "prev";
+      const leaf = bigTurn() && snapshot(stage.current, dir);
+      if (leaf) {
+        turning.current = true;
+        setTimeout(() => {
+          turning.current = false;
+          setTurn((t) => (t?.leaf === leaf ? null : t));
+        }, TURN_MS);
+      }
+      setTurn({ dir, leaf });
+    }
     setSearch(i ? { s: String(i) } : {});
   };
   const choose = (i) => {
@@ -140,6 +157,40 @@ export default function BookPage() {
   const goTo = (sid) => {
     const i = sections.findIndex((s) => s.id === sid);
     if (i >= 0) go(i);
+  };
+  // ← and → turn the pages too (the book reads right to left), and a
+  // sideways swipe on a phone; neither takes over a field, a video or a
+  // control that uses the arrows itself.
+  const goRef = useRef(go);
+  goRef.current = go;
+  useEffect(() => {
+    if (zoom) return undefined;
+    const key = (e) => {
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || ownsKeys(e.target)) return;
+      if (e.key === "ArrowLeft") goRef.current(atRef.current + 1);
+      else if (e.key === "ArrowRight") goRef.current(atRef.current - 1);
+      else return;
+      e.preventDefault();
+    };
+    document.addEventListener("keydown", key);
+    return () => document.removeEventListener("keydown", key);
+  }, [zoom]);
+  const atRef = useRef(at);
+  atRef.current = at;
+  const swipe = useRef(null);
+  const onTouchStart = (e) => {
+    const t = e.touches[0];
+    swipe.current = e.touches.length === 1 && !ownsKeys(e.target) ? { x: t.clientX, y: t.clientY, at: Date.now() } : null;
+  };
+  const onTouchEnd = (e) => {
+    const s = swipe.current;
+    swipe.current = null;
+    const t = e.changedTouches[0];
+    if (!s || !t || Date.now() - s.at > 700) return;
+    const dx = t.clientX - s.x;
+    const dy = t.clientY - s.y;
+    if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.6) return;
+    go(dx > 0 ? at + 1 : at - 1);
   };
   const mapHref = (rid) => `${place.page}/${id}${rid ? `?resource=${encodeURIComponent(rid)}` : ""}`;
 
@@ -171,6 +222,14 @@ export default function BookPage() {
             </button>
           </h2>
           <ol>
+          <p className="bk-progress">
+            <span>
+              الجزء {at + 1} من {sections.length}
+            </span>
+            <span className="bk-progress-bar" aria-hidden="true">
+              <span style={{ width: `${((at + 1) / Math.max(sections.length, 1)) * 100}%` }} />
+            </span>
+          </p>
             {sections.map((s, i) => {
               const Icon = ICON[s.icon] || BookOpen;
               return (
@@ -188,7 +247,7 @@ export default function BookPage() {
           </Link>
         </nav>
 
-        <main className="bk-page" aria-labelledby="bk-title">
+        <main className="bk-page" aria-labelledby="bk-title" ref={stage} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
           <button
             type="button"
             className="bk-index-open"
@@ -208,7 +267,9 @@ export default function BookPage() {
             heading={heading}
             extra={extra}
             onZoom={setZoom}
+            turn={turn?.dir && `is-${turn.leaf ? "turn" : "slide"}-${turn.dir}`}
           />
+          {turn?.leaf && <Turn key={turn.leaf.id} dir={turn.dir} leaf={turn.leaf} />}
         </main>
 
       <footer className="bk-bar">
@@ -373,7 +434,7 @@ const firstSentence = (t) => String(t || "").split(/(?<=\.)\s/)[0];
 // Two pages: the text page with the big picture on the right, the page to
 // choose from on the left. Every choice is a real button, so keyboard and
 // screen readers work the same as a tap.
-function Spread({ section: s, pick, choose, goTo, mapHref, heading, extra, onZoom }) {
+function Spread({ section: s, pick, choose, goTo, mapHref, heading, extra, onZoom, turn }) {
   const card = s.cards?.[pick] || s.cards?.[0];
   const head = (
     <div className={`bk-pg-head ${s.tone ? `tone-${s.tone}` : ""}`}>
@@ -426,14 +487,14 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading, extra, onZoo
       <div className="bk-show" aria-live="polite">
         <p className="bk-kicker">{s.title}</p>
         <div className="bk-pg-head">
-          <h2 id="bk-title" ref={heading} tabIndex={-1} className="is-big">
+          <h2 key={card.resource.id} id="bk-title" ref={heading} tabIndex={-1} className="is-big bk-swap">
             {card.resource.label}
           </h2>
           <span className="bk-robot" aria-hidden="true">
             <RobotGuide />
           </span>
         </div>
-        <dl className="bk-facts">
+        <dl key={card.resource.id} className="bk-facts bk-swap">
           <div>
             <dt>من مناطق استخراجه:</dt>
             <dd>{card.regions[0]}</dd>
@@ -501,10 +562,12 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading, extra, onZoo
     right = (
       <div className="bk-show" aria-live="polite">
         {head}
-        <span className="bk-pill">{card.resource.label}</span>
-        <p className="bk-show-text">{s.lead && !s.intro ? firstSentence(card.text) : card.text}</p>
+        <span key={`p-${card.resource.id}`} className="bk-pill bk-swap">
+          {card.resource.label}
+        </span>
+        <p key={`t-${card.resource.id}`} className="bk-show-text bk-swap">{s.lead && !s.intro ? firstSentence(card.text) : card.text}</p>
         {card.place && (
-          <p className="bk-place">
+          <p key={`l-${card.resource.id}`} className="bk-place bk-swap">
             <MapPin size={20} weight="fill" aria-hidden="true" />
             <span>{card.place}</span>
           </p>
@@ -550,13 +613,73 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading, extra, onZoo
     left = <Panels items={rest} />;
   }
   return (
-    <div className={`bk-book is-${s.spread}`}>
+    <div className={`bk-book is-${s.spread} ${turn || ""}`}>
       <section className="bk-pg is-right" aria-labelledby="bk-title">
         {right}
       </section>
       <section className="bk-pg is-left" aria-label={s.pickTitle || "تابع الصفحة"}>
         {left}
       </section>
+    </div>
+  );
+}
+
+// ------------------------------------------------------ turning pages
+const TURN_MS = 680;
+// The full turn needs the two pages side by side and room to move; tablets
+// and phones slide the new page in, and reduced motion only swaps it.
+function bigTurn() {
+  const mq = (q) => window.matchMedia?.(q).matches;
+  return mq("(min-width: 981px)") && !mq("(prefers-reduced-motion: reduce)");
+}
+// Fields, videos and sliders keep their own arrow keys and swipes.
+function ownsKeys(el) {
+  return Boolean(el?.closest?.("input, textarea, select, video, audio, [contenteditable], [role=slider], [data-own-keys]"));
+}
+// A still copy of the two open pages, taken just before the new ones show:
+// the page that turns (left going on, right going back) and the one it lands
+// on, each with its place inside the stage.
+let turnId = 0;
+function snapshot(stageEl, dir) {
+  const book = stageEl?.querySelector(".bk-book");
+  if (!book) return null;
+  const base = stageEl.getBoundingClientRect();
+  const copy = (el) => {
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    const node = el.cloneNode(true);
+    node.removeAttribute("aria-labelledby");
+    node.querySelectorAll("[id]").forEach((n) => n.removeAttribute("id"));
+    node.querySelectorAll("video").forEach((v) => v.removeAttribute("src"));
+    node.setAttribute("inert", "");
+    return { node, rect: { top: r.top - base.top, left: r.left - base.left, width: r.width, height: r.height } };
+  };
+  const left = copy(book.querySelector(".bk-pg.is-left"));
+  const right = copy(book.querySelector(".bk-pg.is-right"));
+  if (!left || !right) return null;
+  turnId += 1;
+  return dir === "next" ? { id: turnId, lift: left, stay: right } : { id: turnId, lift: right, stay: left };
+}
+// The turning leaf: its front is the old page, its back plain paper, and it
+// swings over the spine onto the facing page (right to left for an Arabic
+// book going on). Only the copy moves: the real pages under it are already
+// the new ones, ready to use, and their text is never mirrored.
+function Turn({ dir, leaf }) {
+  const front = useRef(null);
+  const stay = useRef(null);
+  useLayoutEffect(() => {
+    front.current?.replaceChildren(leaf.lift.node);
+    stay.current?.replaceChildren(leaf.stay.node);
+  }, [leaf]);
+  const box = (r) => ({ top: r.top, left: r.left, width: r.width, height: r.height });
+  return (
+    <div className={`bk-turn is-${dir}`} aria-hidden="true" style={{ "--bk-turn-ms": `${TURN_MS}ms` }}>
+      <div ref={stay} className="bk-turn-stay" style={box(leaf.stay.rect)} />
+      <div className="bk-turn-cast" style={box(leaf.lift.rect)} />
+      <div className="bk-leaf" style={box(leaf.lift.rect)}>
+        <div ref={front} className="bk-leaf-face is-front" />
+        <div className="bk-leaf-face is-back" />
+      </div>
     </div>
   );
 }
@@ -578,6 +701,8 @@ function Picker({ title, cards, pick, choose, extra, grid }) {
                 <span className="bk-pick-name">{c.resource.label}</span>
                 {grid ? (
                   i === pick && <CheckCircle size={26} weight="fill" className="bk-pick-check" aria-hidden="true" />
+                ) : i === pick ? (
+                  <CheckCircle size={24} weight="fill" className="bk-pick-mark" aria-hidden="true" />
                 ) : (
                   <CaretLeft size={20} weight="bold" aria-hidden="true" />
                 )}
@@ -593,7 +718,19 @@ function Picker({ title, cards, pick, choose, extra, grid }) {
 // A card's small photo, or its symbol if the photo cannot load.
 function Thumb({ photo, resource }) {
   const [broken, setBroken] = useState(false);
-  return broken ? <LessonSymbol resource={resource} /> : <img src={photo.src} alt="" loading="lazy" onError={() => setBroken(true)} />;
+  const [ready, setReady] = useState(false);
+  if (broken) return <LessonSymbol resource={resource} />;
+  return (
+    <img
+      ref={(el) => el?.complete && el.naturalWidth && !ready && setReady(true)}
+      className={ready ? "" : "is-loading"}
+      src={photo.src}
+      alt=""
+      loading="lazy"
+      onLoad={() => setReady(true)}
+      onError={() => setBroken(true)}
+    />
+  );
 }
 
 // The big picture. A real photo fills the frame without being cropped (a
@@ -602,7 +739,11 @@ function Thumb({ photo, resource }) {
 function Picture({ card, photo: given, onZoom, mapHref, fill }) {
   // A photo that cannot load (offline, blocked host) gives way to the symbol.
   const [broken, setBroken] = useState("");
+  // The photo shown so far: until the new one arrives a soft shimmer holds
+  // its place, so the page does not jump.
+  const [ready, setReady] = useState("");
   const photo = given && given.src !== broken ? given : null;
+  const loading = photo && ready !== photo.src;
   const video = !photo && card?.video;
   return (
     <figure className={`bk-pic ${fill ? "is-fill" : ""} ${photo ? "has-photo" : ""}`}>
@@ -610,12 +751,18 @@ function Picture({ card, photo: given, onZoom, mapHref, fill }) {
         <button
           key={photo.src}
           type="button"
-          className="bk-pic-zoom"
+          className={`bk-pic-zoom ${loading ? "is-loading" : ""}`}
           onClick={() => onZoom(photo)}
           aria-label={`تكبير صورة ${photo.alt}`}
           style={{ "--bk-photo": `url("${photo.src}")` }}
         >
-          <img src={photo.src} alt={photo.alt} onError={() => setBroken(photo.src)} />
+          <img
+            ref={(el) => el?.complete && el.naturalWidth && ready !== photo.src && setReady(photo.src)}
+            src={photo.src}
+            alt={photo.alt}
+            onLoad={() => setReady(photo.src)}
+            onError={() => setBroken(photo.src)}
+          />
           <span className="bk-pic-hint" aria-hidden="true">
             <MagnifyingGlassPlus size={22} weight="bold" />
           </span>

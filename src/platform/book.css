@@ -2138,3 +2138,474 @@
   top: 10px;
   bottom: auto;
 }
+
+/* ============================================ premium layer (2026-11-19)
+   Tokens taken from the site (navy headings, royal blue, sky panels, cream
+   paper); they live on the book's shell only, so no other page changes. */
+.bk-shell {
+  --bk-navy: #0b1f4d;
+  --bk-royal: #1d4fc4;
+  --bk-cover: #163d8f;
+  --bk-sky: #cfe3fb;
+  --bk-sky-soft: #eef5ff;
+  --bk-paper: #fbf3e2;
+  --bk-paper-hi: #fdf7ea;
+  --bk-paper-edge: #efe2c6;
+  --bk-line: #e6d8b8;
+  --bk-green: #178a4a;
+  --bk-r-sm: 12px;
+  --bk-r-md: 16px;
+  --bk-shadow-sm: 0 3px 8px rgb(90 60 10 / 0.12);
+  --bk-shadow-md: 0 10px 22px rgb(11 47 87 / 0.16);
+  --bk-fast: 180ms;
+  --bk-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* the pages no longer swing on their own: the turning leaf does it, and
+   what is on them settles in softly */
+.bk-book .bk-pg.is-left,
+.bk-book .bk-pg.is-right {
+  animation: none;
+}
+.bk-book .bk-pg > * {
+  animation: bk-rise 0.42s var(--bk-ease) both;
+}
+.bk-book .bk-pg > :nth-child(2) {
+  animation-delay: 40ms;
+}
+.bk-book .bk-pg > :nth-child(n + 3) {
+  animation-delay: 80ms;
+}
+@keyframes bk-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+/* a new card's name, facts and text when another card is chosen */
+.bk-swap {
+  animation: bk-rise 0.32s var(--bk-ease) both;
+}
+
+/* ---- the page turn (desktop) ---- */
+.bk-page {
+  position: relative;
+}
+.bk-turn {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  perspective: 2600px;
+  pointer-events: none;
+}
+.bk-turn-stay,
+.bk-turn-cast,
+.bk-leaf {
+  position: absolute;
+}
+.bk-turn-stay {
+  animation: bk-stay var(--bk-turn-ms) linear both;
+}
+@keyframes bk-stay {
+  0%,
+  52% {
+    opacity: 1;
+  }
+  53%,
+  100% {
+    opacity: 0;
+  }
+}
+/* the shade the lifting page throws on the page it uncovers */
+.bk-turn-cast {
+  border-radius: 6px;
+  animation: bk-cast var(--bk-turn-ms) ease-out both;
+}
+.bk-turn.is-next .bk-turn-cast {
+  background: linear-gradient(to left, rgb(40 25 5 / 0.45), rgb(40 25 5 / 0) 70%);
+}
+.bk-turn.is-prev .bk-turn-cast {
+  background: linear-gradient(to right, rgb(40 25 5 / 0.45), rgb(40 25 5 / 0) 70%);
+}
+@keyframes bk-cast {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  60%,
+  100% {
+    opacity: 0;
+  }
+}
+.bk-leaf {
+  transform-style: preserve-3d;
+  will-change: transform;
+  /* symmetric, so the leaf stands upright exactly halfway */
+  animation: var(--bk-turn-ms) cubic-bezier(0.5, 0, 0.5, 1) both;
+}
+.bk-turn.is-next .bk-leaf {
+  transform-origin: right center;
+  animation-name: bk-leaf-next;
+}
+.bk-turn.is-prev .bk-leaf {
+  transform-origin: left center;
+  animation-name: bk-leaf-prev;
+}
+@keyframes bk-leaf-next {
+  from {
+    transform: rotateY(0deg);
+  }
+  86% {
+    opacity: 1;
+  }
+  to {
+    transform: rotateY(180deg);
+    opacity: 0;
+  }
+}
+@keyframes bk-leaf-prev {
+  from {
+    transform: rotateY(0deg);
+  }
+  86% {
+    opacity: 1;
+  }
+  to {
+    transform: rotateY(-180deg);
+    opacity: 0;
+  }
+}
+.bk-leaf-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgb(40 25 5 / 0.28);
+}
+.bk-leaf-face > .bk-pg {
+  height: 100%;
+  box-shadow: none;
+}
+.bk-leaf-face *,
+.bk-turn-stay * {
+  animation: none !important;
+  transition: none !important;
+}
+.bk-turn-stay > .bk-pg {
+  height: 100%;
+}
+.bk-leaf-face.is-front {
+  transform: rotateY(0deg);
+  animation: bk-face-front var(--bk-turn-ms) linear both;
+}
+.bk-leaf-face.is-back {
+  transform: rotateY(180deg);
+  animation: bk-face-back var(--bk-turn-ms) linear both;
+}
+/* each side shows only while it faces the reader (some browsers ignore
+   backface-visibility over photos and video) */
+@keyframes bk-face-front {
+  0%,
+  49% {
+    visibility: visible;
+  }
+  50%,
+  100% {
+    visibility: hidden;
+  }
+}
+@keyframes bk-face-back {
+  0%,
+  49% {
+    visibility: hidden;
+  }
+  50%,
+  100% {
+    visibility: visible;
+  }
+}
+.bk-turn.is-next .bk-leaf-face.is-back {
+  background: linear-gradient(to left, var(--bk-paper-hi), var(--bk-paper) 78%, var(--bk-paper-edge));
+}
+.bk-turn.is-prev .bk-leaf-face.is-back {
+  background: linear-gradient(to right, var(--bk-paper-hi), var(--bk-paper) 78%, var(--bk-paper-edge));
+}
+/* light on the leaf: it darkens as it stands up, then brightens as it lands */
+.bk-leaf-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: var(--bk-turn-ms) ease-in-out both;
+}
+.bk-turn.is-next .bk-leaf-face.is-front::after {
+  background: linear-gradient(to left, rgb(40 25 5 / 0.4), rgb(255 255 255 / 0.12) 60%, rgb(40 25 5 / 0));
+  animation-name: bk-shade-front;
+}
+.bk-turn.is-prev .bk-leaf-face.is-front::after {
+  background: linear-gradient(to right, rgb(40 25 5 / 0.4), rgb(255 255 255 / 0.12) 60%, rgb(40 25 5 / 0));
+  animation-name: bk-shade-front;
+}
+.bk-turn.is-next .bk-leaf-face.is-back::after {
+  background: linear-gradient(to right, rgb(40 25 5 / 0.35), rgb(40 25 5 / 0) 55%);
+  animation-name: bk-shade-back;
+}
+.bk-turn.is-prev .bk-leaf-face.is-back::after {
+  background: linear-gradient(to left, rgb(40 25 5 / 0.35), rgb(40 25 5 / 0) 55%);
+  animation-name: bk-shade-back;
+}
+@keyframes bk-shade-front {
+  from {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes bk-shade-back {
+  50% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+/* the new page under the landing leaf shows as the leaf lies down */
+.bk-book.is-turn-next .bk-pg.is-right > *,
+.bk-book.is-turn-prev .bk-pg.is-left > * {
+  animation: bk-land var(--bk-turn, 680ms) linear both;
+}
+@keyframes bk-land {
+  0%,
+  78% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* ---- tablets and phones: the new page slides in from the side it comes from ---- */
+.bk-book.is-slide-next {
+  animation: bk-slide-next 0.38s var(--bk-ease);
+}
+.bk-book.is-slide-prev {
+  animation: bk-slide-prev 0.38s var(--bk-ease);
+}
+@keyframes bk-slide-next {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}
+@keyframes bk-slide-prev {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+
+/* ---- pictures: a shimmer holds the place until the photo arrives ---- */
+.bk-pic-zoom.is-loading::before {
+  background: linear-gradient(100deg, #eadcc0 30%, #f8efdc 50%, #eadcc0 70%) 0 0 / 300% 100%;
+  filter: none;
+  animation: bk-shimmer 1.2s linear infinite;
+}
+.bk-pic-zoom.is-loading img,
+.bk-pick-pic img.is-loading {
+  opacity: 0;
+}
+.bk-pick-pic:has(img.is-loading) {
+  background: linear-gradient(100deg, #eadcc0 30%, #f8efdc 50%, #eadcc0 70%) 0 0 / 300% 100%;
+  animation: bk-shimmer 1.2s linear infinite;
+}
+@keyframes bk-shimmer {
+  to {
+    background-position: -300% 0;
+  }
+}
+.bk-pic-zoom img {
+  transition: opacity 0.3s ease;
+}
+.bk-shell .bk-pic.has-photo {
+  box-shadow:
+    inset 0 0 0 4px rgb(255 255 255 / 0.55),
+    0 8px 18px rgb(60 40 10 / 0.18);
+}
+.bk-pic-zoom img {
+  transition:
+    opacity 0.3s ease,
+    transform 0.4s var(--bk-ease);
+}
+
+/* ---- choice cards ---- */
+.bk-pick button {
+  transition:
+    border-color var(--bk-fast) ease,
+    box-shadow var(--bk-fast) ease,
+    background-color var(--bk-fast) ease,
+    transform var(--bk-fast) ease;
+}
+.bk-pick-pic {
+  overflow: hidden;
+}
+.bk-pick-pic > img {
+  transition:
+    transform 0.25s var(--bk-ease),
+    opacity 0.3s ease;
+}
+.bk-pick button:focus-visible {
+  outline: 3px solid #0a62d6;
+  outline-offset: 3px;
+}
+.bk-pick button[aria-pressed="true"] {
+  border-color: var(--bk-royal);
+  animation: bk-pop 0.28s var(--bk-ease);
+}
+.bk-pick.is-grid button[aria-pressed="true"] .bk-pick-name {
+  background: var(--bk-royal);
+  color: #ffffff;
+}
+.bk-pick.is-grid .bk-pick-name {
+  align-self: stretch;
+  transition:
+    background-color var(--bk-fast) ease,
+    color var(--bk-fast) ease;
+}
+.bk-pick-check,
+.bk-pick-mark {
+  animation: bk-check 0.3s var(--bk-ease);
+}
+.bk-pick-mark {
+  flex: none;
+  color: var(--bk-royal);
+}
+@keyframes bk-pop {
+  50% {
+    transform: scale(0.97);
+  }
+}
+@keyframes bk-check {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+/* ---- contents of the lesson ---- */
+.bk-progress {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 14px 4px;
+  color: var(--bk-navy);
+  font-size: 14px;
+  font-weight: 800;
+}
+.bk-progress-bar {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--bk-sky-soft);
+}
+.bk-progress-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(to left, var(--bk-royal), #4f8af0);
+  transition: width 0.4s var(--bk-ease);
+}
+.bk-index li button {
+  position: relative;
+  transition:
+    background-color var(--bk-fast) ease,
+    color var(--bk-fast) ease,
+    transform var(--bk-fast) ease;
+}
+.bk-index li button[aria-current="step"]::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  right: 0;
+  width: 4px;
+  border-radius: 4px;
+  background: var(--bk-royal);
+  animation: bk-check 0.3s var(--bk-ease);
+}
+.bk-index li button[aria-current="step"] {
+  font-weight: 900;
+}
+
+/* ---- buttons answer the press ---- */
+.bk-bar button,
+.bk-explore,
+.bk-kind,
+.bk-on-map {
+  transition:
+    transform var(--bk-fast) ease,
+    box-shadow var(--bk-fast) ease,
+    background-color var(--bk-fast) ease;
+}
+.bk-bar button:not(:disabled):active,
+.bk-explore:active,
+.bk-kind:active,
+.bk-on-map:active {
+  transform: scale(0.96);
+}
+
+/* hover lifts only where there is a real pointer (no sticky hover on touch) */
+@media (hover: hover) {
+  .bk-pic-zoom:hover img {
+    transform: scale(1.015);
+  }
+  .bk-pick button:hover {
+    border-color: #9cbcf0;
+    box-shadow: var(--bk-shadow-md);
+  }
+  .bk-pick button:hover .bk-pick-pic > img {
+    transform: scale(1.06);
+  }
+  .bk-index li button:hover {
+    transform: translateX(-3px);
+  }
+  .bk-kind:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--bk-shadow-md);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bk-book .bk-pg > *,
+  .bk-swap,
+  .bk-book.is-slide-next,
+  .bk-book.is-slide-prev,
+  .bk-book.is-turn-next .bk-pg.is-right > *,
+  .bk-book.is-turn-prev .bk-pg.is-left > *,
+  .bk-pick button[aria-pressed="true"],
+  .bk-pick-check,
+  .bk-pick-mark,
+  .bk-index li button[aria-current="step"]::before {
+    animation: none;
+  }
+  .bk-turn {
+    display: none;
+  }
+  .bk-pic-zoom.is-loading::before,
+  .bk-pick-pic:has(img.is-loading) {
+    animation: none;
+  }
+  .bk-pick button:hover .bk-pick-pic > img,
+  .bk-pic-zoom:hover img,
+  .bk-index li button:hover,
+  .bk-kind:hover,
+  .bk-bar button:not(:disabled):active,
+  .bk-explore:active,
+  .bk-kind:active,
+  .bk-on-map:active {
+    transform: none;
+  }
+}

@@ -2133,3 +2133,8 @@
   top: 10px;
   bottom: auto;
 }
+/* on a video, the map link moves up so the player controls stay free */
+.bk-pic:has(video) .bk-on-map {
+  top: 10px;
+  bottom: auto;
+}

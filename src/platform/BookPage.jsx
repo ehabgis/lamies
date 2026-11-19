@@ -30,6 +30,7 @@ import {
   Waves,
   Wind,
   ListBullets,
+  MagnifyingGlassPlus,
   X,
 } from "phosphor-react";
 import { api } from "./api";
@@ -83,6 +84,9 @@ export default function BookPage() {
   const [indexOpen, setIndexOpen] = useState(false);
   // The card chosen on the open book's left page (first one by default).
   const [pick, setPick] = useState(0);
+  // The photo open in the enlarged view, or null.
+  const [zoom, setZoom] = useState(null);
+  const extra = useResourceMedia();
   const heading = useRef(null);
   const first = useRef(true);
 
@@ -101,6 +105,8 @@ export default function BookPage() {
   const section = sections[at];
   const next = sections[at + 1];
   const prev = sections[at - 1];
+  // Every part of every lesson is shown as the open book's two pages.
+  const view = section ? asSpread(section, id) : null;
 
   useEffect(() => {
     if (!section) return;
@@ -127,7 +133,7 @@ export default function BookPage() {
     if (window.matchMedia?.("(max-width: 760px)").matches) {
       const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       requestAnimationFrame(() =>
-        document.querySelector(".bk-fact, .bk-source")?.scrollIntoView({ block: "start", behavior: smooth ? "smooth" : "auto" }),
+        document.querySelector(".bk-show")?.scrollIntoView({ block: "start", behavior: smooth ? "smooth" : "auto" }),
       );
     }
   };
@@ -192,16 +198,17 @@ export default function BookPage() {
           >
             <ListBullets size={20} aria-hidden="true" /> محتويات الدرس · {at + 1} من {sections.length}
           </button>
-          {section.spread ? (
-            <Spread section={section} pick={pick} choose={choose} goTo={goTo} mapHref={mapHref} heading={heading} />
-          ) : (
-            <div className="bk-sheet">
-              <h2 id="bk-title" ref={heading} tabIndex={-1} className="bk-title">
-                {section.title}
-              </h2>
-              <Section section={section} mapHref={mapHref} />
-            </div>
-          )}
+          <Spread
+            key={section.id}
+            section={view}
+            pick={pick}
+            choose={choose}
+            goTo={goTo}
+            mapHref={mapHref}
+            heading={heading}
+            extra={extra}
+            onZoom={setZoom}
+          />
         </main>
 
       <footer className="bk-bar">
@@ -212,7 +219,7 @@ export default function BookPage() {
           type="button"
           className="bk-listen"
           aria-pressed={speaking}
-          onClick={() => (speaking ? narrator.stop() : narrator.speak(spokenText(section, pick)))}
+          onClick={() => (speaking ? narrator.stop() : narrator.speak(spokenText(view, pick)))}
           disabled={!narrator.available()}
         >
           {speaking ? <Stop size={22} weight="fill" aria-hidden="true" /> : <SpeakerHigh size={22} aria-hidden="true" />}
@@ -236,6 +243,7 @@ export default function BookPage() {
         )}
       </footer>
       </div>
+      {zoom && <Lightbox photo={zoom} onClose={() => setZoom(null)} />}
     </Frame>
   );
 }
@@ -291,157 +299,83 @@ function Frame({ id, title, children }) {
   );
 }
 
-function Section({ section, mapHref }) {
-  return (
-    <div className="bk-body">
-      {section.lead && (
-        <p className="bk-lead">
-          <BookOpen size={34} aria-hidden="true" />
-          <span>{section.lead}</span>
-        </p>
-      )}
-      {section.columns?.length > 0 && (
-        <div className={`bk-columns count-${section.columns.length}`}>
-          {section.columns.map((c) => {
-            const Icon = ICON[c.icon];
-            return (
-              <section key={c.title} className={`bk-column tone-${c.tone}`}>
-                <h2>
-                  {Icon && <Icon size={30} weight="duotone" aria-hidden="true" />} {c.title}
-                </h2>
-                {c.text && <p>{c.text}</p>}
-                {c.list?.length > 0 && (
-                  <ul>
-                    {c.list.map((x) => (
-                      <li key={x}>{x}</li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-            );
-          })}
-        </div>
-      )}
-      {section.cards?.length > 0 && (
-        <ul className={`bk-cards is-${section.layout || "rows"}`}>
-          {section.cards.map((c) => (
-            <Card key={c.resource.id} card={c} wide={section.layout === "wide"} moreIcon={section.moreIcon} mapHref={mapHref} />
-          ))}
-        </ul>
-      )}
-      {section.boxes?.length > 0 && (
-        <div className="bk-boxes">
-          {section.boxes.map((b) => {
-            const Icon = ICON[b.icon] || Lightbulb;
-            return (
-              <section key={b.title} className={`bk-box tone-${b.tone}`}>
-                <h2>
-                  <Lightbulb size={24} weight="duotone" aria-hidden="true" /> {b.title}
-                </h2>
-                <p>
-                  <span>{b.text}</span>
-                  <Icon size={44} weight="duotone" aria-hidden="true" />
-                </p>
-              </section>
-            );
-          })}
-        </div>
-      )}
-      {section.note && (
-        <p className="bk-note">
-          <span>{section.note}</span>
-          <Leaf size={30} weight="fill" aria-hidden="true" />
-        </p>
-      )}
-    </div>
-  );
+
+// ------------------------------------------------------ book pages
+// The server sends lesson 1's layout in `spread`; the other lessons' parts
+// get one here from what they hold, so every lesson reads as the same book
+// (no data changes: the same text, cards and lists, only arranged).
+function asSpread(s, lessonId) {
+  if (s.spread === "sources") return { ...s, spread: "showcase" };
+  if (s.spread) return s;
+  if (s.id === "goals") return { ...s, spread: "goals", cards: [] };
+  if (s.cards?.length)
+    return { ...s, spread: "showcase", intro: s.lead, pickTitle: lessonId === "lesson-3" ? "اختر مشروعًا" : "اختر موردًا" };
+  return { ...s, spread: "info" };
 }
 
-function Card({ card, wide, moreIcon, mapHref }) {
-  const More = moreIcon === "pin" ? MapPin : Star;
-  const media = card.photo ? (
-    <img src={card.photo} alt={card.resource.label} loading="lazy" />
-  ) : card.video ? (
-    <video src={card.video} controls preload="metadata" aria-label={`فيديو ${card.resource.label}`} />
-  ) : (
-    <span className="bk-media-empty" aria-hidden="true">
-      <LessonSymbol resource={card.resource} />
-    </span>
-  );
-  return (
-    <li className="bk-card" style={{ "--tone": card.resource.color || "#0a5fd8" }}>
-      <div className="bk-card-text">
-        <h3>
-          <span className="bk-card-icon" aria-hidden="true">
-            <LessonSymbol resource={card.resource} />
-          </span>
-          {card.resource.label}
-        </h3>
-        <p>{card.text}</p>
-        {card.place &&
-          (wide ? (
-            <p className="bk-place">
-              <More size={24} weight="fill" aria-hidden="true" />
-              <span>{card.place}</span>
-            </p>
-          ) : (
-            <p className="bk-place-inline">{card.place}</p>
-          ))}
-      </div>
-      <div className="bk-media">
-        {media}
-        {card.mappable && (
-          <Link className="bk-on-map" to={mapHref(card.resource.id)}>
-            <MapTrifold size={22} aria-hidden="true" /> شاهد على الخريطة
-          </Link>
-        )}
-      </div>
-    </li>
-  );
+// Documented photos listed in public/lesson-media/resource-media.json (the
+// same file the map reads), used when a resource has no site photo yet.
+let mediaJson = null;
+function useResourceMedia() {
+  const [media, setMedia] = useState(mediaJson || {});
+  useEffect(() => {
+    if (mediaJson) return;
+    let live = true;
+    fetch("/lesson-media/resource-media.json")
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((j) => {
+        mediaJson = j.resources || {};
+        if (live) setMedia(mediaJson);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
+  return media;
+}
+// The card's photo: the teacher's site file first, then the documented one.
+function photoOf(card, extra) {
+  if (card.photo) return { src: card.photo, alt: card.resource.label, credit: "" };
+  const m = extra?.[card.resource.id];
+  if (m?.imageUrl) return { src: m.imageUrl, alt: card.resource.label, credit: m.imageCredit || "" };
+  return null;
 }
 
-// What «استمع للشرح» reads: the visible text only (on the open book, the
-// chosen card, not every card).
+// What «استمع للشرح» reads: the text on the two pages, and for pages with
+// a choice, only the chosen card.
 function spokenText(s, pick = 0) {
-  const card = s.spread && s.spread !== "goals" ? s.cards?.[pick] : null;
-  const parts = s.spread
-    ? [
-        s.title,
-        s.spread === "goals" ? "في نهاية الدرس أستطيع أن" : s.spread === "sources" ? null : s.lead,
-        ...(s.spread === "goals" ? s.columns?.[0]?.list || [] : []),
-        ...(s.uses || []).flatMap((u) => [u.title, u.text]),
-        ...(s.kinds || []).flatMap((k) => [k.title, k.chips.join("، ")]),
-        ...(s.spread === "roles" ? s.columns.flatMap((c) => [c.title, ...c.list]) : []),
-        ...(card ? cardWords(s, card) : []),
-      ]
-    : [
-        s.title,
-        s.lead,
-        ...(s.columns || []).flatMap((c) => [c.title, c.text, ...(c.list || [])]),
-        ...(s.cards || []).flatMap((c) => [c.resource.label, c.text, c.place]),
-        ...(s.boxes || []).flatMap((b) => [b.title, b.text]),
-        s.note,
-      ];
+  if (!s) return "";
+  const card = s.cards?.[pick];
+  let parts;
+  if (s.spread === "goals") parts = [s.title, "في نهاية الدرس أستطيع أن", ...(s.columns?.[0]?.list || []), ...(s.boxes || []).flatMap((b) => [b.title, b.text])];
+  else if (s.spread === "minerals") parts = [s.title, s.lead, card?.resource.label, card && `من مناطق استخراجه: ${card.regions[0]}`, card && `من استخداماته: ${card.use}`];
+  else if (s.spread === "energy") parts = [s.title, s.lead, "كيف نستخدم الطاقة؟", ...s.uses.flatMap((u) => [u.title, u.text]), ...s.kinds.flatMap((k) => [k.title, k.chips.join("، ")])];
+  else if (s.spread === "showcase")
+    parts = [s.title, s.intro, card?.resource.label, card?.text, card?.place, ...extrasOf(s).flatMap((c) => [c.title, c.text, ...(c.list || [])])];
+  else parts = [s.title, s.lead, ...extrasOf(s).flatMap((c) => [c.title, c.text, ...(c.list || [])])];
   return parts
     .filter(Boolean)
     .map((t) => (/[.؟!:]$/.test(t) ? t : `${t}.`))
     .join(" ");
 }
-function cardWords(s, c) {
-  if (s.spread === "minerals")
-    return [c.resource.label, `من مناطق استخراجه: ${c.regions[0]}`, `من استخداماته: ${c.use}`];
-  return [c.resource.label, firstSentence(c.text), c.place];
+// Lists and boxes a part holds besides its cards, as one kind of panel.
+function extrasOf(s) {
+  return [
+    ...(s.columns || []),
+    ...(s.boxes || []).map((b) => ({ title: b.title, text: b.text, tone: b.tone === "value" ? "green" : "blue" })),
+    ...(s.note ? [{ title: "", text: s.note, tone: "green" }] : []),
+  ];
 }
 // "البترول يُستخرج منه … . مصدر طاقة غير متجدد." → its first sentence.
 const firstSentence = (t) => String(t || "").split(/(?<=\.)\s/)[0];
 
-// ---------------------------------------------------------- open book
-// Two pages: the text page on the right (with the robot) and the page to
-// choose from on the left. Every choice is a real button, so the keyboard
-// and screen readers work the same as a tap.
-function Spread({ section: s, pick, choose, goTo, mapHref, heading }) {
+// Two pages: the text page with the big picture on the right, the page to
+// choose from on the left. Every choice is a real button, so keyboard and
+// screen readers work the same as a tap.
+function Spread({ section: s, pick, choose, goTo, mapHref, heading, extra, onZoom }) {
   const card = s.cards?.[pick] || s.cards?.[0];
-  const title = (
+  const head = (
     <div className={`bk-pg-head ${s.tone ? `tone-${s.tone}` : ""}`}>
       <h2 id="bk-title" ref={heading} tabIndex={-1}>
         {s.title}
@@ -456,20 +390,18 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading }) {
   if (s.spread === "goals") {
     right = (
       <>
-        {title}
+        {head}
         <h3 className="bk-pg-sub">في نهاية الدرس أستطيع أن:</h3>
         <ul className="bk-goals">
-          {s.columns[0].list.map((g) => (
+          {(s.columns?.[0]?.list || []).map((g) => (
             <li key={g}>{g}</li>
           ))}
         </ul>
       </>
     );
     left = s.cover ? (
-      <figure className="bk-cover">
-        <img src={s.cover} alt={`صورة تمهيدية لدرس ${s.title}`} />
-      </figure>
-    ) : (
+      <Picture photo={{ src: s.cover, alt: `صورة تمهيدية لدرس ${s.title}`, credit: "" }} onZoom={onZoom} fill />
+    ) : s.cards?.length ? (
       <>
         <h3 className="bk-pg-sub is-lined">في هذا الدرس نتعرّف على</h3>
         <ul className="bk-symbols">
@@ -483,32 +415,47 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading }) {
           ))}
         </ul>
       </>
+    ) : (
+      <>
+        <p className="bk-pg-lead">{s.lead}</p>
+        <Panels items={(s.boxes || []).map((b) => ({ title: b.title, text: b.text, tone: "blue" }))} />
+      </>
     );
   } else if (s.spread === "minerals") {
     right = (
-      <>
-        {title}
-        <p className="bk-pg-lead">{s.lead}</p>
-        <div className="bk-fact" aria-live="polite">
-          <h3>{card.resource.label}</h3>
-          <dl>
-            <div>
-              <dt>من مناطق استخراجه</dt>
-              <dd>{card.regions[0]}</dd>
-            </div>
-            <div>
-              <dt>من استخداماته</dt>
-              <dd>{card.use}</dd>
-            </div>
-          </dl>
+      <div className="bk-show" aria-live="polite">
+        <p className="bk-kicker">{s.title}</p>
+        <div className="bk-pg-head">
+          <h2 id="bk-title" ref={heading} tabIndex={-1} className="is-big">
+            {card.resource.label}
+          </h2>
+          <span className="bk-robot" aria-hidden="true">
+            <RobotGuide />
+          </span>
         </div>
+        <dl className="bk-facts">
+          <div>
+            <dt>من مناطق استخراجه:</dt>
+            <dd>{card.regions[0]}</dd>
+          </div>
+          <div>
+            <dt>من استخداماته:</dt>
+            <dd>{card.use}</dd>
+          </div>
+        </dl>
+        <Picture card={card} photo={photoOf(card, extra)} onZoom={onZoom} mapHref={card.mappable && mapHref(card.resource.id)} />
+      </div>
+    );
+    left = (
+      <>
+        <p className="bk-pg-lead is-intro">{s.lead}</p>
+        <Picker title={s.pickTitle} cards={s.cards} pick={pick} choose={choose} extra={extra} grid />
       </>
     );
-    left = <Picker title={s.pickTitle} cards={s.cards} pick={pick} choose={choose} grid />;
   } else if (s.spread === "energy") {
     right = (
       <>
-        {title}
+        {head}
         <p className="bk-pg-lead">{s.lead}</p>
         <h3 className="bk-pg-sub">كيف نستخدم الطاقة؟</h3>
         <ul className="bk-uses">
@@ -550,32 +497,34 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading }) {
         </div>
       </>
     );
-  } else if (s.spread === "sources") {
+  } else if (s.spread === "showcase") {
     right = (
+      <div className="bk-show" aria-live="polite">
+        {head}
+        <span className="bk-pill">{card.resource.label}</span>
+        <p className="bk-show-text">{s.lead && !s.intro ? firstSentence(card.text) : card.text}</p>
+        {card.place && (
+          <p className="bk-place">
+            <MapPin size={20} weight="fill" aria-hidden="true" />
+            <span>{card.place}</span>
+          </p>
+        )}
+        <Picture card={card} photo={photoOf(card, extra)} onZoom={onZoom} mapHref={card.mappable && mapHref(card.resource.id)} />
+      </div>
+    );
+    left = (
       <>
-        {title}
-        <div className="bk-source" aria-live="polite">
-          <span className="bk-pill">{card.resource.label}</span>
-          <p>{firstSentence(card.text)}</p>
-          {s.tone === "green" && card.place && (
-            <p className="bk-place">
-              <MapPin size={22} weight="fill" aria-hidden="true" />
-              <span>{card.place}</span>
-            </p>
-          )}
-          <Picture card={card} />
-          {card.mappable && <OnMap href={mapHref(card.resource.id)} />}
-        </div>
+        {s.intro && <p className="bk-pg-lead is-intro">{s.intro}</p>}
+        <Picker title={s.pickTitle} cards={s.cards} pick={pick} choose={choose} extra={extra} />
+        <Panels items={extrasOf(s)} />
       </>
     );
-    left = <Picker title={s.pickTitle} cards={s.cards} pick={pick} choose={choose} />;
-  } else {
+  } else if (s.spread === "roles") {
     const [state, people] = s.columns;
-    // Both pages share rows (CSS subgrid), so the two headings line up.
     right = (
       <>
         <div className="bk-roles-top">
-          {title}
+          {head}
           <p className="bk-pg-lead">{s.lead}</p>
         </div>
         <Roles col={state} Icon={Bank} />
@@ -587,6 +536,18 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading }) {
         <Roles col={people} Icon={UsersThree} />
       </>
     );
+  } else {
+    // A part with lists only: the first list beside the title, the rest on
+    // the facing page.
+    const [firstCol, ...rest] = extrasOf(s);
+    right = (
+      <>
+        {head}
+        {s.lead && <p className="bk-pg-lead">{s.lead}</p>}
+        {firstCol && <Panels items={[firstCol]} />}
+      </>
+    );
+    left = <Panels items={rest} />;
   }
   return (
     <div className={`bk-book is-${s.spread}`}>
@@ -600,51 +561,148 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading }) {
   );
 }
 
-function Picker({ title, cards, pick, choose, grid }) {
+function Picker({ title, cards, pick, choose, extra, grid }) {
   return (
     <>
       <h3 className="bk-pg-sub is-lined">{title}</h3>
       <ul className={grid ? "bk-pick is-grid" : "bk-pick is-list"}>
-        {cards.map((c, i) => (
-          <li key={c.resource.id}>
-            <button type="button" aria-pressed={i === pick} onClick={() => choose(i)}>
-              <span className="bk-pick-pic" aria-hidden="true">
-                {c.photo ? <img src={c.photo} alt="" loading="lazy" /> : <LessonSymbol resource={c.resource} />}
-              </span>
-              <span className="bk-pick-name">{c.resource.label}</span>
-              {grid ? (
-                i === pick && <CheckCircle size={26} weight="fill" className="bk-pick-check" aria-hidden="true" />
-              ) : (
-                <CaretLeft size={20} weight="bold" aria-hidden="true" />
-              )}
-            </button>
-          </li>
-        ))}
+        {cards.map((c, i) => {
+          const photo = photoOf(c, extra);
+          const thumb = photo && <Thumb photo={photo} resource={c.resource} />;
+          return (
+            <li key={c.resource.id}>
+              <button type="button" aria-pressed={i === pick} onClick={() => choose(i)}>
+                <span className={`bk-pick-pic ${photo ? "has-photo" : ""}`} aria-hidden="true">
+                  {thumb || <LessonSymbol resource={c.resource} />}
+                </span>
+                <span className="bk-pick-name">{c.resource.label}</span>
+                {grid ? (
+                  i === pick && <CheckCircle size={26} weight="fill" className="bk-pick-check" aria-hidden="true" />
+                ) : (
+                  <CaretLeft size={20} weight="bold" aria-hidden="true" />
+                )}
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </>
   );
 }
 
-// A photo when the teacher's site file exists; until then the resource symbol.
-function Picture({ card }) {
+// A card's small photo, or its symbol if the photo cannot load.
+function Thumb({ photo, resource }) {
+  const [broken, setBroken] = useState(false);
+  return broken ? <LessonSymbol resource={resource} /> : <img src={photo.src} alt="" loading="lazy" onError={() => setBroken(true)} />;
+}
+
+// The big picture. A real photo fills the frame without being cropped (a
+// soft copy of it fills the empty sides) and opens larger on a tap; with no
+// photo yet, the resource's symbol keeps its place.
+function Picture({ card, photo: given, onZoom, mapHref, fill }) {
+  // A photo that cannot load (offline, blocked host) gives way to the symbol.
+  const [broken, setBroken] = useState("");
+  const photo = given && given.src !== broken ? given : null;
+  const video = !photo && card?.video;
   return (
-    <figure className="bk-pic">
-      {card.photo ? (
-        <img src={card.photo} alt={card.resource.label} loading="lazy" />
+    <figure className={`bk-pic ${fill ? "is-fill" : ""} ${photo ? "has-photo" : ""}`}>
+      {photo ? (
+        <button
+          key={photo.src}
+          type="button"
+          className="bk-pic-zoom"
+          onClick={() => onZoom(photo)}
+          aria-label={`تكبير صورة ${photo.alt}`}
+          style={{ "--bk-photo": `url("${photo.src}")` }}
+        >
+          <img src={photo.src} alt={photo.alt} onError={() => setBroken(photo.src)} />
+          <span className="bk-pic-hint" aria-hidden="true">
+            <MagnifyingGlassPlus size={22} weight="bold" />
+          </span>
+        </button>
+      ) : video ? (
+        <video key={video} src={video} controls preload="metadata" aria-label={`فيديو ${card.resource.label}`} />
       ) : (
-        <span className="bk-pic-symbol" aria-hidden="true">
-          <LessonSymbol resource={card.resource} />
+        <span key={card?.resource.id} className="bk-pic-symbol" aria-hidden="true">
+          {card && <LessonSymbol resource={card.resource} />}
         </span>
       )}
+      {photo?.credit && <figcaption>{photo.credit}</figcaption>}
+      {mapHref && <OnMap href={mapHref} />}
     </figure>
+  );
+}
+
+// The enlarged photo: Esc, the button or a tap outside closes it, and the
+// focus goes back to the picture that opened it.
+function Lightbox({ photo, onClose }) {
+  const close = useRef(null);
+  useEffect(() => {
+    const back = document.activeElement;
+    close.current?.focus();
+    const key = (e) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "Tab") {
+        e.preventDefault();
+        close.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", key);
+    return () => {
+      document.removeEventListener("keydown", key);
+      back?.focus?.();
+    };
+  }, [onClose]);
+  return (
+    <div className="bk-lightbox" role="dialog" aria-modal="true" aria-label={`صورة ${photo.alt}`} onClick={onClose}>
+      <figure onClick={(e) => e.stopPropagation()}>
+        <img src={photo.src} alt={photo.alt} />
+        <figcaption>
+          <strong>{photo.alt}</strong>
+          {photo.credit && <small>{photo.credit}</small>}
+        </figcaption>
+        <button ref={close} type="button" className="bk-lightbox-close" onClick={onClose} aria-label="إغلاق الصورة">
+          <X size={22} weight="bold" />
+        </button>
+      </figure>
+    </div>
   );
 }
 
 function OnMap({ href }) {
   return (
     <Link className="bk-on-map" to={href}>
-      <MapTrifold size={22} aria-hidden="true" /> شاهد على الخريطة
+      <MapTrifold size={20} aria-hidden="true" /> شاهد على الخريطة
     </Link>
+  );
+}
+
+// Lists, definitions and notes of a part, each in a soft panel.
+function Panels({ items }) {
+  if (!items?.length) return null;
+  return (
+    <div className="bk-panels">
+      {items.map((c, i) => (
+        <section key={`${c.title}-${i}`} className={`bk-panel tone-${c.tone || "blue"}`}>
+          {c.title && (
+            <h3>
+              <Lightbulb size={22} weight="duotone" aria-hidden="true" /> {c.title}
+            </h3>
+          )}
+          {c.text && <p>{c.text}</p>}
+          {c.list?.length > 0 && (
+            <ul>
+              {c.list.map((x) => (
+                <li key={x}>
+                  <CheckCircle size={20} weight="fill" aria-hidden="true" />
+                  <span>{x}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))}
+    </div>
   );
 }
 

@@ -1687,3 +1687,449 @@
     content: none;
   }
 }
+
+/* ============================================ pictures first (2026-11-19)
+   The big picture takes the free height of the text page; photos are never
+   cropped (a blurred copy fills the sides) and open larger on a tap. */
+.bk-show {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+.bk-kicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: #0b1f4d;
+  font-size: 17px;
+  font-weight: 900;
+}
+.bk-kicker::before,
+.bk-kicker::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background: #1d3a8a;
+}
+.bk-show .bk-pg-head {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.bk-pg-head h2.is-big {
+  font-size: 40px;
+  line-height: 1.2;
+}
+.bk-facts {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+.bk-facts > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 18px;
+  line-height: 1.6;
+}
+.bk-facts dt {
+  color: #1d3a8a;
+  font-weight: 900;
+}
+.bk-facts dd {
+  margin: 0;
+  color: #0b1f4d;
+  font-weight: 800;
+}
+.bk-show-text {
+  margin: 0;
+  color: #0b1f4d;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.75;
+}
+.bk-pg-lead.is-intro {
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgb(207 227 251 / 0.55);
+  font-size: 16.5px;
+}
+
+.bk-shell .bk-pic {
+  position: relative;
+  display: grid;
+  flex: 1 1 220px;
+  place-items: center;
+  min-height: 200px;
+  max-height: none;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #e3d3b2;
+  border-radius: 16px;
+  background: radial-gradient(circle at 50% 40%, #f8ecd6, #e7d3ae);
+  box-shadow: inset 0 0 0 4px rgb(255 255 255 / 0.55), 0 4px 10px rgb(90 60 10 / 0.12);
+}
+.bk-pic.is-fill {
+  flex: 1;
+  margin: -8px -10px -6px;
+}
+.bk-pic-zoom {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: #1c1a16;
+  cursor: zoom-in;
+}
+.bk-pic-zoom::before {
+  content: "";
+  position: absolute;
+  inset: -20px;
+  background: var(--bk-photo) center / cover no-repeat;
+  filter: blur(18px) brightness(0.8);
+}
+.bk-pic-zoom img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: bk-photo-in 0.35s ease-out;
+}
+.bk-pic-zoom:focus-visible {
+  outline: 3px solid #0a62d6;
+  outline-offset: -3px;
+}
+.bk-pic-hint {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.92);
+  color: #13307f;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+  transition: transform 0.15s ease;
+}
+.bk-pic-zoom:hover .bk-pic-hint {
+  transform: scale(1.08);
+}
+.bk-pic video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+.bk-shell .bk-pic-symbol {
+  width: clamp(90px, 30%, 150px);
+  height: auto;
+  aspect-ratio: 84 / 108;
+  animation: bk-photo-in 0.35s ease-out;
+}
+.bk-pic figcaption {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  max-width: 60%;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.55);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  pointer-events: none;
+}
+.bk-pic .bk-on-map {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  min-height: 42px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.95);
+  color: #13307f;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.2);
+}
+
+/* pickers: real thumbnails, a clear blue frame, a light press */
+.bk-pick button {
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+.bk-pick button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgb(11 47 87 / 0.12);
+}
+.bk-pick button:active {
+  transform: scale(0.97);
+}
+.bk-pick.is-list button[aria-pressed="true"] {
+  border-color: #1d4fc4;
+  background: #eef5ff;
+  box-shadow: 0 0 0 3px rgb(29 79 196 / 0.22);
+}
+.bk-pick.is-list .bk-pick-pic {
+  width: 64px;
+  height: 64px;
+  background: radial-gradient(circle at 50% 45%, #f7ead2, #e9d6b4);
+}
+.bk-pick-pic.has-photo > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bk-pick.is-grid .bk-pick-pic.has-photo {
+  position: relative;
+}
+.bk-pick.is-grid .bk-pick-pic.has-photo > img {
+  position: absolute;
+  inset: 0;
+}
+
+/* panels: lists and notes beside the cards */
+.bk-panels {
+  display: grid;
+  gap: 10px;
+}
+.bk-panel {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #fffdf8;
+  border: 1px solid #e6d8b8;
+  border-top: 4px solid var(--col, #1d4fc4);
+}
+.bk-panel h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  color: var(--col, #1d4fc4);
+  font-size: 19px;
+  font-weight: 900;
+}
+.bk-panel p {
+  margin: 0;
+  color: #0b1f4d;
+  font-size: 16.5px;
+  font-weight: 700;
+  line-height: 1.75;
+}
+.bk-panel ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bk-panel li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #0b1f4d;
+  font-size: 16.5px;
+  font-weight: 700;
+  line-height: 1.65;
+}
+.bk-panel li svg {
+  flex: none;
+  margin-top: 4px;
+  color: var(--col, #1d4fc4);
+}
+
+/* the contents list scrolls when a lesson has many parts; the panel takes
+   the book's height, not its own */
+@media (min-width: 981px) {
+  .bk-index {
+    height: 0;
+    min-height: 100%;
+  }
+  .bk-index ol {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
+/* turning the page: the left page swings in from the fold */
+.bk-book .bk-pg.is-left {
+  transform-origin: right center;
+  animation: bk-turn-in 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.bk-book .bk-pg.is-right {
+  animation: bk-fade-in 0.4s ease-out;
+}
+@keyframes bk-turn-in {
+  from {
+    opacity: 0.2;
+    transform: perspective(1400px) rotateY(-28deg);
+  }
+}
+@keyframes bk-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes bk-photo-in {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+/* the enlarged photo */
+.bk-lightbox {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(8 18 40 / 0.82);
+  animation: bk-fade-in 0.2s ease-out;
+}
+.bk-lightbox figure {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-width: min(1100px, 100%);
+  max-height: 100%;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #fffdf8;
+  box-shadow: 0 20px 50px rgb(0 0 0 / 0.4);
+}
+.bk-lightbox img {
+  display: block;
+  min-height: 0;
+  max-width: 100%;
+  max-height: calc(100vh - 110px);
+  object-fit: contain;
+  background: #111;
+}
+.bk-lightbox figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 16px;
+  color: #0b1f4d;
+  font-family: Cairo, system-ui, sans-serif;
+}
+.bk-lightbox figcaption strong {
+  font-size: 18px;
+}
+.bk-lightbox figcaption small {
+  color: #4a5b70;
+  font-size: 13px;
+}
+.bk-lightbox-close {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.95);
+  color: #0b1f4d;
+  cursor: pointer;
+}
+.bk-lightbox-close:focus-visible {
+  outline: 3px solid #0a62d6;
+  outline-offset: 2px;
+}
+
+@media (min-width: 981px) and (max-height: 820px) {
+  .bk-pg-head h2.is-big {
+    font-size: 34px;
+  }
+  .bk-facts > div,
+  .bk-show-text {
+    font-size: 16.5px;
+  }
+  .bk-shell .bk-pic {
+    min-height: 140px;
+  }
+  .bk-show .bk-place {
+    padding: 4px 10px;
+    font-size: 15.5px;
+  }
+}
+@media (max-width: 760px) {
+  .bk-shell .bk-pic {
+    flex: none;
+    height: min(62vw, 300px);
+    min-height: 0;
+  }
+  .bk-pic.is-fill {
+    margin: 0;
+  }
+  .bk-pg-head h2.is-big {
+    font-size: 30px;
+  }
+  .bk-show-text,
+  .bk-facts > div {
+    font-size: 16.5px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bk-book .bk-pg.is-left,
+  .bk-book .bk-pg.is-right,
+  .bk-pic-zoom img,
+  .bk-shell .bk-pic-symbol,
+  .bk-lightbox {
+    animation: none;
+  }
+  .bk-pick button,
+  .bk-pic-hint {
+    transition: none;
+  }
+  .bk-pick button:hover,
+  .bk-pick button:active {
+    transform: none;
+  }
+}
+/* long lists (four or more): two columns of smaller cards */
+@media (min-width: 761px) {
+  .bk-pick.is-list:has(> li:nth-child(4)) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .bk-pick.is-list:has(> li:nth-child(4)) button {
+    min-height: 54px;
+    padding: 6px 10px;
+    font-size: 16.5px;
+  }
+  .bk-pick.is-list:has(> li:nth-child(4)) .bk-pick-pic {
+    width: 44px;
+    height: 44px;
+  }
+  .bk-pick.is-list:has(> li:nth-child(4)) button > svg:last-child {
+    display: none;
+  }
+  .bk-pg-lead.is-intro {
+    font-size: 15.5px;
+    line-height: 1.7;
+  }
+  .bk-panel p,
+  .bk-panel li {
+    font-size: 15.5px;
+  }
+}
+/* the photo credit sits at the top so it never meets «شاهد على الخريطة» */
+.bk-shell .bk-pic figcaption {
+  top: 10px;
+  bottom: auto;
+}

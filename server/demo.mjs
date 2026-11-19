@@ -19,6 +19,8 @@ export function fullContent(id) {
 const VIDEO_ALIASES = {
   "galala-city": ["galala", "el-galala", "al-galala"],
   "gold-sukari": ["gold", "sukari", "gold-journey"],
+  // Lesson 3's Benban project shows lesson 1's Benban video (one file).
+  "benban-solar": ["solar-benban"],
 };
 function siteFiles(id, index) {
   const images = [];

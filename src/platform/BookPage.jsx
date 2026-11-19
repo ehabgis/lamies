@@ -155,7 +155,7 @@ export default function BookPage() {
     );
 
   return (
-    <Frame id={id}>
+    <Frame id={id} title={book.title}>
       <div className="bk-layout">
         <nav id="bk-index" className={`bk-index ${indexOpen ? "is-open" : ""}`} aria-label="محتويات الدرس">
           <h2>
@@ -164,31 +164,25 @@ export default function BookPage() {
               <X size={20} weight="bold" />
             </button>
           </h2>
-          <p className="bk-lesson-name">{book.title}</p>
           <ol>
             {sections.map((s, i) => {
               const Icon = ICON[s.icon] || BookOpen;
               return (
                 <li key={s.id}>
                   <button type="button" aria-current={i === at ? "step" : undefined} onClick={() => go(i)}>
-                    <Icon size={28} weight="duotone" aria-hidden="true" />
+                    <Icon size={28} aria-hidden="true" />
                     <span>{s.title}</span>
-                    <ArrowLeft size={18} aria-hidden="true" />
                   </button>
                 </li>
               );
             })}
           </ol>
           <Link className="bk-explore" to={mapHref()} onClick={() => play("project")}>
-            <MapTrifold size={22} aria-hidden="true" /> استكشف الخريطة
+            <MapPin size={24} aria-hidden="true" /> استكشف الخريطة
           </Link>
         </nav>
 
-        <main className="bk-page" aria-labelledby="bk-lesson-title">
-          <header className="bk-hero">
-            <small>كنوز مصر</small>
-            <h1 id="bk-lesson-title">{book.title}</h1>
-          </header>
+        <main className="bk-page" aria-labelledby="bk-title">
           <button
             type="button"
             className="bk-index-open"
@@ -209,7 +203,6 @@ export default function BookPage() {
             </div>
           )}
         </main>
-      </div>
 
       <footer className="bk-bar">
         <button type="button" className="bk-side-btn" onClick={() => go(at - 1)} disabled={!prev}>
@@ -242,11 +235,12 @@ export default function BookPage() {
           </button>
         )}
       </footer>
+      </div>
     </Frame>
   );
 }
 
-function Frame({ id, children }) {
+function Frame({ id, title, children }) {
   const navigate = useNavigate();
   const place = useLessonPlace();
   const lessonsHref = place.classroom ? "/journey" : LESSONS_HREF;
@@ -272,17 +266,25 @@ function Frame({ id, children }) {
           </Link>
         </nav>
       </header>
-      <nav className="bk-lessons" aria-label="دروس الوحدة الثالثة: كنوز مصر">
-        {LESSONS.map(([lid, n, name], i) => (
-          <Link key={lid} to={`${place.page}/${lid}/book`} aria-current={lid === id ? "page" : undefined} onClick={() => play("select")}>
-            <b aria-hidden="true">{i + 1}</b>
-            <span>
-              <strong>{n}</strong>
-              <small>{name}</small>
-            </span>
-          </Link>
-        ))}
-      </nav>
+      <div className="bk-headrow">
+        <header className="bk-hero">
+          <small>كنوز مصر</small>
+          <h1 id="bk-lesson-title">{title || LESSONS.find(([lid]) => lid === id)?.[2]}</h1>
+        </header>
+        <nav className="bk-lessons" aria-label="دروس الوحدة الثالثة: كنوز مصر">
+          {LESSONS.map(([lid, n, name]) => (
+            <Link
+              key={lid}
+              to={`${place.page}/${lid}/book`}
+              aria-current={lid === id ? "page" : undefined}
+              title={name}
+              onClick={() => play("select")}
+            >
+              {n}
+            </Link>
+          ))}
+        </nav>
+      </div>
       {children}
       <span className="bk-ground" aria-hidden="true" />
     </div>
@@ -441,12 +443,12 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading }) {
   const card = s.cards?.[pick] || s.cards?.[0];
   const title = (
     <div className={`bk-pg-head ${s.tone ? `tone-${s.tone}` : ""}`}>
-      <span className="bk-robot" aria-hidden="true">
-        <RobotGuide />
-      </span>
       <h2 id="bk-title" ref={heading} tabIndex={-1}>
         {s.title}
       </h2>
+      <span className="bk-robot" aria-hidden="true">
+        <RobotGuide />
+      </span>
     </div>
   );
   let right;
@@ -456,19 +458,20 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading }) {
       <>
         {title}
         <h3 className="bk-pg-sub">في نهاية الدرس أستطيع أن:</h3>
-        <ol className="bk-goals">
-          {s.columns[0].list.map((g, i) => (
-            <li key={g}>
-              <b aria-hidden="true">{i + 1}</b>
-              <span>{g}</span>
-            </li>
+        <ul className="bk-goals">
+          {s.columns[0].list.map((g) => (
+            <li key={g}>{g}</li>
           ))}
-        </ol>
+        </ul>
       </>
     );
-    left = (
+    left = s.cover ? (
+      <figure className="bk-cover">
+        <img src={s.cover} alt={`صورة تمهيدية لدرس ${s.title}`} />
+      </figure>
+    ) : (
       <>
-        <h3 className="bk-pg-sub">في هذا الدرس نتعرّف على</h3>
+        <h3 className="bk-pg-sub is-lined">في هذا الدرس نتعرّف على</h3>
         <ul className="bk-symbols">
           {s.cards.map((c) => (
             <li key={c.resource.id}>
@@ -487,12 +490,7 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading }) {
         {title}
         <p className="bk-pg-lead">{s.lead}</p>
         <div className="bk-fact" aria-live="polite">
-          <h3>
-            <span className="bk-fact-icon" aria-hidden="true">
-              <LessonSymbol resource={card.resource} />
-            </span>
-            {card.resource.label}
-          </h3>
+          <h3>{card.resource.label}</h3>
           <dl>
             <div>
               <dt>من مناطق استخراجه</dt>
@@ -503,7 +501,6 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading }) {
               <dd>{card.use}</dd>
             </div>
           </dl>
-          {card.mappable && <OnMap href={mapHref(card.resource.id)} />}
         </div>
       </>
     );
@@ -534,7 +531,7 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading }) {
     );
     left = (
       <>
-        <h3 className="bk-pg-sub">تعرّف على نوعَي الطاقة</h3>
+        <h3 className="bk-pg-sub is-lined">تعرّف على نوعَي الطاقة</h3>
         <div className="bk-kinds">
           {s.kinds.map((k) => (
             <button key={k.to} type="button" className={`bk-kind tone-${k.tone}`} onClick={() => goTo(k.to)}>
@@ -606,7 +603,7 @@ function Spread({ section: s, pick, choose, goTo, mapHref, heading }) {
 function Picker({ title, cards, pick, choose, grid }) {
   return (
     <>
-      <h3 className="bk-pg-sub">{title}</h3>
+      <h3 className="bk-pg-sub is-lined">{title}</h3>
       <ul className={grid ? "bk-pick is-grid" : "bk-pick is-list"}>
         {cards.map((c, i) => (
           <li key={c.resource.id}>

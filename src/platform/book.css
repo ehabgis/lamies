@@ -711,184 +711,491 @@
 }
 
 /* ===================================================== open book
-   2026-11-19 design: big lesson title with «كنوز مصر» above it, a narrow
-   contents list on the right, and the lesson as an open book (two cream
-   pages on a blue cover): the text page with the robot on the right, the
-   page to choose from on the left. */
-.bk-layout {
-  grid-template-columns: 250px minmax(0, 1fr);
-  padding-top: 10px;
+   2026-11-19 design (owner mockups): title row with the lesson tabs, a
+   3D open book on a blue hard cover, the contents panel as tall as the
+   book with a blue head, and a white bar under the book. */
+.bk-shell {
+  background: linear-gradient(#e4f0fd, #eef6ff 60%, #e6f1fd);
+}
+.bk-headrow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: 12px 24px 0;
 }
 .bk-hero {
-  margin: 0 0 12px;
-  text-align: center;
+  min-width: 0;
+  text-align: start;
 }
 .bk-hero small {
-  display: inline-block;
-  padding: 2px 16px;
-  border-radius: 999px;
-  background: #fff3d6;
-  color: #9a5a00;
-  font-size: 15px;
-  font-weight: 900;
+  display: block;
+  color: #4a5b70;
+  font-size: 17px;
+  font-weight: 800;
 }
 .bk-hero h1 {
-  margin: 4px 0 0;
-  color: #0b2a6b;
-  font-size: min(var(--page-title-max, 30px), 30px);
+  margin: 0;
+  color: #0b1f4d;
+  font-size: min(var(--page-title-max, 30px), 32px);
   font-weight: 900;
   line-height: 1.35;
 }
-.bk-index li button {
-  min-height: 52px;
-  font-size: 16px;
+.bk-headrow .bk-lessons {
+  flex: none;
+  gap: 10px;
+  margin: 0 0 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
 }
+.bk-headrow .bk-lessons a {
+  min-height: 44px;
+  padding: 4px 22px;
+  border: 1.5px solid #d3e2f3;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0b1f4d;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 2px 6px rgb(11 47 87 / 0.06);
+}
+.bk-headrow .bk-lessons a[aria-current="page"] {
+  border-color: #2c63c9;
+  background: #d5e7fc;
+  color: #0b1f4d;
+  box-shadow: 0 3px 0 #2c63c9;
+}
+
+/* book column + contents column; the bar sits under the book only */
+.bk-layout {
+  grid-template-columns: 270px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 18px;
+  row-gap: 14px;
+  align-items: stretch;
+  padding: 12px 24px 24px;
+}
+.bk-index {
+  grid-row: 1;
+  grid-column: 1;
+  position: static;
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 14px;
+  overflow: hidden;
+  border: 1px solid #c9dcf1;
+  border-radius: 20px;
+}
+.bk-index h2 {
+  justify-content: center;
+  padding: 14px 12px;
+  background: linear-gradient(#1f3f93, #16307a);
+  color: #ffffff;
+  font-size: 22px;
+}
+.bk-index h2 > svg {
+  display: none;
+}
+.bk-index ol {
+  padding: 8px 10px 0;
+}
+.bk-index li + li {
+  border-top: 1px solid #e3ecf6;
+}
+.bk-index li button {
+  min-height: 56px;
+  color: #0b1f4d;
+  font-size: 16.5px;
+  font-weight: 800;
+}
+.bk-index li button > svg:first-child {
+  color: #1d3a8a;
+}
+.bk-index li button[aria-current="step"] {
+  background: #cfe3fb;
+  color: #0b1f4d;
+}
+.bk-explore {
+  margin: auto 10px 0;
+  border: 1.5px solid #2c63c9;
+  background: #f4f9ff;
+  color: #0b1f4d;
+  font-size: 17px;
+}
+.bk-explore:hover {
+  background: #e3effd;
+}
+.bk-page {
+  grid-row: 1;
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+}
+
 .bk-explore {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 48px;
-  margin: 10px 6px 2px;
+  min-height: 50px;
   border-radius: 14px;
-  background: #1a5fd0;
-  color: #ffffff;
   font-weight: 900;
   text-decoration: none;
 }
-.bk-explore:hover {
-  background: #134ba8;
+.bk-pg-sub {
+  margin: 0;
+  font-weight: 900;
 }
-.bk-side-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.bk-pg-lead {
+  margin: 0;
+  line-height: 1.8;
 }
-
+.bk-fact {
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+}
+.bk-fact h3 {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-weight: 900;
+}
+.bk-fact dl {
+  display: grid;
+}
+.bk-fact dl > div {
+  display: grid;
+}
+.bk-fact dt,
+.bk-fact dd {
+  margin: 0;
+  padding: 10px 14px;
+  line-height: 1.6;
+}
+.bk-fact dt {
+  font-weight: 900;
+}
+.bk-fact dd {
+  font-weight: 800;
+}
+/* --- the 3D book --- */
 .bk-book {
   position: relative;
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  min-height: min(560px, calc(100vh - 300px));
-  padding: 12px;
-  border-radius: 28px;
-  background: linear-gradient(135deg, #2a6fd6, #134ba8);
-  box-shadow: 0 16px 34px rgb(11 47 87 / 0.18);
+  min-height: max(440px, calc(100vh - 300px));
+  padding: 12px 18px 24px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #2557b8, #163d8f 70%, #12337a);
+  box-shadow:
+    inset 0 0 0 2px rgb(255 255 255 / 0.12),
+    0 4px 0 #0e2b6a,
+    0 22px 34px -10px rgb(11 31 77 / 0.45);
 }
+/* page stacks along the outer edges and the bottom */
 .bk-pg {
   position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-width: 0;
-  padding: 22px 26px;
-  background: #fffaf0;
+  padding: 22px 28px 20px;
+  background: #fbf3e2;
 }
 .bk-pg.is-right {
-  border-radius: 4px 18px 18px 4px;
-  box-shadow: inset 18px 0 22px -18px rgb(90 60 10 / 0.35);
+  border-radius: 6px 18px 10px 6px / 6px 26px 10px 6px;
+  background: linear-gradient(to left, #fdf7ea 0%, #fbf3e2 78%, #efe2c6 100%);
+  box-shadow:
+    2px 2px 0 #f3e9d3,
+    3px 4px 0 #d9c8a6,
+    5px 6px 0 #f1e6cd,
+    6px 8px 0 #d3c19c,
+    8px 10px 0 #ece0c4;
 }
 .bk-pg.is-left {
-  border-radius: 18px 4px 4px 18px;
-  box-shadow: inset -18px 0 22px -18px rgb(90 60 10 / 0.35);
+  border-radius: 18px 6px 6px 10px / 26px 6px 6px 10px;
+  background: linear-gradient(to right, #fdf7ea 0%, #fbf3e2 78%, #efe2c6 100%);
+  box-shadow:
+    -2px 2px 0 #f3e9d3,
+    -3px 4px 0 #d9c8a6,
+    -5px 6px 0 #f1e6cd,
+    -6px 8px 0 #d3c19c,
+    -8px 10px 0 #ece0c4;
 }
-/* the spine */
+/* the gutter: a soft fold where the pages meet */
 .bk-book::after {
   content: "";
   position: absolute;
+  z-index: 2;
   top: 12px;
-  bottom: 12px;
+  bottom: 20px;
   left: 50%;
-  width: 2px;
-  translate: -1px 0;
-  background: rgb(90 60 10 / 0.18);
+  width: 46px;
+  translate: -50% 0;
+  background: linear-gradient(
+    to right,
+    rgb(120 90 40 / 0) 0%,
+    rgb(120 90 40 / 0.22) 44%,
+    rgb(70 50 20 / 0.38) 50%,
+    rgb(120 90 40 / 0.22) 56%,
+    rgb(120 90 40 / 0) 100%
+  );
+  pointer-events: none;
 }
+/* the spine below the pages */
+.bk-book::before {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 70px;
+  height: 14px;
+  translate: -50% 0;
+  border-radius: 0 0 10px 10px;
+  background: #12337a;
+}
+
+/* page heading: title, robot toward the spine, a line under it */
 .bk-pg-head {
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-.bk-pg-head.tone-green {
-  padding: 4px 12px;
-  border-radius: 18px;
-  background: #e3f5e9;
-}
-.bk-pg-head.tone-amber {
-  padding: 4px 12px;
-  border-radius: 18px;
-  background: #fff1dc;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #1d3a8a;
 }
 .bk-pg-head h2 {
+  flex: 1;
   margin: 0;
-  color: #0b2a6b;
-  font-size: 26px;
+  color: #0b1f4d;
+  font-size: 30px;
   font-weight: 900;
   outline: none;
 }
+.bk-pg-head.tone-green,
+.bk-pg-head.tone-amber {
+  padding: 4px 14px 8px;
+  border-radius: 16px 16px 0 0;
+}
+.bk-pg-head.tone-green {
+  background: #e2f4e8;
+}
+.bk-pg-head.tone-amber {
+  background: #fdf0da;
+}
 .bk-robot {
   flex: none;
-  width: 64px;
-}
-.bk-robot svg {
-  display: block;
-  width: 100%;
-  height: auto;
+  width: 72px;
+  margin-block: -18px -4px;
 }
 .bk-pg-lead {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.8;
+  font-size: 19px;
+  font-weight: 800;
+  color: #0b1f4d;
 }
 .bk-pg-sub {
-  margin: 0;
-  color: #134ba8;
-  font-size: 19px;
-  font-weight: 900;
+  color: #0b1f4d;
+  font-size: 20px;
 }
-.bk-pg-note {
-  margin: auto 0 0;
-  padding: 10px 14px;
-  border-radius: 14px;
-  background: #eef5ff;
-  font-size: 15.5px;
-  font-weight: 700;
-  line-height: 1.8;
+.bk-pg-sub.is-lined {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 28px;
+  text-align: center;
+}
+.bk-pg-sub.is-lined::before,
+.bk-pg-sub.is-lined::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background: #1d3a8a;
 }
 
-/* goals */
+/* goals: plain list with blue dots */
 .bk-goals {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  gap: 12px;
 }
 .bk-goals li {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: #ffffff;
-  border: 1px solid #e6dcc6;
-  font-size: 17px;
-  font-weight: 700;
+  position: relative;
+  display: block;
+  padding: 0 24px 0 0;
+  border: 0;
+  background: none;
+  color: #0b1f4d;
+  font-size: 19px;
+  font-weight: 800;
   line-height: 1.7;
 }
-.bk-goals b {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 32px;
-  height: 32px;
+.bk-goals li::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  right: 2px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
-  background: #1a5fd0;
-  color: #ffffff;
-  font-weight: 900;
+  background: #1d4fc4;
 }
+.bk-cover {
+  flex: 1;
+  margin: -6px -10px -4px;
+  overflow: hidden;
+  border-radius: 10px;
+}
+.bk-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bk-symbols li {
+  border-color: #e6d8b8;
+}
+
+/* choose a card: picture area on top, name under it */
+.bk-pick.is-grid {
+  gap: 16px;
+}
+.bk-pick.is-grid button {
+  gap: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid #e6d8b8;
+  background: #fffdf8;
+  box-shadow: 0 3px 8px rgb(90 60 10 / 0.12);
+}
+.bk-pick.is-grid .bk-pick-pic {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  border-radius: 0;
+  background: radial-gradient(circle at 50% 45%, #f7ead2, #e9d6b4);
+}
+.bk-shell .bk-pick.is-grid .bk-pick-pic > *:not(img) {
+  width: 46%;
+  height: 80%;
+}
+.bk-pick.is-grid .bk-pick-name {
+  padding: 8px 6px 10px;
+  font-size: 21px;
+}
+.bk-pick button[aria-pressed="true"] {
+  border-color: #1d4fc4;
+  background: #fffdf8;
+  box-shadow: 0 0 0 3px rgb(29 79 196 / 0.22);
+}
+.bk-pick-check {
+  left: auto;
+  right: 8px;
+  z-index: 1;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #1d4fc4;
+}
+
+/* the chosen mineral: name band and a two-column table */
+.bk-fact {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1.5px solid #b9d2f1;
+  background: #ffffff;
+}
+.bk-fact h3 {
+  justify-content: center;
+  padding: 8px 12px;
+  background: #cfe3fb;
+  color: #0b1f4d;
+  font-size: 32px;
+}
+.bk-fact dl {
+  gap: 8px;
+  margin: 10px;
+  border: 0;
+  overflow: visible;
+}
+.bk-fact dl > div {
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  border: 1.5px solid #b9d2f1;
+  border-radius: 12px;
+}
+.bk-fact dl > div + div {
+  border-top: 1.5px solid #b9d2f1;
+}
+.bk-fact dt {
+  background: #cfe3fb;
+  color: #0b1f4d;
+  font-size: 18px;
+}
+.bk-fact dd {
+  color: #0b1f4d;
+  font-size: 18px;
+}
+
+/* --- the bar under the book --- */
+.bk-layout > .bk-bar {
+  grid-row: 2;
+  grid-column: 2;
+  position: static;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border: 1px solid #c9dcf1;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgb(11 47 87 / 0.06);
+}
+.bk-layout > .bk-bar > * {
+  min-width: 170px;
+  min-height: 48px;
+}
+.bk-layout > .bk-bar .bk-side-btn:not(.is-next) {
+  border: 0;
+  background: none;
+  color: #0b1f4d;
+}
+.bk-layout > .bk-bar .bk-listen {
+  min-width: 240px;
+  border-radius: 14px;
+  background: #cfe3fb;
+  color: #0b1f4d;
+}
+.bk-layout > .bk-bar .bk-listen:hover:not(:disabled) {
+  background: #bcd8fa;
+}
+.bk-layout > .bk-bar .bk-side-btn.is-next {
+  border: 0;
+  border-radius: 14px;
+  background: #13307f;
+  color: #ffffff;
+}
+.bk-layout > .bk-bar .bk-side-btn.is-next:hover {
+  background: #0d2463;
+}
+.bk-ground {
+  display: none;
+}
+
+/* lessons 2 and 3: one sheet in the same frame until their pages come */
+.bk-sheet {
+  flex: 1;
+  padding: 18px 20px;
+  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid #d9e7f6;
+}
+
+/* goals left page: the lesson's symbols until the picture is added */
 .bk-symbols {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   gap: 10px;
   margin: 0;
   padding: 0;
@@ -901,25 +1208,24 @@
   gap: 4px;
   padding: 8px 4px;
   border-radius: 14px;
-  background: #ffffff;
-  border: 1px solid #e6dcc6;
+  background: #fffdf8;
+  border: 1px solid #e6d8b8;
   font-size: 14px;
   font-weight: 800;
   text-align: center;
 }
 .bk-symbols li > span {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
 }
 .bk-shell .bk-symbols li > span > *,
 .bk-shell .bk-pick-pic > *:not(img),
-.bk-shell .bk-fact-icon > *,
 .bk-shell .bk-pic-symbol > * {
   width: 100%;
   height: 100%;
 }
 
-/* choose a card */
+/* list pickers (energy sources) */
 .bk-pick {
   display: grid;
   gap: 12px;
@@ -938,29 +1244,22 @@
   width: 100%;
   min-height: 64px;
   padding: 10px 14px;
-  border: 2px solid #e6dcc6;
+  border: 2px solid #e6d8b8;
   border-radius: 18px;
-  background: #ffffff;
-  color: #0b2a6b;
+  background: #fffdf8;
+  color: #0b1f4d;
   font: inherit;
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 900;
   text-align: start;
   cursor: pointer;
 }
 .bk-pick.is-grid button {
   flex-direction: column;
-  justify-content: center;
-  min-height: 150px;
   text-align: center;
 }
 .bk-pick button:hover {
   border-color: #9cbcf0;
-}
-.bk-pick button[aria-pressed="true"] {
-  border-color: #1a5fd0;
-  background: #eef5ff;
-  box-shadow: 0 0 0 3px rgb(26 95 208 / 0.18);
 }
 .bk-pick button:focus-visible,
 .bk-kind:focus-visible {
@@ -971,14 +1270,10 @@
   display: grid;
   place-items: center;
   flex: none;
-  width: 56px;
-  height: 56px;
+  width: 58px;
+  height: 58px;
   overflow: hidden;
   border-radius: 12px;
-}
-.bk-pick.is-grid .bk-pick-pic {
-  width: 84px;
-  height: 84px;
 }
 .bk-pick-pic img {
   width: 100%;
@@ -988,72 +1283,9 @@
 .bk-pick-name {
   flex: 1;
 }
-.bk-pick.is-grid .bk-pick-name {
-  flex: none;
-}
 .bk-pick-check {
   position: absolute;
   top: 8px;
-  left: 8px;
-  color: #1a5fd0;
-}
-
-/* minerals: the chosen one's facts */
-.bk-fact {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: #ffffff;
-  border: 1px solid #e6dcc6;
-}
-.bk-fact h3 {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  font-size: 22px;
-  font-weight: 900;
-}
-.bk-fact-icon {
-  width: 40px;
-  height: 40px;
-}
-.bk-fact dl {
-  display: grid;
-  margin: 0;
-  border: 1px solid #d9e7f6;
-  border-radius: 14px;
-  overflow: hidden;
-}
-.bk-fact dl > div {
-  display: grid;
-  grid-template-columns: 42% 1fr;
-}
-.bk-fact dl > div + div {
-  border-top: 1px solid #d9e7f6;
-}
-.bk-fact dt,
-.bk-fact dd {
-  margin: 0;
-  padding: 10px 12px;
-  font-size: 17px;
-  line-height: 1.6;
-}
-.bk-fact dt {
-  background: #eef5ff;
-  color: #134ba8;
-  font-weight: 900;
-}
-.bk-fact dd {
-  font-weight: 800;
-}
-.bk-pg .bk-on-map {
-  align-self: flex-start;
-  position: static;
-  min-height: 44px;
-  padding: 4px 16px;
 }
 
 /* energy */
@@ -1070,15 +1302,15 @@
   gap: 14px;
   padding: 12px 14px;
   border-radius: 16px;
-  background: #ffffff;
-  border: 1px solid #e6dcc6;
+  background: #fffdf8;
+  border: 1px solid #e6d8b8;
   font-size: 17px;
   font-weight: 700;
   line-height: 1.7;
 }
 .bk-uses strong {
   display: block;
-  color: #134ba8;
+  color: #1d3a8a;
   font-size: 18px;
   font-weight: 900;
 }
@@ -1113,8 +1345,8 @@
   padding: 16px 18px 16px 52px;
   border: 2px solid var(--col);
   border-radius: 20px;
-  background: #ffffff;
-  color: #0b2a6b;
+  background: #fffdf8;
+  color: #0b1f4d;
   font: inherit;
   text-align: start;
   cursor: pointer;
@@ -1160,6 +1392,7 @@
 /* one energy source */
 .bk-source {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 10px;
 }
@@ -1167,30 +1400,33 @@
   align-self: flex-start;
   padding: 4px 18px;
   border-radius: 999px;
-  background: #1a5fd0;
+  background: #1d3a8a;
   color: #ffffff;
   font-size: 18px;
   font-weight: 900;
 }
 .bk-source p {
   margin: 0;
-  font-size: 17px;
+  color: #0b1f4d;
+  font-size: 18px;
   font-weight: 700;
   line-height: 1.8;
 }
 .bk-pg .bk-place {
   display: flex;
   gap: 8px;
-  color: #134ba8;
+  color: #1d3a8a;
 }
 .bk-pic {
   display: grid;
+  flex: 1 1 48px;
   place-items: center;
+  min-height: 48px;
+  max-height: 300px;
   margin: 0;
-  height: clamp(150px, 26vh, 230px);
   overflow: hidden;
-  border-radius: 16px;
-  background: #eef5ff;
+  border-radius: 14px;
+  background: radial-gradient(circle at 50% 45%, #f7ead2, #e9d6b4);
 }
 .bk-pic img {
   width: 100%;
@@ -1198,39 +1434,43 @@
   object-fit: contain;
 }
 .bk-pic-symbol {
-  width: 110px;
-  height: 110px;
+  width: 96px;
+  height: 120px;
+  max-height: 90%;
+}
+.bk-pg .bk-on-map {
+  align-self: flex-start;
+  position: static;
+  min-height: 44px;
+  padding: 4px 16px;
 }
 
-/* roles */
-.bk-roles {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: #ffffff;
-  border-top: 5px solid var(--col);
+/* roles: both pages share rows, so the two headings line up */
+.bk-book.is-roles {
+  grid-template-rows: auto 1fr;
 }
-@media (min-width: 761px) {
-  .bk-book.is-roles {
-    grid-template-rows: auto 1fr;
-  }
-  .bk-book.is-roles .bk-pg {
-    display: grid;
-    grid-row: span 2;
-    grid-template-rows: subgrid;
-    align-content: start;
-    row-gap: 12px;
-  }
-  .bk-book.is-roles .bk-roles {
-    align-self: start;
-  }
+.bk-book.is-roles .bk-pg {
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  align-content: start;
+  row-gap: 12px;
 }
 .bk-roles-top {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+.bk-roles {
+  display: flex;
+  flex-direction: column;
+  align-self: start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #fffdf8;
+  border-top: 5px solid var(--col);
+  box-shadow: 0 3px 8px rgb(90 60 10 / 0.1);
 }
 .bk-roles h3 {
   display: flex;
@@ -1238,7 +1478,7 @@
   gap: 10px;
   margin: 0;
   color: var(--col);
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 900;
 }
 .bk-roles ul {
@@ -1252,7 +1492,8 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  font-size: 17px;
+  color: #0b1f4d;
+  font-size: 18px;
   font-weight: 700;
   line-height: 1.7;
 }
@@ -1261,119 +1502,188 @@
   margin-top: 4px;
   color: var(--col);
 }
-
-/* lessons 2 and 3: one sheet on the same frame until their pages come */
-.bk-sheet {
-  padding: 18px 20px;
-  border-radius: 24px;
-  background: #ffffff;
-  border: 1px solid #d9e7f6;
+.bk-fact,
+.bk-source {
+  scroll-margin-top: 16px;
 }
 
-@media (max-width: 980px) {
+/* laptop widths: the title row, book and bar fit one screen */
+@media (min-width: 981px) and (max-height: 820px) {
+  .bk-headrow {
+    padding-top: 6px;
+  }
+  .bk-hero small {
+    font-size: 14px;
+  }
+  .bk-book {
+    min-height: max(420px, calc(100vh - 262px));
+  }
+  .bk-pg {
+    gap: 10px;
+    padding: 16px 24px 14px;
+  }
+  .bk-pg-head h2 {
+    font-size: 26px;
+  }
+  .bk-robot {
+    width: 62px;
+    margin-block: -14px -4px;
+  }
+  .bk-pg-sub.is-lined {
+    font-size: 24px;
+  }
+  .bk-goals li,
+  .bk-pg-lead {
+    font-size: 17px;
+  }
+  .bk-pick.is-grid .bk-pick-name {
+    padding: 4px 6px 6px;
+    font-size: 19px;
+  }
+  .bk-pick.is-grid .bk-pick-pic {
+    aspect-ratio: 16 / 9;
+  }
+  .bk-fact h3 {
+    padding: 4px 12px;
+    font-size: 26px;
+  }
+  .bk-fact dt,
+  .bk-fact dd {
+    padding: 8px 12px;
+    font-size: 17px;
+  }
   .bk-layout {
-    grid-template-columns: 1fr;
+    padding-top: 8px;
+    row-gap: 10px;
+  }
+  .bk-index li button {
+    min-height: 50px;
   }
 }
-/* Phones and narrow tablets: the pages stack (text first). */
+
+/* tablets and phones: contents become a drawer, the bar stays at the
+   bottom of the screen, the book's pages stack */
+@media (max-width: 980px) {
+  .bk-headrow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 12px 0;
+  }
+  .bk-headrow .bk-lessons {
+    align-self: center;
+  }
+  .bk-layout {
+    grid-template-columns: 1fr;
+    padding: 10px 12px 100px;
+  }
+  .bk-page {
+    grid-column: 1;
+  }
+  .bk-index {
+    position: fixed;
+    padding-bottom: 14px;
+  }
+  .bk-index h2 {
+    justify-content: space-between;
+  }
+  .bk-index-close {
+    color: #ffffff;
+  }
+  .bk-layout > .bk-bar {
+    position: fixed;
+    z-index: 20;
+    inset: auto 8px 8px;
+    grid-row: auto;
+    grid-column: auto;
+  }
+  .bk-layout > .bk-bar > * {
+    min-width: 0;
+  }
+}
 @media (max-width: 760px) {
   .bk-book {
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 10px;
     min-height: 0;
-    padding: 8px;
-    border-radius: 22px;
+    padding: 8px 8px 14px;
   }
-  .bk-book::after {
+  .bk-book::after,
+  .bk-book::before {
     display: none;
   }
   .bk-pg,
   .bk-pg.is-right,
   .bk-pg.is-left {
     padding: 16px 14px;
-    border-radius: 16px;
-    box-shadow: none;
+    border-radius: 12px;
+    box-shadow: 0 3px 0 #e3d4b4;
+  }
+  .bk-book.is-roles {
+    grid-template-rows: none;
+  }
+  .bk-book.is-roles .bk-pg {
+    display: flex;
+    grid-row: auto;
   }
   .bk-pg.is-left .bk-roles-top {
     display: none;
   }
   .bk-pg-head h2 {
-    font-size: 22px;
+    font-size: 23px;
   }
   .bk-robot {
-    width: 50px;
+    width: 60px;
+    margin-block: -14px -4px;
   }
-  .bk-pick.is-grid button {
-    min-height: 120px;
+  .bk-pg-sub.is-lined {
+    font-size: 22px;
   }
-  .bk-pick.is-grid .bk-pick-pic {
-    width: 64px;
-    height: 64px;
+  .bk-fact h3 {
+    font-size: 24px;
   }
   .bk-fact dl > div {
     grid-template-columns: 1fr;
   }
-}
-
-/* Laptop heights: the whole open book fits above the bottom bar. */
-@media (min-width: 761px) {
-  .bk-lessons {
-    margin-top: 8px;
+  .bk-headrow .bk-lessons a {
+    padding: 4px 12px;
+    font-size: 14px;
   }
-  .bk-lessons a {
-    min-height: 46px;
+  .bk-layout > .bk-bar {
+    gap: 6px;
+    padding: 6px;
   }
-  .bk-hero {
-    margin-bottom: 8px;
-  }
-  .bk-hero small {
-    font-size: 13px;
-  }
-  .bk-hero h1 {
-    margin-top: 2px;
-    font-size: min(var(--page-title-max, 28px), 28px);
-  }
-  .bk-pg {
-    gap: 10px;
-    padding: 16px 22px;
-  }
-  .bk-robot {
-    width: 54px;
-  }
-  .bk-goals li {
-    padding: 7px 12px;
-    font-size: 16px;
-    line-height: 1.6;
-  }
-  .bk-symbols {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-  .bk-symbols li {
-    font-size: 13px;
-  }
-  .bk-symbols li > span {
-    width: 44px;
-    height: 44px;
-  }
-  .bk-pic {
-    height: clamp(110px, calc(100vh - 560px), 230px);
-  }
-}
-@media (min-width: 761px) {
-  .bk-book {
-    min-height: max(420px, calc(100vh - 292px));
-  }
-  .bk-source {
+  .bk-layout > .bk-bar > * {
     flex: 1;
+    padding: 4px 8px;
+    font-size: 14px;
   }
-  .bk-shell .bk-pic {
-    flex: 1 1 66px;
-    height: auto;
-    min-height: 66px;
-    max-height: 300px;
+  .bk-layout > .bk-bar .bk-listen {
+    min-width: 0;
   }
 }
-.bk-fact,
-.bk-source {
-  scroll-margin-top: 16px;
+.bk-robot svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+@media (max-width: 640px) {
+  .bk-headrow .bk-lessons {
+    align-self: stretch;
+    gap: 6px;
+  }
+  .bk-headrow .bk-lessons a {
+    flex-direction: row;
+    justify-content: center;
+    min-height: 44px;
+    padding: 4px 8px;
+    white-space: nowrap;
+  }
+  /* the bar's buttons keep their own words */
+  .bk-layout > .bk-bar .bk-side-btn.is-next {
+    font-size: 14px;
+  }
+  .bk-layout > .bk-bar .bk-side-btn.is-next::before {
+    content: none;
+  }
 }

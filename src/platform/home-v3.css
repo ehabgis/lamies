@@ -1075,3 +1075,211 @@
 .home-v3 .hv-say p {
   margin: 0;
 }
+
+/* ---- computers: the whole start page fits one screen (2026-11-20) ----
+   Smaller title, cards and journey; sizes follow the screen height so a
+   laptop and a large monitor both show everything without scrolling. */
+@media (min-width: 1181px) {
+  .hv-top {
+    padding: 8px 0;
+  }
+  .hv-nav a,
+  .hv-chip {
+    min-height: 40px;
+  }
+  .hv-chip.is-round {
+    width: 40px;
+  }
+  .hv-main {
+    gap: clamp(8px, 1.4vh, 14px);
+  }
+  .hv-hero {
+    min-height: 0;
+    height: clamp(190px, 31vh, 330px);
+    border-radius: 24px;
+  }
+  .hv-hero-text {
+    gap: clamp(6px, 1vh, 10px);
+    padding: 12px 18px 22px;
+  }
+  .hv-cloud {
+    padding: clamp(8px, 1.4vh, 14px) clamp(18px, 1.8vw, 26px);
+    border-radius: 32px;
+    font-size: clamp(15px, 1.15vw, 19px);
+  }
+  .hv-cloud strong {
+    font-size: clamp(19px, 1.6vw, 26px);
+  }
+  .hv-motto {
+    padding: 5px 16px;
+    font-size: clamp(14px, 1.05vw, 17px);
+  }
+  .hv-lead {
+    font-size: 14px;
+  }
+  .hv-hero-art {
+    width: min(100%, calc(clamp(190px, 31vh, 330px) * 1180 / 990));
+    margin-inline-end: 3%;
+  }
+  .hv-say.hv-say {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+  .hv-cards {
+    gap: 12px;
+  }
+  .hv-card {
+    min-height: 0;
+    height: clamp(128px, 21vh, 210px);
+    padding: 10px 10px 12px;
+    border-radius: 22px;
+  }
+  .hv-card-art svg {
+    width: auto;
+    height: clamp(52px, 10vh, 110px);
+  }
+  .hv-card-text {
+    padding: 6px 10px;
+    border-radius: 14px;
+  }
+  .hv-card-text strong {
+    font-size: clamp(15px, 1.2vw, 19px);
+  }
+  .hv-card-text small {
+    font-size: 12.5px;
+  }
+  .hv-card-go {
+    top: 10px;
+    left: 10px;
+    width: 28px;
+    height: 28px;
+  }
+  .hv-path {
+    padding: 10px 16px 12px;
+    border-radius: 22px;
+  }
+  .hv-path > header {
+    margin-bottom: 6px;
+  }
+  .hv-path h2 {
+    font-size: 19px;
+  }
+  .hv-path .hv-go.is-small {
+    min-height: 38px;
+    font-size: 15px;
+  }
+  .hv-stop {
+    width: clamp(42px, 6vh, 60px);
+    height: clamp(42px, 6vh, 60px);
+    border-width: 3px;
+  }
+  .hv-stop svg {
+    width: 24px;
+    height: 24px;
+  }
+  .hv-road::before {
+    top: calc(clamp(42px, 6vh, 60px) / 2 - 6px);
+    height: 12px;
+  }
+  .hv-road a {
+    gap: 2px;
+    padding-bottom: 0;
+  }
+  .hv-stop-text {
+    grid-auto-flow: row;
+  }
+  .hv-stop-text b {
+    font-size: 14.5px;
+  }
+  .hv-stop-text small,
+  .hv-stop-text em {
+    font-size: 12px;
+  }
+  /* the explorer's panel keeps to the same height */
+  .hv-me {
+    gap: clamp(6px, 1vh, 12px);
+    padding: 12px;
+  }
+  .hv-me-head img {
+    width: clamp(54px, 8vh, 78px);
+    height: clamp(54px, 8vh, 78px);
+  }
+  .hv-me-head h2 {
+    font-size: 19px;
+  }
+  .hv-me-head h2 span {
+    font-size: 22px;
+  }
+  .hv-me-box {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .hv-name input {
+    min-height: 44px;
+  }
+  .hv-go {
+    min-height: 46px;
+    font-size: 17px;
+  }
+  .hv-progress,
+  .hv-stats li,
+  .hv-fresh {
+    padding: 7px 12px;
+    font-size: 14px;
+  }
+  .hv-stats ul {
+    gap: 6px;
+  }
+  .hv-link {
+    min-height: 40px;
+    font-size: 14px;
+  }
+  .hv-more {
+    gap: 6px;
+  }
+}
+@media (min-width: 1181px) {
+  .home-v3 {
+    padding-bottom: 10px;
+  }
+}
+@media (min-width: 1181px) and (max-height: 800px) {
+  .hv-lead {
+    display: none;
+  }
+  .hv-note {
+    font-size: 11.5px;
+  }
+}
+/* the welcome's two lines, smaller and steady whatever older heading rules say */
+.home-v3 .hv-cloud > span {
+  font-size: clamp(16px, 1.25vw, 20px);
+  line-height: 1.4;
+}
+.home-v3 .hv-cloud > strong {
+  font-size: clamp(19px, 1.6vw, 26px);
+  line-height: 1.35;
+}
+@media (max-width: 640px) {
+  .home-v3 .hv-cloud > span {
+    font-size: 17px;
+  }
+  .home-v3 .hv-cloud > strong {
+    font-size: 21px;
+  }
+}
+@media (min-width: 1181px) and (max-height: 740px) {
+  .hv-me-head img {
+    width: 48px;
+    height: 48px;
+  }
+  .hv-fresh {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}
+@media (min-width: 1181px) {
+  .home-v3 .hv-main {
+    padding-block: 4px 0;
+  }
+}

@@ -560,7 +560,7 @@ function untilt(e) {
   e.currentTarget.style.setProperty("--ty", 0);
 }
 
-// Egypt behind the welcome: sky, sun, the Nile with a felucca, palms and the
+// Egypt behind the welcome: sky, sun, the Nile with a felucca and the
 // pyramids, each on its own depth for the parallax.
 function HeroScenery() {
   return (
@@ -601,12 +601,6 @@ function HeroScenery() {
           <path d="M-30 18 h60 l-10 10 h-40z" fill="#8a5a33" />
           <path d="M0 18 V-30 L28 12z" fill="#fff" stroke="#d9e2ec" />
         </g>
-        {[40, 470, 1160].map((x, i) => (
-          <g key={x} transform={`translate(${x} 296) scale(${i === 1 ? 0.6 : 0.85})`}>
-            <path d="M0 0 Q4 -40 0 -70" stroke="#8a5a33" strokeWidth="6" fill="none" />
-            <path d="M0 -70 q-30 -6 -44 10 q24 -10 44 -4 M0 -70 q30 -8 44 8 q-24 -8 -44 -2 M0 -70 q-10 -24 -32 -26 q20 10 32 24 M0 -70 q12 -24 34 -24 q-20 10 -34 22" fill="#3f9b4a" stroke="#3f9b4a" strokeWidth="3" />
-          </g>
-        ))}
       </g>
     </svg>
   );

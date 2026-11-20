@@ -1283,3 +1283,30 @@
     padding-block: 4px 0;
   }
 }
+
+/* ---- 2026-11-20: a bigger welcome picture, and the explorer's panel as
+   tall as the column beside it ---- */
+@media (min-width: 1181px) {
+  .hv-hero {
+    height: clamp(220px, 37vh, 400px);
+  }
+  .hv-hero-art {
+    width: min(100%, calc(clamp(220px, 37vh, 400px) * 1.06 * 1180 / 990));
+    margin-bottom: -2%;
+  }
+  .hv-card {
+    height: clamp(118px, 18vh, 190px);
+  }
+  .hv-card-art svg {
+    height: clamp(46px, 8.2vh, 96px);
+  }
+  .hv-me {
+    align-self: stretch;
+    grid-template-rows: auto auto auto 1fr auto;
+    align-content: start;
+  }
+  /* the sign-in links sit at the bottom of the panel */
+  .hv-more {
+    align-self: end;
+  }
+}

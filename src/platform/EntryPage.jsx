@@ -2,28 +2,19 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   BookOpen,
-  Compass,
   ArrowLeft,
   User,
   Lock,
   Play,
-  Sparkle,
+  GameController,
   SpeakerHigh,
   SpeakerSlash,
   ArrowCounterClockwise,
   Users,
   House,
   MapTrifold,
-  Star,
-  Medal,
-  Flag,
-  CaretLeft,
   Path,
-  CheckCircle,
-  Trophy,
-  Diamond,
-  Drop,
-  Buildings,
+  Check,
 } from "phosphor-react";
 import "./entry-experience.css";
 import "./platform-polish.css";
@@ -34,7 +25,7 @@ import { useSession } from "./Session";
 import BrandMark from "./BrandMark";
 import { play } from "./sfx";
 import * as narrator from "./narrator";
-import { loadGuest, saveGuest, savedProgress } from "./guestProfile";
+import { loadGuest, saveGuest } from "./guestProfile";
 import WelcomeArt from "./WelcomeArt";
 import { readAchievements } from "./achievements";
 import { LESSONS_HREF } from "./links";
@@ -48,7 +39,6 @@ export default function EntryPage() {
   const [guest, setGuest] = useState(loadGuest);
   const [accountOpen, setAccountOpen] = useState(false);
   const [asParent, setAsParent] = useState(false);
-  const resume = savedProgress();
   const welcome = "أهلًا يا مستكشف، اكتب اسمك ثم اضغط ابدأ المغامرة.";
   const [voice, setVoice] = useState(narrator.getSettings());
   // The robot's welcome: its bubble shows while it speaks, then fades; the
@@ -165,9 +155,25 @@ export default function EntryPage() {
     saveGuest(guest);
     play("open");
   };
-  const unitDone = a.journeysDone + a.mapsDone;
-  const percent = Math.round((unitDone / (a.journeys.length + a.maps.length)) * 100);
   const next = a.next;
+  // One yellow button: «ابدأ المغامرة» before the first journey, then
+  // «أكمل رحلتي», which opens the part the explorer stopped at (each journey
+  // resumes from its own saved place).
+  const resumeHref = next ? next.href : "/achievements";
+  function continueJourney() {
+    if (!user && !String(guest.name || "").trim()) {
+      setNameError("اكتب اسمك أولًا يا مستكشف");
+      nameRef.current?.focus();
+      return;
+    }
+    narrator.stop();
+    if (!user) saveGuest(guest);
+    play("open");
+    navigate(resumeHref);
+  }
+  const total = a.journeys.length;
+  const done = a.journeysDone;
+  const first = savedName.trim().split(/\s+/)[0];
   return (
     <div className="lamis-platform home-v3" dir="rtl">
       <header className="hv-top">
@@ -185,18 +191,11 @@ export default function EntryPage() {
           <Link to="/demo/lesson-1" onClick={enter("/demo/lesson-1")}>
             <MapTrifold size={22} weight="duotone" aria-hidden="true" /> <span>الخريطة التفاعلية</span>
           </Link>
+          <Link to="/demo/trips" onClick={enter("/demo/trips")}>
+            <GameController size={22} weight="duotone" aria-hidden="true" /> <span>الأنشطة التفاعلية</span>
+          </Link>
         </nav>
         <div className="hv-tools">
-          <Link to="/achievements" className="hv-chip is-star" title="نجومي في إنجازاتي" onClick={enter("/achievements")}>
-            <Star size={22} weight="fill" aria-hidden="true" />
-            {a.stars > 0 ? (
-              <span>
-                {a.stars} <small>نجمة</small>
-              </span>
-            ) : (
-              <span>نجومي</span>
-            )}
-          </Link>
           {voice.available && (
             <button
               type="button"
@@ -220,10 +219,7 @@ export default function EntryPage() {
               <span>مرحبًا بك في عالم</span>
               <strong>الخرائط التعليمية الذكية</strong>
             </h1>
-            <p className="hv-motto">
-              <Sparkle size={20} weight="fill" aria-hidden="true" /> اكتشف • تعلّم • تفاعل
-            </p>
-            <p className="hv-lead">مصر مليئة بالكنوز… هل أنت مستعد لاكتشافها؟</p>
+            <p className="hv-lead">هل أنت مستعد لاكتشاف كنوز مصر؟</p>
           </div>
           <div className="hv-hero-art">
             <WelcomeArt resting={typed} greeting={greeting && !blocked} />
@@ -246,10 +242,7 @@ export default function EntryPage() {
         <aside className="hv-me" aria-labelledby="hv-me-title">
           <div className="hv-me-head">
             <img src="/welcome/kid-explorer.webp" alt="" width="84" height="84" loading="lazy" onError={(e) => (e.currentTarget.hidden = true)} />
-            <h2 id="hv-me-title">
-              مرحبًا بك
-              <span>{savedName ? `يا ${savedName.trim().split(/\s+/)[0]}!` : "يا بطل!"}</span>
-            </h2>
+            <h2 id="hv-me-title">{first ? `مرحبًا يا ${first}!` : "مرحبًا يا بطل!"}</h2>
           </div>
           {user ? (
             <div className="hv-me-box">
@@ -258,13 +251,13 @@ export default function EntryPage() {
                 className="hv-go"
                 to={user.role === "student" ? "/journey" : user.role === "parent" ? "/parent" : "/admin"}
               >
-                تابع رحلتك <ArrowLeft size={20} aria-hidden="true" />
+                <Play size={22} weight="fill" aria-hidden="true" /> أكمل رحلتي
               </Link>
             </div>
           ) : (
             <div className="hv-me-box">
               <label className="hv-name">
-                <span>ما اسمك؟</span>
+                <span>اسم الطالب</span>
                 <input
                   ref={nameRef}
                   value={guest.name || ""}
@@ -281,7 +274,7 @@ export default function EntryPage() {
                       setPulse((n) => n + 1);
                     }
                   }}
-                  onKeyDown={(e) => e.key === "Enter" && startAdventure()}
+                  onKeyDown={(e) => e.key === "Enter" && (a.started ? continueJourney() : startAdventure())}
                 />
               </label>
               {nameError && (
@@ -289,74 +282,58 @@ export default function EntryPage() {
                   {nameError}
                 </p>
               )}
-              <button type="button" key={pulse} className={`hv-go ${pulse ? "is-pulse" : ""}`} onClick={startAdventure}>
-                <Play size={22} weight="fill" aria-hidden="true" /> ابدأ المغامرة
+              <button
+                type="button"
+                key={pulse}
+                className={`hv-go ${pulse ? "is-pulse" : ""}`}
+                onClick={a.started ? continueJourney : startAdventure}
+              >
+                <Play size={22} weight="fill" aria-hidden="true" /> {a.started ? "أكمل رحلتي" : "ابدأ المغامرة"}
               </button>
-              {resume && (
-                <Link to={resume.href} className="hv-resume" onClick={enter(resume.href)}>
-                  أكمل رحلتك: {resume.label} ({resume.done} موارد مكتشفة) <ArrowLeft size={18} aria-hidden="true" />
-                </Link>
-              )}
             </div>
           )}
-          {a.started ? (
-            <div className="hv-stats">
-              <div className="hv-progress">
-                <span>تقدّمك في وحدة «كنوز مصر»</span>
-                <span className="hv-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label="تقدّمك في الوحدة">
-                  <span style={{ width: `${Math.max(percent, 4)}%` }} />
-                </span>
-                <b>{percent}%</b>
-              </div>
-              <ul>
-                <li>
-                  <Star size={28} weight="fill" aria-hidden="true" className="is-gold" />
-                  <b>{a.stars}</b> نجمة
-                </li>
-                <li>
-                  <Medal size={28} weight="fill" aria-hidden="true" className="is-purple" />
-                  <b>{a.badges.filter((x) => x.earned).length}</b> شارة
-                </li>
-                <li>
-                  <Flag size={28} weight="fill" aria-hidden="true" className="is-green" />
-                  <b>
-                    {a.journeysDone} من {a.journeys.length}
-                  </b>{" "}
-                  رحلات مكتملة
-                </li>
-              </ul>
-            </div>
-          ) : (
-            <p className="hv-fresh">
-              <Compass size={24} weight="duotone" aria-hidden="true" /> رحلتك تبدأ الآن: كل نجمة تجمعها في الرحلات تظهر هنا.
+          <div className="hv-count">
+            <span
+              className={`hv-bar ${done ? "" : "is-empty"}`}
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={total}
+              aria-valuenow={done}
+              aria-label="الرحلات المكتملة"
+            >
+              <span style={{ width: `${(done / total) * 100}%` }} />
+            </span>
+            <p>
+              <b>{ar(done)}</b> من {ar(total)} رحلات مكتملة
             </p>
-          )}
-          <p className="hv-note">دون حساب · يُحفظ تقدمك على هذا الجهاز فقط · تجربة غير معتمدة</p>
-          {!user && (
-            <div className="hv-more">
-              <button type="button" className="hv-link" onClick={() => setAccountOpen(true)}>
-                <User size={20} aria-hidden="true" /> لديّ حساب أو أريد حسابًا لحفظ نتائجي
-              </button>
-              <Link to="/parent" className="hv-link">
-                <Users size={20} aria-hidden="true" /> متابعة ولي الأمر
+          </div>
+          <div className="hv-more">
+            {user ? (
+              <Link
+                to={user.role === "student" ? "/journey" : user.role === "parent" ? "/parent" : "/admin"}
+                className="hv-link"
+              >
+                <User size={22} aria-hidden="true" /> حسابي
               </Link>
-            </div>
-          )}
+            ) : (
+              <button type="button" className="hv-link" onClick={() => setAccountOpen(true)}>
+                <User size={22} aria-hidden="true" /> حسابي
+              </button>
+            )}
+            <Link to="/parent" className="hv-link">
+              <Users size={22} aria-hidden="true" /> حساب ولي الأمر
+            </Link>
+            {!user && <p className="hv-note">دون حساب يُحفظ تقدمك على هذا الجهاز فقط · تجربة غير معتمدة</p>}
+          </div>
         </aside>
 
         <nav className="hv-cards" aria-label="ابدأ من هنا">
           {CARDS.map((c) => (
-            <Link key={c.id} to={c.href} className={`hv-card is-${c.id}`} onClick={enter(c.href)} onPointerMove={tilt} onPointerLeave={untilt}>
+            <Link key={c.id} to={c.href} className={`hv-card is-${c.id}`} title={c.text} onClick={enter(c.href)}>
               <span className="hv-card-art" aria-hidden="true">
                 <c.Art />
               </span>
-              <span className="hv-card-text">
-                <strong>{c.title}</strong>
-                <small>{c.id === "awards" && a.stars > 0 ? `معك ${a.stars} نجمة` : c.text}</small>
-              </span>
-              <span className="hv-card-go" aria-hidden="true">
-                <CaretLeft size={20} weight="bold" />
-              </span>
+              <strong className="hv-card-title">{c.title}</strong>
             </Link>
           ))}
         </nav>
@@ -366,41 +343,34 @@ export default function EntryPage() {
             <h2 id="hv-path-title">
               <Path size={28} weight="duotone" aria-hidden="true" /> رحلتي التعليمية
             </h2>
-            <span className="hv-unit">الوحدة الحالية: كنوز مصر</span>
-            {next && (
-              <Link to={next.href} className="hv-go is-small" onClick={enter(next.href)}>
-                {a.started ? "أكمل رحلتي" : "ابدأ رحلتي"} <ArrowLeft size={18} aria-hidden="true" />
-              </Link>
-            )}
           </header>
           <ol className="hv-road">
             {a.journeys.map((j, i) => {
-              const Mark = STOP_ICONS[i];
               const now = next?.id === j.id && next.href === j.href;
               return (
                 <li key={j.id} className={`is-${j.status} ${now ? "is-now" : ""}`} style={{ "--i": i }}>
                   <Link to={j.href} onClick={enter(j.href)} aria-current={now ? "step" : undefined}>
                     <span className="hv-stop" aria-hidden="true">
-                      {j.done ? <CheckCircle size={30} weight="fill" /> : <Mark size={28} weight="duotone" />}
+                      {j.done && <Check size={16} weight="bold" />}
                     </span>
                     <span className="hv-stop-text">
-                      <small>{j.lesson}</small>
-                      <b>{j.title}</b>
-                      <em>{now && j.status === "new" ? "محطتك التالية" : STATUS[j.status]}</em>
+                      <b>{STOP_NAMES[i]}</b>
+                      <span className="hv-sr">
+                        {j.lesson}: {now && j.status === "new" ? "محطتك التالية" : STATUS[j.status]}
+                      </span>
                     </span>
                   </Link>
                 </li>
               );
             })}
-            <li className={`is-flag ${a.journeysDone === a.journeys.length ? "is-done" : ""}`} style={{ "--i": 3 }}>
+            <li className={`is-flag ${done === total ? "is-done" : ""}`} style={{ "--i": 3 }}>
               <Link to="/achievements" onClick={enter("/achievements")}>
                 <span className="hv-stop" aria-hidden="true">
-                  <Trophy size={28} weight="duotone" />
+                  {done === total && <Check size={16} weight="bold" />}
                 </span>
                 <span className="hv-stop-text">
-                  <small>نهاية الوحدة</small>
                   <b>شهاداتي</b>
-                  <em>{a.journeysDone === a.journeys.length ? "مكتملة" : "شهادة لكل رحلة تكملها"}</em>
+                  <span className="hv-sr">نهاية الوحدة: {done === total ? "مكتملة" : "شهادة لكل رحلة تكملها"}</span>
                 </span>
               </Link>
             </li>
@@ -549,19 +519,10 @@ function still(e) {
   e.currentTarget.style.setProperty("--px", 0);
   e.currentTarget.style.setProperty("--py", 0);
 }
-function tilt(e) {
-  if (calm()) return;
-  const r = e.currentTarget.getBoundingClientRect();
-  e.currentTarget.style.setProperty("--tx", ((e.clientX - r.left) / r.width - 0.5).toFixed(3));
-  e.currentTarget.style.setProperty("--ty", ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
-}
-function untilt(e) {
-  e.currentTarget.style.setProperty("--tx", 0);
-  e.currentTarget.style.setProperty("--ty", 0);
-}
+const ar = (n) => Number(n).toLocaleString("ar-EG");
 
-// Egypt behind the welcome: sky, sun, the Nile with a felucca and the
-// pyramids, each on its own depth for the parallax.
+// Egypt behind the welcome: a light-blue sky, sand and the pyramids
+// (bottom right).
 function HeroScenery() {
   return (
     <svg className="hv-scene" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
@@ -570,23 +531,8 @@ function HeroScenery() {
           <stop offset="0" stopColor="#bfe2ff" />
           <stop offset="1" stopColor="#eef7ff" />
         </linearGradient>
-        <linearGradient id="hv-nile" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#4aa3e8" />
-          <stop offset="1" stopColor="#7cc4f5" />
-        </linearGradient>
       </defs>
       <rect width="1200" height="360" fill="url(#hv-sky)" />
-      <g className="hv-far">
-        <circle cx="980" cy="70" r="38" fill="#ffe08a" />
-        <g className="hv-cloud-a" fill="#fff" opacity="0.9">
-          <ellipse cx="300" cy="60" rx="60" ry="18" />
-          <ellipse cx="340" cy="48" rx="38" ry="20" />
-        </g>
-        <g className="hv-cloud-b" fill="#fff" opacity="0.8">
-          <ellipse cx="760" cy="40" rx="50" ry="14" />
-          <ellipse cx="790" cy="30" rx="30" ry="16" />
-        </g>
-      </g>
       <g className="hv-mid">
         <path d="M860 280 L960 150 L1060 280z" fill="#e9c27a" />
         <path d="M960 150 L1060 280 H990z" fill="#d4a55a" />
@@ -595,13 +541,6 @@ function HeroScenery() {
         <path d="M790 280 L840 222 L890 280z" fill="#efcf90" />
       </g>
       <path d="M0 290 Q300 262 600 286 T1200 282 V360 H0z" fill="#f3dfb4" />
-      <path className="hv-nile" d="M0 312 Q260 292 520 312 T1000 308 T1200 318 V340 Q900 330 600 338 T0 336z" fill="url(#hv-nile)" />
-      <g className="hv-near">
-        <g className="hv-boat" transform="translate(150 286)">
-          <path d="M-30 18 h60 l-10 10 h-40z" fill="#8a5a33" />
-          <path d="M0 18 V-30 L28 12z" fill="#fff" stroke="#d9e2ec" />
-        </g>
-      </g>
     </svg>
   );
 }
@@ -660,4 +599,5 @@ const CARDS = [
   { id: "play", title: "الأنشطة التفاعلية", text: "رحلات استكشاف ومهام ممتعة", href: "/demo/trips", Art: PlayArt },
   { id: "awards", title: "جوائزي وإنجازاتي", text: "نجومك وشاراتك وشهاداتك", href: "/achievements", Art: TrophyArt },
 ];
-const STOP_ICONS = [Diamond, Drop, Buildings];
+// The journey's stops as the start page names them, right to left.
+const STOP_NAMES = ["الخامات المعدنية ومصادر الطاقة", "المياه في مصر", "المشروعات القومية"];

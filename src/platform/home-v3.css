@@ -1310,3 +1310,320 @@
     align-self: end;
   }
 }
+
+/* ---- 2026-11-22: calmer start page ----
+   White doors with a light-blue edge, one yellow button in the explorer's
+   panel, a grey journey line with the current stop in blue. */
+.hv-hero-text {
+  padding-bottom: 40px;
+}
+.hv-lead {
+  padding: 6px 18px;
+  background: rgb(255 255 255 / 0.85);
+  color: var(--hv-navy);
+}
+
+/* the explorer's panel */
+.hv-me {
+  align-content: start;
+  background: #fff;
+  border-color: #d6e6f7;
+}
+.hv-me-head h2 {
+  color: var(--hv-royal);
+}
+.hv-me-box {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.hv-count {
+  display: grid;
+  gap: 8px;
+  padding-block: 4px 12px;
+  border-bottom: 1px solid #e3ecf6;
+}
+.hv-count .hv-bar {
+  display: block;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e1e7ef;
+}
+.hv-count .hv-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3d8bff, #1d5fd6);
+  transition: width 0.6s var(--hv-ease);
+}
+.hv-count .hv-bar.is-empty > span {
+  display: none;
+}
+.hv-count p {
+  margin: 0;
+  color: var(--hv-navy);
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+}
+.hv-me .hv-more {
+  display: grid;
+  gap: 2px;
+}
+.hv-me .hv-link {
+  justify-content: flex-start;
+  min-height: 46px;
+  padding: 6px 4px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--hv-navy);
+  font-size: 16px;
+}
+.hv-me .hv-link svg {
+  color: var(--hv-royal);
+}
+.hv-me .hv-note {
+  margin-top: 4px;
+  color: #5b6b80;
+  font-size: 12px;
+  text-align: start;
+}
+
+/* four white doors */
+.hv-card {
+  grid-template-rows: 1fr auto;
+  justify-items: center;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 12px;
+  border: 1.5px solid #cfe1f5;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 6px 16px rgb(11 47 87 / 0.07);
+  color: var(--hv-navy) !important;
+  transform: none;
+}
+.hv-card::before {
+  content: none;
+}
+.hv-card-art {
+  width: clamp(72px, 7vw, 104px);
+  aspect-ratio: 1.15;
+  border-radius: 20px;
+  background: #e5f6ea;
+}
+.hv-card.is-book .hv-card-art {
+  background: #e6efff;
+}
+.hv-card.is-play .hv-card-art {
+  background: #fde8f0;
+}
+.hv-card.is-awards .hv-card-art {
+  background: #efe9ff;
+}
+.hv-card-art svg {
+  width: 78%;
+  height: auto;
+  filter: none;
+}
+.hv-card-title {
+  font-size: clamp(16px, 1.3vw, 21px);
+  font-weight: 900;
+  line-height: 1.35;
+  text-align: center;
+}
+.hv-card:active {
+  transform: scale(0.98);
+}
+.hv-card:focus-visible {
+  outline: 3px solid var(--hv-royal);
+}
+
+/* the journey line */
+.hv-path {
+  background: #fff;
+}
+.hv-road::before {
+  top: 14px;
+  right: 12.5%;
+  left: 12.5%;
+  height: 4px;
+  background: #dde4ec;
+}
+.hv-road a {
+  gap: 10px;
+  padding-top: 2px;
+}
+.hv-stop,
+.hv-road .is-active .hv-stop,
+.hv-road .is-flag .hv-stop {
+  width: 28px;
+  height: 28px;
+  border: 4px solid #c9d3de;
+  background: #fff;
+  color: #fff;
+  box-shadow: none;
+}
+.hv-road .is-active .hv-stop {
+  border-color: #9cbcf0;
+}
+.hv-road .is-done .hv-stop,
+.hv-road .is-flag.is-done .hv-stop {
+  border-color: var(--hv-green);
+  background: var(--hv-green);
+}
+.hv-road .is-now .hv-stop {
+  width: 36px;
+  height: 36px;
+  margin-top: -4px;
+  border: 7px solid var(--hv-royal);
+  background: #fff;
+  box-shadow: 0 0 0 5px rgb(29 79 196 / 0.15);
+}
+.hv-stop-text b {
+  color: var(--hv-navy);
+  font-size: 16px;
+}
+.hv-road .is-now .hv-stop-text b {
+  color: var(--hv-royal);
+}
+.hv-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (hover: hover) {
+  .hv-card:hover {
+    border-color: #9cbcf0;
+    box-shadow: 0 10px 22px rgb(11 47 87 / 0.12);
+    transform: translateY(-3px);
+  }
+  .hv-me .hv-link:hover {
+    background: #f1f6fd;
+  }
+}
+
+@media (min-width: 1181px) {
+  .hv-card {
+    padding: 10px;
+    gap: 6px;
+  }
+  .hv-card-art {
+    width: auto;
+    height: clamp(58px, 9.5vh, 104px);
+  }
+  .hv-card-art svg {
+    width: auto;
+    height: 78%;
+  }
+  .hv-stop,
+  .hv-road .is-active .hv-stop,
+  .hv-road .is-flag .hv-stop {
+    width: 28px;
+    height: 28px;
+    border-width: 4px;
+  }
+  .hv-road .is-now .hv-stop {
+    width: 36px;
+    height: 36px;
+    border-width: 7px;
+  }
+  .hv-road::before {
+    top: 12px;
+    height: 4px;
+  }
+  .hv-stop-text b {
+    font-size: 15px;
+  }
+  .hv-me {
+    grid-template-rows: auto auto auto 1fr;
+  }
+  .hv-me .hv-more {
+    align-self: start;
+  }
+}
+@media (max-width: 1180px) {
+  .hv-me {
+    grid-template-columns: 1fr;
+  }
+  .hv-me .hv-more {
+    grid-template-columns: 1fr 1fr;
+  }
+  .hv-me .hv-note {
+    grid-column: 1 / -1;
+  }
+}
+/* phones: the journey goes down the screen so the names stay readable */
+@media (max-width: 640px) {
+  .hv-card {
+    min-height: 150px;
+    padding: 14px 8px;
+  }
+  .hv-card-art {
+    width: 84px;
+  }
+  .hv-card-title {
+    font-size: 16px;
+  }
+  .hv-me .hv-more {
+    grid-template-columns: 1fr;
+  }
+  .hv-road {
+    gap: 18px;
+  }
+  .hv-road::before {
+    top: 14px;
+    bottom: 14px;
+    right: 13px;
+    left: auto;
+    width: 4px;
+    height: auto;
+    background: #dde4ec;
+  }
+  .hv-road a {
+    grid-template-columns: 36px 1fr;
+    justify-items: center;
+    gap: 12px;
+  }
+  .hv-road .hv-stop-text {
+    justify-self: start;
+  }
+  .hv-road .is-now .hv-stop {
+    margin-top: 0;
+  }
+}
+@media (min-width: 1181px) {
+  .home-v3 .hv-lead {
+    display: block;
+    font-size: clamp(14px, 1.1vw, 17px);
+  }
+  .hv-hero {
+    height: clamp(230px, 40vh, 440px);
+  }
+  .hv-hero-art {
+    width: min(100%, calc(clamp(230px, 40vh, 440px) * 1.06 * 1180 / 990));
+  }
+  .hv-card {
+    height: clamp(118px, 19vh, 200px);
+  }
+}
+@media (max-width: 640px) {
+  .hv-nav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .hv-nav a {
+    min-width: 0;
+    padding: 4px 2px;
+    font-size: 11.5px;
+    line-height: 1.3;
+    text-align: center;
+    white-space: normal;
+  }
+}

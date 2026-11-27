@@ -15,6 +15,7 @@ const listeners = new Set();
 export const isMuted = () => muted;
 export function setMuted(value) {
   muted = value;
+  if (value) stopRain(0.15);
   try {
     localStorage.setItem(KEY, value ? "off" : "on");
   } catch {}
@@ -132,4 +133,61 @@ export function resourceSound(resource) {
   if (["renewable", "nonrenewable"].includes(resource.kind) || /solar|energy/.test(id + family)) return "energy";
   if (resource.kind === "project") return "project";
   return "select";
+}
+
+// Light rain (lesson 2, «الأمطار الشتوية»): soft filtered noise that fades in
+// with the falling drops, lasts about five seconds and fades out. Only one
+// plays at a time; stopRain() fades it out early (another resource, leaving
+// the scene, the narration starting, or mute).
+let rainNow = null;
+export function rain(seconds = 5) {
+  stopRain(0.1);
+  const a = audio();
+  if (!a) return;
+  try {
+    const t = a.currentTime;
+    const len = Math.ceil(a.sampleRate * (seconds + 0.5));
+    const buffer = a.createBuffer(1, len, a.sampleRate);
+    const data = buffer.getChannelData(0);
+    // Brown-ish noise with sparse brighter ticks, like drops on leaves.
+    let last = 0;
+    for (let i = 0; i < len; i++) {
+      const white = Math.random() * 2 - 1;
+      last = (last + 0.06 * white) / 1.06;
+      data[i] = last * 3 + (Math.random() < 0.0009 ? white * 0.6 : 0);
+    }
+    const src = a.createBufferSource();
+    src.buffer = buffer;
+    const high = a.createBiquadFilter();
+    high.type = "highpass";
+    high.frequency.value = 350;
+    const low = a.createBiquadFilter();
+    low.type = "lowpass";
+    low.frequency.value = 2600;
+    const amp = a.createGain();
+    amp.gain.setValueAtTime(0.0001, t);
+    amp.gain.exponentialRampToValueAtTime(0.22, t + 0.6);
+    amp.gain.setValueAtTime(0.22, t + seconds - 1.6);
+    amp.gain.exponentialRampToValueAtTime(0.0001, t + seconds);
+    src.connect(high).connect(low).connect(amp).connect(a.destination);
+    src.start(t);
+    src.stop(t + seconds + 0.05);
+    const now = { src, amp };
+    rainNow = now;
+    src.onended = () => {
+      if (rainNow === now) rainNow = null;
+    };
+  } catch {}
+}
+export function stopRain(fade = 0.4) {
+  const r = rainNow;
+  rainNow = null;
+  if (!r || !ctx) return;
+  try {
+    const t = ctx.currentTime;
+    r.amp.gain.cancelScheduledValues(t);
+    r.amp.gain.setValueAtTime(Math.max(r.amp.gain.value, 0.0001), t);
+    r.amp.gain.exponentialRampToValueAtTime(0.0001, t + fade);
+    r.src.stop(t + fade + 0.02);
+  } catch {}
 }

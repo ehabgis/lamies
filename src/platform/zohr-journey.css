@@ -1,0 +1,385 @@
+/* «رحلة حقل ظهر» (lesson 1, gas; 2026-11-27): all in the map's own frame. */
+.zohr {
+  position: absolute;
+  inset: 0;
+  z-index: 1100;
+  pointer-events: none;
+  font-family: Cairo, system-ui, sans-serif;
+  color: #0b2a5b;
+}
+.zohr-halo {
+  animation: zohr-halo 1.6s ease-in-out infinite;
+}
+@keyframes zohr-halo {
+  50% {
+    stroke-opacity: 0.4;
+    fill-opacity: 0.08;
+  }
+}
+.leaflet-tooltip.zohr-label {
+  padding: 4px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #0b2a5b;
+  color: #fff;
+  font-family: Cairo, system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.35);
+}
+.leaflet-tooltip.zohr-label::before {
+  border-top-color: #0b2a5b;
+}
+.zohr-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+.zohr-stage > * {
+  pointer-events: auto;
+}
+/* the frame stays clear while the map flies, then fades to the platform */
+.zohr-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #0b2e55;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+.zohr-stage:not(.is-flying)::before {
+  opacity: 1;
+  pointer-events: auto;
+}
+.zohr-video {
+  position: absolute;
+  inset: 14px 14px 76px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #000;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+.zohr-video[hidden] {
+  display: none;
+}
+.is-video .zohr-video,
+.is-diving .zohr-video {
+  opacity: 1;
+  pointer-events: auto;
+}
+.zohr-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+.zohr-play {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  height: fit-content;
+  padding: 12px 22px;
+  border: 0;
+  border-radius: 999px;
+  background: #ffc21a;
+  color: #3b2a00;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.zohr-missing {
+  position: absolute;
+  inset: 40% 20px auto;
+  margin: 0;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* the dive */
+.zohr-dive {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+.is-diving .zohr-dive {
+  opacity: 1;
+  animation: zohr-dark 2.6s ease-in forwards;
+}
+@keyframes zohr-dark {
+  from {
+    background: rgb(30 120 190 / 0.35);
+  }
+  to {
+    background: #0b2e55;
+  }
+}
+.zohr-surface {
+  position: absolute;
+  inset: 55% 0 auto;
+  height: 60%;
+  background:
+    radial-gradient(120% 30px at 50% 0, rgb(255 255 255 / 0.85), transparent 70%),
+    linear-gradient(#3d9be0, #0e4f8a);
+}
+.is-diving .zohr-surface {
+  animation: zohr-surface 2.6s cubic-bezier(0.5, 0, 0.3, 1) forwards;
+}
+@keyframes zohr-surface {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-190%);
+    opacity: 0.2;
+  }
+}
+.zohr-rays {
+  position: absolute;
+  inset: -20% 0 0;
+  background: repeating-linear-gradient(100deg, rgb(255 255 255 / 0.13) 0 24px, transparent 24px 90px);
+  opacity: 0;
+}
+.is-diving .zohr-rays {
+  animation: zohr-rays 2.6s ease forwards;
+}
+@keyframes zohr-rays {
+  30% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.5;
+    transform: translateY(8%);
+  }
+}
+.zohr-bubbles i {
+  position: absolute;
+  left: var(--x);
+  bottom: -20px;
+  width: var(--s);
+  height: var(--s);
+  border: 1.5px solid rgb(255 255 255 / 0.8);
+  border-radius: 50%;
+  opacity: 0;
+}
+.is-diving .zohr-bubbles i {
+  animation: zohr-bubble 1.8s ease-in var(--d) infinite;
+}
+@keyframes zohr-bubble {
+  10% {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-110vh);
+  }
+}
+
+/* the cut under the sea */
+.zohr-cut {
+  position: absolute;
+  inset: 0 0 76px;
+  animation: zohr-in 0.6s ease;
+}
+@keyframes zohr-in {
+  from {
+    opacity: 0;
+  }
+}
+.zohr-cut svg {
+  width: 100%;
+  height: 100%;
+}
+.zohr-place {
+  cursor: pointer;
+  outline: none;
+}
+.zohr-glow {
+  fill: #ffe066;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.zohr-place.is-lit .zohr-glow {
+  opacity: 0.32;
+}
+.zohr-place:focus-visible .zohr-glow {
+  opacity: 0.18;
+  stroke: #ffd34d;
+  stroke-width: 6;
+}
+.zohr-name {
+  fill: #fff;
+  font-size: 30px;
+  font-weight: 900;
+  paint-order: stroke;
+  stroke: rgb(0 0 0 / 0.45);
+  stroke-width: 5px;
+}
+.zohr-small {
+  fill: #4a3518;
+  font-size: 15px;
+  font-weight: 800;
+}
+.zohr-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.55);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* the bar under the frame */
+.zohr-panel {
+  position: absolute;
+  inset: auto 12px 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 8px 12px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
+}
+.zohr-caption {
+  flex: 1 1 220px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+.zohr-say {
+  display: flex;
+  flex: 1 1 100%;
+  order: 1;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: #eef6ff;
+  color: #0b2a6b;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.6;
+}
+.zohr-say svg {
+  flex: none;
+  margin-top: 3px;
+  color: #e0a100;
+}
+.zohr-say.is-right {
+  background: #e9f7ef;
+  color: #0f5f33;
+}
+.zohr-say.is-right svg {
+  color: #178a4a;
+}
+.zohr-say.is-wrong {
+  background: #fff1e6;
+  color: #8a2c08;
+}
+.zohr-say.is-wrong svg {
+  color: #c2410c;
+}
+.zohr-main,
+.zohr-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 4px 18px;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.zohr-main {
+  border: 0;
+  background: #ffc21a;
+  color: #3b2a00;
+  box-shadow: 0 3px 0 #e0a800;
+}
+.zohr-back {
+  border: 1.5px solid #c9dbee;
+  background: #fff;
+  color: #0a4fb0;
+}
+@media (max-width: 850px) {
+  .zohr-stage {
+    top: 54px;
+  }
+  .zohr-video {
+    inset: 8px 8px 150px;
+  }
+  .zohr-cut {
+    bottom: 150px;
+  }
+  .zohr-name {
+    font-size: 34px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zohr-halo,
+  .zohr-dive,
+  .zohr-dive *,
+  .zohr-cut {
+    animation: none !important;
+  }
+}
+/* above the lesson's bottom dock */
+.zohr-panel {
+  bottom: 60px;
+}
+.zohr-video {
+  bottom: 140px;
+}
+.zohr-cut {
+  bottom: 140px;
+}
+@media (max-width: 850px) {
+  .zohr-panel {
+    bottom: 96px;
+  }
+  .zohr-video,
+  .zohr-cut {
+    bottom: 200px;
+  }
+}
+.zohr-stage {
+  --ph: 64px;
+}
+.zohr-video,
+.zohr-cut {
+  bottom: calc(var(--ph) + 72px);
+}
+@media (max-width: 850px) {
+  .zohr-video,
+  .zohr-cut {
+    bottom: calc(var(--ph) + 108px);
+  }
+}
+.zohr-place.is-lit .zohr-glow {
+  opacity: 0.4;
+}
+.zohr-tag {
+  left: auto;
+  right: 12px;
+}

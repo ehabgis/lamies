@@ -1,57 +1,78 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
-import { ArrowLeft, ArrowCounterClockwise, CheckCircle, Play, SpeakerHigh, Sparkle, Warning, XCircle } from "phosphor-react";
+import { ArrowLeft, ArrowRight, ArrowCounterClockwise, CheckCircle, Play, SpeakerHigh, Sparkle, Warning, XCircle } from "phosphor-react";
 import RobotGuide from "../components/Map/RobotGuide";
 import * as narrator from "./narrator";
 import { play } from "./sfx";
 import "./gold-journey.css";
 
-// «من الصخر إلى الذهب» (lesson 1, gold). States, in this order only:
-// focusing (the map flies to the Sukari mine, its marker glows, the robot asks)
-// → exploring (a rock illustration and a lens the child drags or moves with
-// the arrow keys) → video (the gold clip in the same media area) → info (the
-// mine and the uses, with a quick question). «أعد الاستكشاف» goes back to
-// exploring; «إغلاق» leaves and the map tools come back.
+// «رحلة الذهب» (lesson 1, gold; 2026-11-27). States, in this order:
+// focus (the map comes close to the Sukari mine, the robot speaks beside its
+// marker, the card shows a real ore sample and «شاهد رحلة الذهب»)
+// → intro (about 4.5 s in the map's own frame: the camera closes in on the
+// mine and tilts, an open pit seen from above, the camera goes down toward
+// its steps, then a short walk in a lit rock tunnel marked «مشهد توضيحي»)
+// → video (the gold clip in the same frame, loaded during the intro)
+// → info (the mine and the uses, with a quick question).
+// «تخطَّ المقدمة» starts the video at once; «العودة إلى الخريطة» stops the
+// media and goes back to the mine on the map.
 export const GOLD_ID = "gold";
-const ASK = "هل الذهب موجود داخل الصخور؟ حرّك العدسة لنكتشف!";
-const FOUND = "يحتاج الخام إلى الاستخراج والمعالجة للحصول على الذهب";
+const ASK = "هنا منجم السكري. تعال نشوف رحلة الذهب!";
+const ORE = "معدن ثمين يوجد في الصخور داخل منجم السكري.";
 const QUESTION = "هل يُستخرج الذهب من الصخور جاهزًا على شكل سبيكة؟";
 const RIGHT = "أحسنت! يحتاج الخام إلى الاستخراج والمعالجة للحصول على الذهب";
 const WRONG = "حاول مرة أخرى. تذكّر مشاهد المعالجة والصهر في الفيديو";
-const EXPLORE_MS = 3000; // moving the lens about this long shows the finding
+const ORE_PHOTO = "/lesson-media/gold-ore-sample.jpg";
+const PIT_PHOTO = "/lesson-media/sites/gold-sukari.jpg";
+const TUNNEL_PHOTO = "/lesson-media/sites/gold-sukari-3.jpg";
+// The intro's beats (ms from «شاهد رحلة الذهب»).
+const CLOSE_IN_MS = 1200;
+const PIT_MS = 1600;
+const TUNNEL_MS = 1700;
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export default function GoldJourney({ map, resource, video, onLeave, onToolsHidden }) {
   const site = resource.locations?.[0];
-  const [phase, setPhase] = useState("focusing");
+  const [phase, setPhase] = useState("focus");
+  const [beat, setBeat] = useState("map"); // intro: map → pit → tunnel
+  const [spot, setSpot] = useState(null);
   const [ask, setAsk] = useState(true);
-  const [found, setFound] = useState(false);
-  const [run, setRun] = useState(0);
   const [blocked, setBlocked] = useState(false);
   const [failed, setFailed] = useState(!video);
+  const [load, setLoad] = useState(false);
   const [answer, setAnswer] = useState(null);
   const [speaking, setSpeaking] = useState(false);
+  const [run, setRun] = useState(0);
   const clip = useRef(null);
-  const win = useRef(null);
   const timers = useRef([]);
   const alive = useRef(true);
   const later = (fn, ms) => timers.current.push(setTimeout(() => alive.current && fn(), ms));
+  const clear = () => {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+  };
+  const stage = phase === "intro" || phase === "video";
 
   useEffect(() => {
     alive.current = true;
-    onToolsHidden?.(true);
     const off = narrator.subscribe((s) => setSpeaking(s.state === "speaking"));
     return () => {
       alive.current = false;
-      timers.current.forEach(clearTimeout);
+      clear();
       off?.();
       narrator.stop();
       clip.current?.pause();
+      untilt();
       onToolsHidden?.(false);
     };
   }, []);
+  // The map's tool list (right) steps aside for the card all along; «عرض
+  // الجميع» and «المفتاح والأدوات» stay.
+  useEffect(() => {
+    onToolsHidden?.(true);
+  }, []);
 
-  // Focusing: the golden halo on the mine and a short flight there.
+  // The golden halo on the mine.
   useEffect(() => {
     if (!site) return undefined;
     const halo = L.circleMarker([site.lat, site.lng], {
@@ -63,30 +84,78 @@ export default function GoldJourney({ map, resource, video, onLeave, onToolsHidd
       interactive: false,
       className: "gold-halo",
     }).addTo(map);
-    map.stop();
-    map.flyTo([site.lat, site.lng], Math.max(map.getZoom(), 8), { animate: !reducedMotion(), duration: 1.6 });
     return () => halo.remove();
   }, []);
 
-  // The robot's question: its bubble goes once the voice ends (or after a
-  // while when there is no voice); the lens is ready right away.
+  // The robot stands beside the mine's marker (below the map's buttons) and
+  // follows it when the map moves.
   useEffect(() => {
+    if (!site) return undefined;
+    const place = () => {
+      const p = map.latLngToContainerPoint([site.lat, site.lng]);
+      const size = map.getSize();
+      setSpot({ x: p.x, y: p.y, w: size.x, h: size.y });
+    };
+    place();
+    map.on("move zoom moveend", place);
+    return () => map.off("move zoom moveend", place);
+  }, []);
+
+  // Focus: close in on Sukari, the mine in the free space left of the card.
+  useEffect(() => {
+    if (phase !== "focus" || !site) return undefined;
+    flyToMine();
     setAsk(true);
     let spoke = false;
-    const off = narrator.subscribe((s) => {
-      if (s.state === "speaking") spoke = true;
-      else if (spoke) later(() => setAsk(false), 600);
+    const off = narrator.subscribe((st) => {
+      if (st.state === "speaking") spoke = true;
+      else if (spoke) later(() => setAsk(false), 1500);
     });
     narrator.speak(ASK);
-    later(() => !spoke && setAsk(false), 6000);
-    later(() => setPhase((p) => (p === "focusing" ? "exploring" : p)), reducedMotion() ? 0 : 1700);
+    later(() => !spoke && setAsk(false), 8000);
     return () => off?.();
-  }, [run]);
+  }, [phase === "focus", run]);
+
+  function flyToMine(zoomIn = 0) {
+    const narrow = window.innerWidth <= 850;
+    const z = Math.min(map.getMaxZoom?.() || 18, 12 + zoomIn);
+    const size = map.getSize();
+    // Leave room for the card (right) on wide screens, and for it below on phones.
+    const shift = narrow ? L.point(0, size.y * 0.18) : L.point(Math.min(200, size.x * 0.17), 0);
+    const centre = map.unproject(map.project([site.lat, site.lng], z).add(shift), z);
+    map.stop();
+    map.flyTo(centre, z, { animate: !reducedMotion(), duration: zoomIn ? CLOSE_IN_MS / 1000 : 1.4 });
+  }
+  function tilt() {
+    const el = map.getContainer();
+    el.classList.add("gold-tilting");
+  }
+  function untilt() {
+    map.getContainer?.().classList.remove("gold-tilting");
+  }
 
   function watch() {
     play("open");
     narrator.stop();
     setAsk(false);
+    setFailed(!video);
+    setLoad(true);
+    if (reducedMotion()) return startVideoPhase();
+    setPhase("intro");
+    setBeat("map");
+    flyToMine(2);
+    tilt();
+    later(() => {
+      setBeat("pit");
+      untilt();
+    }, CLOSE_IN_MS);
+    later(() => setBeat("tunnel"), CLOSE_IN_MS + PIT_MS);
+    later(startVideoPhase, CLOSE_IN_MS + PIT_MS + TUNNEL_MS);
+  }
+  function startVideoPhase() {
+    clear();
+    untilt();
+    setLoad(true);
     setPhase("video");
   }
   function startVideo() {
@@ -99,80 +168,70 @@ export default function GoldJourney({ map, resource, video, onLeave, onToolsHidd
   useEffect(() => {
     if (phase === "video" && !failed) startVideo();
     if (phase !== "video") clip.current?.pause();
-    if (phase === "video") keepMineInView();
   }, [phase]);
-  // The mine moves into the gap between the video window and the card.
-  function keepMineInView() {
-    if (!site) return;
-    const box = map.getContainer().getBoundingClientRect();
-    const w = win.current?.getBoundingClientRect();
-    const card = win.current?.parentElement.querySelector(".gold-card")?.getBoundingClientRect();
-    if (!w) return;
-    const at = map.latLngToContainerPoint([site.lat, site.lng]);
-    let goal;
-    if (card?.width && card.left - w.right >= 60)
-      goal = L.point((w.right + card.left) / 2 - box.left, Math.min(Math.max(at.y, 120), box.height - 140));
-    // Phones: the card waits, so the mine goes into the map below the video.
-    else if (!card?.width && box.bottom - w.bottom > 150)
-      goal = L.point(box.width / 2, (w.bottom - box.top + box.height - 110) / 2);
-    else return;
-    map.panBy(at.subtract(goal), { animate: !reducedMotion(), duration: 0.6 });
+  function backToMap() {
+    play("close");
+    clear();
+    untilt();
+    clip.current?.pause();
+    narrator.stop();
+    setPhase("focus");
+    setRun((n) => n + 1);
   }
   function toInfo() {
     clip.current?.pause();
+    untilt();
     setPhase("info");
+    flyToMine();
   }
   function again() {
     play("select");
     narrator.stop();
-    timers.current.forEach(clearTimeout);
-    timers.current = [];
-    setFound(false);
+    clear();
     setAnswer(null);
     setFailed(!video);
-    setPhase("exploring");
+    setPhase("focus");
     setRun((n) => n + 1);
   }
   const info = [resource.description, resource.importance].filter(Boolean);
+  // The robot and its bubble: left of the marker, never above the buttons row.
+  const askStyle = spot
+    ? {
+        right: `${Math.max(8, spot.w - spot.x + 26)}px`,
+        top: `${Math.min(Math.max(spot.y + 18, 76), spot.h - 170)}px`,
+      }
+    : undefined;
 
   return (
-    <div className={`gold ${phase === "video" ? "is-video" : ""}`} dir="rtl">
-      {/* The gold video in a clear window over the map (2026-11-05 review),
-          beside the card so the Sukari mine stays in view between them. */}
+    <div className={`gold ${stage ? "is-stage" : ""}`} dir="rtl">
+      {/* The intro and the video share one frame in the map's own space. */}
       <section
-        ref={win}
-        className={`gold-window ${phase === "video" ? "is-on" : ""}`}
+        className={`gold-stage ${stage ? "is-on" : ""} at-${phase === "video" ? "video" : beat}`}
         role="dialog"
-        aria-label="فيديو رحلة الذهب"
-        aria-hidden={phase !== "video"}
+        aria-label="رحلة الذهب"
+        aria-hidden={!stage}
       >
-        <header>
-          <h2>
-            <Sparkle size={20} weight="fill" aria-hidden="true" /> رحلة الذهب
-          </h2>
-          <button type="button" className="gold-skip" onClick={toInfo}>
-            {failed ? "متابعة" : "تخطَّ"} <ArrowLeft size={18} aria-hidden="true" />
-          </button>
-        </header>
-        {failed && (
-          <div className="gold-missing" role="alert">
-            <Warning size={28} weight="fill" aria-hidden="true" />
-            <p>{video ? "تعذّر تحميل فيديو رحلة الذهب." : "فيديو رحلة الذهب غير مضاف بعد."}</p>
-            {!video && <small>اسم الملف المنتظر: lesson-media/sites/gold-sukari.mp4</small>}
-          </div>
-        )}
+        <div className="gold-scenes" aria-hidden="true">
+          <figure className="gold-scene is-pit">
+            <img src={PIT_PHOTO} alt="" loading="lazy" />
+          </figure>
+          <figure className="gold-scene is-tunnel">
+            <img src={TUNNEL_PHOTO} alt="" loading="lazy" />
+            <figcaption>مشهد توضيحي</figcaption>
+          </figure>
+        </div>
         {video && (
-          <div className="gold-player" hidden={failed}>
+          <div className="gold-player" hidden={failed || phase !== "video"}>
             <video
               ref={clip}
-              src={video}
-              preload="metadata"
+              src={load ? video : undefined}
+              preload={load ? "auto" : "none"}
               playsInline
               controls
               controlsList="nodownload"
-              aria-label="فيديو رحلة الذهب"
+              aria-label="فيديو رحلة الذهب من منجم السكري"
               onEnded={() => later(toInfo, 800)}
-              onError={() => phase === "video" && setFailed(true)}
+              onError={() => load && setFailed(true)}
             />
             {phase === "video" && blocked && (
               <button type="button" className="gold-start" onClick={startVideo}>
@@ -181,10 +240,30 @@ export default function GoldJourney({ map, resource, video, onLeave, onToolsHidd
             )}
           </div>
         )}
+        {phase === "video" && failed && (
+          <div className="gold-missing" role="alert">
+            <Warning size={28} weight="fill" aria-hidden="true" />
+            <p>{video ? "تعذّر تحميل فيديو رحلة الذهب." : "فيديو رحلة الذهب غير مضاف بعد."}</p>
+            <button type="button" className="gold-skip" onClick={toInfo}>
+              متابعة <ArrowLeft size={18} aria-hidden="true" />
+            </button>
+          </div>
+        )}
+        <footer className="gold-stage-bar">
+          {phase === "video" && <p>فيديو: رحلة الذهب من منجم السكري</p>}
+          {phase === "intro" && (
+            <button type="button" className="gold-skip is-strong" onClick={startVideoPhase}>
+              تخطَّ المقدمة <ArrowLeft size={18} aria-hidden="true" />
+            </button>
+          )}
+          <button type="button" className="gold-skip" onClick={backToMap}>
+            <ArrowRight size={18} aria-hidden="true" /> العودة إلى الخريطة
+          </button>
+        </footer>
       </section>
 
-      {ask && (
-        <div className="gold-ask" role="status">
+      {phase === "focus" && ask && (
+        <div className="gold-ask" role="status" style={askStyle}>
           <p>{ASK}</p>
           <span aria-hidden="true">
             <RobotGuide />
@@ -192,245 +271,85 @@ export default function GoldJourney({ map, resource, video, onLeave, onToolsHidd
         </div>
       )}
 
-      <aside className="gold-card" aria-label="الذهب">
-        <h2>
-          <Sparkle size={24} weight="fill" aria-hidden="true" /> الذهب <small>خام معدني</small>
-        </h2>
+      {!stage && (
+        <aside className="gold-card" aria-label="الذهب">
+          <h2>
+            <Sparkle size={24} weight="fill" aria-hidden="true" /> الذهب <small>خام معدني</small>
+          </h2>
 
-        <div className="gold-media">
-          {(phase === "focusing" || phase === "exploring") && (
-            <RockLens key={run} onFound={() => setFound(true)} />
+          {phase === "focus" && (
+            <>
+              <figure className="gold-ore">
+                <img src={ORE_PHOTO} alt="عينة من خام الذهب: صخرة رمادية من الكوارتز تلمع فيها حبيبات ذهب صفراء" />
+                <figcaption>عينة خام ذهب داخل الكوارتز · صورة: Rob Lavinsky، CC BY-SA 3.0</figcaption>
+              </figure>
+              <button type="button" className="gold-cta" onClick={watch}>
+                <Play size={20} weight="fill" aria-hidden="true" /> شاهد رحلة الذهب
+              </button>
+              <p className="gold-ore-text">{ORE}</p>
+            </>
           )}
-          {phase === "video" && (
-            <div className="gold-done is-playing" role="status">
-              <GoldGrains />
-              <p>
-                <Play size={18} weight="fill" aria-hidden="true" /> رحلة الذهب تُعرض الآن على الخريطة
-              </p>
-            </div>
-          )}
+
           {phase === "info" && (
-            <div className="gold-done" aria-hidden="true">
-              <GoldGrains />
+            <div className="gold-info">
+              {info.map((t) => (
+                <p key={t}>{t}</p>
+              ))}
+              <button
+                type="button"
+                aria-pressed={speaking}
+                onClick={() => (speaking ? narrator.stop() : narrator.speak(["الذهب", ...info].join(". ")))}
+              >
+                <SpeakerHigh size={20} aria-hidden="true" /> {speaking ? "إيقاف" : "استمع للمعلومة"}
+              </button>
+              <section className="gold-quiz" aria-labelledby="gold-quiz-q">
+                <h3>سؤال سريع</h3>
+                <p id="gold-quiz-q">{QUESTION}</p>
+                <div>
+                  {["نعم", "لا"].map((a) => (
+                    <button
+                      key={a}
+                      type="button"
+                      aria-pressed={answer === a}
+                      disabled={answer === "لا"}
+                      onClick={() => {
+                        play(a === "لا" ? "correct" : "wrong");
+                        setAnswer(a);
+                      }}
+                    >
+                      {a}
+                    </button>
+                  ))}
+                </div>
+                {answer && (
+                  <p className={`gold-verdict ${answer === "لا" ? "is-right" : "is-wrong"}`} role="status">
+                    {answer === "لا" ? <CheckCircle size={22} weight="fill" aria-hidden="true" /> : <XCircle size={22} weight="fill" aria-hidden="true" />}
+                    {answer === "لا" ? RIGHT : WRONG}
+                  </p>
+                )}
+              </section>
             </div>
           )}
-        </div>
 
-        {phase === "exploring" && found && (
-          <div className="gold-found" role="status">
-            <p>{FOUND}</p>
-            <button type="button" className="gold-cta" onClick={watch}>
-              <Play size={20} weight="fill" aria-hidden="true" /> شاهد رحلة الذهب
-            </button>
-          </div>
-        )}
-
-
-        {phase === "info" && (
-          <div className="gold-info">
-            {info.map((t) => (
-              <p key={t}>{t}</p>
-            ))}
+          <footer>
+            {phase === "info" && (
+              <button type="button" onClick={again}>
+                <ArrowCounterClockwise size={18} weight="bold" aria-hidden="true" /> أعد الرحلة
+              </button>
+            )}
             <button
               type="button"
-              aria-pressed={speaking}
-              onClick={() => (speaking ? narrator.stop() : narrator.speak(["الذهب", ...info].join(". ")))}
+              className="gold-close"
+              onClick={() => {
+                narrator.stop();
+                onLeave();
+              }}
             >
-              <SpeakerHigh size={20} aria-hidden="true" /> {speaking ? "إيقاف" : "استمع للمعلومة"}
+              إغلاق
             </button>
-            <section className="gold-quiz" aria-labelledby="gold-quiz-q">
-              <h3>سؤال سريع</h3>
-              <p id="gold-quiz-q">{QUESTION}</p>
-              <div>
-                {["نعم", "لا"].map((a) => (
-                  <button
-                    key={a}
-                    type="button"
-                    aria-pressed={answer === a}
-                    disabled={answer === "لا"}
-                    onClick={() => {
-                      play(a === "لا" ? "correct" : "wrong");
-                      setAnswer(a);
-                    }}
-                  >
-                    {a}
-                  </button>
-                ))}
-              </div>
-              {answer && (
-                <p className={`gold-verdict ${answer === "لا" ? "is-right" : "is-wrong"}`} role="status">
-                  {answer === "لا" ? <CheckCircle size={22} weight="fill" aria-hidden="true" /> : <XCircle size={22} weight="fill" aria-hidden="true" />}
-                  {answer === "لا" ? RIGHT : WRONG}
-                </p>
-              )}
-            </section>
-          </div>
-        )}
-
-        <footer>
-          {phase !== "focusing" && (
-            <button type="button" onClick={again}>
-              <ArrowCounterClockwise size={18} weight="bold" aria-hidden="true" /> أعد الاستكشاف
-            </button>
-          )}
-          <button
-            type="button"
-            className="gold-close"
-            onClick={() => {
-              narrator.stop();
-              onLeave();
-            }}
-          >
-            إغلاق
-          </button>
-        </footer>
-      </aside>
+          </footer>
+        </aside>
+      )}
     </div>
-  );
-}
-
-// The rock as a drawing: a few faint flecks outside the lens, clear gold
-// grains inside it (the lens shows the rock twice as big).
-const W = 320;
-const H = 190;
-const ROCK = "M28 132 L44 74 L92 40 L160 30 L226 44 L282 78 L298 128 L268 162 L190 176 L104 172 L52 160 Z";
-const GRAINS = (() => {
-  let seed = 7;
-  const rand = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
-  const out = [];
-  while (out.length < 90) {
-    const x = 50 + rand() * 230;
-    const y = 52 + rand() * 110;
-    if (((x - 163) / 125) ** 2 + ((y - 104) / 62) ** 2 > 1) continue;
-    out.push({ x, y, r: 1.3 + rand() * 1.8, a: rand() * 180 });
-  }
-  return out;
-})();
-const ZOOM = 2;
-const LENS_R = 40;
-
-function Rock({ bright }) {
-  return (
-    <>
-      <path d={ROCK} fill="#8a7b6b" />
-      <path d="M44 74 L92 40 L160 30 L226 44 L282 78 L230 70 L160 60 L96 66 Z" fill="#a39482" />
-      <path d="M52 160 L104 172 L190 176 L268 162 L298 128 L250 150 L170 158 L96 154 Z" fill="#6c5f52" />
-      <path d="M92 96 L130 84 M180 120 L214 106 M120 140 L150 132 M230 92 L256 100" stroke="#5d5247" strokeWidth="2" strokeLinecap="round" />
-      {GRAINS.map((g, i) => (
-        <polygon
-          key={i}
-          points={`${g.x - g.r},${g.y} ${g.x},${g.y - g.r * 0.8} ${g.x + g.r},${g.y + g.r * 0.2} ${g.x + g.r * 0.2},${g.y + g.r}`}
-          transform={`rotate(${g.a} ${g.x} ${g.y})`}
-          fill={bright ? "#ffd23f" : "#b39b62"}
-          stroke={bright ? "#fff3b0" : "none"}
-          strokeWidth={bright ? 0.4 : 0}
-          opacity={bright ? 1 : 0.55}
-        />
-      ))}
-    </>
-  );
-}
-
-function RockLens({ onFound }) {
-  const box = useRef(null);
-  const [pos, setPos] = useState({ x: 110, y: 100 });
-  const drag = useRef(false);
-  const moved = useRef({ first: 0, done: false, total: 0 });
-  const clamp = (p) => ({ x: Math.min(W - 30, Math.max(30, p.x)), y: Math.min(H - 24, Math.max(24, p.y)) });
-  const track = (d) => {
-    const m = moved.current;
-    if (m.done) return;
-    const now = performance.now();
-    if (!m.first) m.first = now;
-    m.total += d;
-    if (now - m.first >= EXPLORE_MS && m.total > 120) {
-      m.done = true;
-      play("project");
-      onFound();
-    }
-  };
-  const at = useRef(pos);
-  const moveTo = (p) => {
-    const n = clamp(p);
-    track(Math.hypot(n.x - at.current.x, n.y - at.current.y));
-    at.current = n;
-    setPos(n);
-  };
-  const fromEvent = (e) => {
-    const r = box.current.getBoundingClientRect();
-    return { x: ((e.clientX - r.left) / r.width) * W, y: ((e.clientY - r.top) / r.height) * H };
-  };
-  // A slow check so the finding also shows if the child stops right after 3 s.
-  useEffect(() => {
-    const t = setInterval(() => track(0), 400);
-    return () => clearInterval(t);
-  }, []);
-
-  return (
-    <div className="gold-rock">
-      <svg
-        ref={box}
-        viewBox={`0 0 ${W} ${H}`}
-        onPointerDown={(e) => {
-          drag.current = true;
-          e.currentTarget.setPointerCapture?.(e.pointerId);
-          moveTo(fromEvent(e));
-        }}
-        onPointerMove={(e) => drag.current && moveTo(fromEvent(e))}
-        onPointerUp={() => (drag.current = false)}
-        onPointerCancel={() => (drag.current = false)}
-        aria-hidden="true"
-      >
-        <defs>
-          <clipPath id="gold-lens-clip">
-            <circle cx={pos.x} cy={pos.y} r={LENS_R} />
-          </clipPath>
-        </defs>
-        <Rock />
-        <g clipPath="url(#gold-lens-clip)">
-          <rect x="0" y="0" width={W} height={H} fill="#f4ecd8" />
-          <g transform={`translate(${pos.x} ${pos.y}) scale(${ZOOM}) translate(${-pos.x} ${-pos.y})`}>
-            <Rock bright />
-          </g>
-        </g>
-        <circle cx={pos.x} cy={pos.y} r={LENS_R} fill="none" stroke="#3b2d16" strokeWidth="6" />
-        <circle cx={pos.x} cy={pos.y} r={LENS_R - 3} fill="none" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="2" />
-        <line
-          x1={pos.x + LENS_R * 0.7}
-          y1={pos.y + LENS_R * 0.7}
-          x2={pos.x + LENS_R * 1.35}
-          y2={pos.y + LENS_R * 1.35}
-          stroke="#3b2d16"
-          strokeWidth="11"
-          strokeLinecap="round"
-        />
-      </svg>
-      <button
-        type="button"
-        className="gold-lens-key"
-        aria-label="العدسة: استعمل الأسهم لتحريكها فوق الصخرة"
-        style={{ left: `${(pos.x / W) * 100}%`, top: `${(pos.y / H) * 100}%` }}
-        onKeyDown={(e) => {
-          const step = 14;
-          const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
-          if (!d) return;
-          e.preventDefault();
-          moveTo({ x: pos.x + d[0], y: pos.y + d[1] });
-        }}
-      />
-      <span className="gold-badge">رسم توضيحي</span>
-      <p className="gold-tip">حرّك العدسة فوق الصخرة</p>
-    </div>
-  );
-}
-
-function GoldGrains() {
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
-      <rect width={W} height={H} rx="14" fill="#f4ecd8" />
-      <g transform={`translate(160 95) scale(1.6) translate(-160 -95)`}>
-        <Rock bright />
-      </g>
-    </svg>
   );
 }

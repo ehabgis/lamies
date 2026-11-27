@@ -94,11 +94,9 @@ export default function AIAssistant({
         </div>
       </div>
       {mode === "explain" && resource && <Simple resource={resource} />}
-      {!canConnect && status !== null && (
+      {!canConnect && status !== null && !demo && (
         <p className="p-feedback">
-          {demo
-            ? "أنت في درس تجريبي؛ استخدم التلميحات المكتوبة داخل الأسئلة. الاتصال بالمعلم يتطلب حسابًا ودرسًا منشورًا بمصادر مراجعة وتفعيل الخدمة."
-            : !status.configured
+          {!status.configured
               ? "خدمة المعلم لم تُفعّل بعد. يمكنك متابعة التعلّم واستخدام تلميحات الأسئلة."
               : !reviewReady
                 ? "المعلم المتصل غير مفعّل لهذا الدرس بعد."
@@ -110,10 +108,6 @@ export default function AIAssistant({
       <p>
         اسأل عن الدرس{resource ? ` أو ${resource.label}` : ""}. يُرسل السؤال
         وسياق الدرس إلى {providerLabel}، دون إرفاق اسم حسابك أو نتائجك.
-      </p>
-      <p className="p-muted">
-        قد يخطئ المساعد؛ راجع مصدره واسأل معلمك عند الشك. التقييم والنقاط
-        يحددهما الخادم.
       </p>
       {history.map((h, i) => (
         <article key={i}>

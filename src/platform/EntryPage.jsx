@@ -1,20 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  BookOpen,
   ArrowLeft,
   User,
   Lock,
   Play,
-  GameController,
   SpeakerHigh,
   SpeakerSlash,
   ArrowCounterClockwise,
   Users,
-  House,
-  MapTrifold,
   Path,
   Check,
+  GraduationCap,
 } from "phosphor-react";
 import "./entry-experience.css";
 import "./platform-polish.css";
@@ -25,11 +22,12 @@ import { useSession } from "./Session";
 import BrandMark from "./BrandMark";
 import { play } from "./sfx";
 import * as narrator from "./narrator";
-import { loadGuest, saveGuest } from "./guestProfile";
+import { loadGuest, saveGuest, nameKey } from "./guestProfile";
 import WelcomeArt from "./WelcomeArt";
 import { readAchievements } from "./achievements";
 import { LESSONS_HREF } from "./links";
 import "./home-v3.css";
+import "./home-v4.css";
 export default function EntryPage() {
   const { setUser, user } = useSession(),
     navigate = useNavigate();
@@ -38,6 +36,13 @@ export default function EntryPage() {
     [error, setError] = useState("");
   const [guest, setGuest] = useState(loadGuest);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [teacherLogin, setTeacherLogin] = useState(false);
+  const openAccount = (who) => {
+    setTeacherLogin(who === "teacher");
+    setMode("login");
+    setError("");
+    setAccountOpen(true);
+  };
   const [asParent, setAsParent] = useState(false);
   const welcome = "أهلًا يا مستكشف، اكتب اسمك ثم اضغط ابدأ المغامرة.";
   const [voice, setVoice] = useState(narrator.getSettings());
@@ -109,6 +114,7 @@ export default function EntryPage() {
     }
     narrator.stop();
     saveGuest(guest);
+    rememberAvatar(guest.name, guest.avatar === "girl" ? "girl" : "boy");
     play("project");
     navigate("/explore");
   }
@@ -140,7 +146,6 @@ export default function EntryPage() {
   // Real progress kept on this device for the current explorer (stars,
   // badges, journeys and maps from «إنجازاتي»); nothing is made up here.
   const [a] = useState(readAchievements);
-  const savedName = user ? user.name || user.username : loadGuest().name || "";
   const nameRef = useRef(null);
   // Places the child can open from here. A guest says their name first, so
   // their progress is kept under it, as «ابدأ المغامرة» always did.
@@ -167,61 +172,57 @@ export default function EntryPage() {
       return;
     }
     narrator.stop();
-    if (!user) saveGuest(guest);
+    if (!user) {
+      saveGuest(guest);
+      rememberAvatar(guest.name, guest.avatar === "girl" ? "girl" : "boy");
+    }
     play("open");
     navigate(resumeHref);
   }
   const total = a.journeys.length;
   const done = a.journeysDone;
-  const first = savedName.trim().split(/\s+/)[0];
+  const shownName = user ? user.name || user.username || "" : guest.name || "";
+  const first = shownName.trim().split(/\s+/)[0];
+  const avatar = guest.avatar === "girl" ? "girl" : "boy";
+  const chooseAvatar = (kind) => {
+    play("select");
+    const nextGuest = { ...guest, avatar: kind };
+    setGuest(nextGuest);
+    rememberAvatar(nextGuest.name, kind);
+    if (String(nextGuest.name || "").trim()) saveGuest(nextGuest);
+  };
+  // Where the journey line reaches: the current stop (blue), the rest grey.
+  const nowIndex = (() => {
+    const k = a.journeys.findIndex((j) => next?.id === j.id && next.href === j.href);
+    if (k >= 0) return k;
+    return done === total ? total : 0;
+  })();
   return (
-    <div className="lamis-platform home-v3" dir="rtl">
-      <header className="hv-top">
-        <Link to="/" className="hv-brand" aria-label="الخرائط التعليمية الذكية: الرئيسية">
-          <BrandMark size={46} round />
+    <div className="lamis-platform home-v3 home-v4" dir="rtl">
+      <header className="h4-top">
+        <Link to="/" className="h4-brand" aria-label="الخرائط التعليمية الذكية: الرئيسية">
+          <BrandMark size={64} round />
           <span>الخرائط التعليمية الذكية</span>
         </Link>
-        <nav className="hv-nav" aria-label="التنقل الرئيسي">
-          <Link to="/" aria-current="page">
-            <House size={22} weight="duotone" aria-hidden="true" /> <span>الرئيسية</span>
-          </Link>
-          <Link to={LESSONS_HREF} onClick={enter(LESSONS_HREF)}>
-            <BookOpen size={22} weight="duotone" aria-hidden="true" /> <span>كتابي التفاعلي</span>
-          </Link>
-          <Link to="/demo/lesson-1" onClick={enter("/demo/lesson-1")}>
-            <MapTrifold size={22} weight="duotone" aria-hidden="true" /> <span>الخريطة التفاعلية</span>
-          </Link>
-          <Link to="/demo/trips" onClick={enter("/demo/trips")}>
-            <GameController size={22} weight="duotone" aria-hidden="true" /> <span>الأنشطة التفاعلية</span>
-          </Link>
-        </nav>
-        <div className="hv-tools">
-          {voice.available && (
-            <button
-              type="button"
-              className="hv-chip is-round"
-              aria-pressed={voice.muted}
-              aria-label={voice.muted ? "تشغيل الصوت" : "كتم الصوت"}
-              title={voice.muted ? "تشغيل الصوت" : "كتم الصوت"}
-              onClick={() => narrator.update({ muted: !voice.muted })}
-            >
-              {voice.muted ? <SpeakerSlash size={22} weight="bold" /> : <SpeakerHigh size={22} weight="bold" />}
-            </button>
-          )}
-        </div>
+        {voice.available && (
+          <button
+            type="button"
+            className="h4-mute"
+            aria-pressed={voice.muted}
+            aria-label={voice.muted ? "تشغيل الصوت" : "كتم الصوت"}
+            title={voice.muted ? "تشغيل الصوت" : "كتم الصوت"}
+            onClick={() => narrator.update({ muted: !voice.muted })}
+          >
+            {voice.muted ? <SpeakerSlash size={22} weight="bold" /> : <SpeakerHigh size={22} weight="bold" />}
+          </button>
+        )}
       </header>
 
-      <main className="hv-main">
-        <section className="hv-hero" aria-labelledby="hv-title" onPointerMove={parallax} onPointerLeave={still}>
-          <HeroScenery />
-          <div className="hv-hero-text">
-            <h1 id="hv-title" className="hv-cloud">
-              <span>مرحبًا بك في عالم</span>
-              <strong>الخرائط التعليمية الذكية</strong>
-            </h1>
-            <p className="hv-lead">هل أنت مستعد لاكتشاف كنوز مصر؟</p>
-          </div>
-          <div className="hv-hero-art">
+      <main className="h4-main">
+        <section className="h4-scene" aria-label="مرحبًا بك في عالم الخرائط التعليمية الذكية">
+          <h1 className="h4-sr">مرحبًا بك في عالم الخرائط التعليمية الذكية</h1>
+          <AtlasBook />
+          <div className="h4-art">
             <WelcomeArt resting={typed} greeting={greeting && !blocked} />
             <div className={`entry-robot-say hv-say ${greeting ? "is-on" : ""}`} role="status" aria-live="polite">
               <p>{welcome}</p>
@@ -231,32 +232,32 @@ export default function EntryPage() {
                 </button>
               )}
             </div>
-            {voice.available && !voice.muted && (
-              <button type="button" className="hv-replay" aria-label="أعد الاستماع للترحيب" title="أعد الاستماع" onClick={replay}>
-                <ArrowCounterClockwise size={18} weight="bold" />
-              </button>
-            )}
           </div>
+          {voice.available && !voice.muted && (
+            <button type="button" className="hv-replay" aria-label="أعد الاستماع للترحيب" title="أعد الاستماع" onClick={replay}>
+              <ArrowCounterClockwise size={18} weight="bold" />
+            </button>
+          )}
         </section>
 
-        <aside className="hv-me" aria-labelledby="hv-me-title">
-          <div className="hv-me-head">
-            <img src="/welcome/kid-explorer.webp" alt="" width="84" height="84" loading="lazy" onError={(e) => (e.currentTarget.hidden = true)} />
+        <aside className="h4-me" aria-labelledby="hv-me-title">
+          <div className="h4-me-head">
+            <Avatar kind={avatar} />
             <h2 id="hv-me-title">{first ? `مرحبًا يا ${first}!` : "مرحبًا يا بطل!"}</h2>
           </div>
           {user ? (
-            <div className="hv-me-box">
-              <p className="hv-me-name">{user.name || user.username}</p>
+            <>
+              <p className="h4-me-name">{user.name || user.username}</p>
               <Link
                 className="hv-go"
                 to={user.role === "student" ? "/journey" : user.role === "parent" ? "/parent" : "/admin"}
               >
                 <Play size={22} weight="fill" aria-hidden="true" /> أكمل رحلتي
               </Link>
-            </div>
+            </>
           ) : (
-            <div className="hv-me-box">
-              <label className="hv-name">
+            <>
+              <label className="h4-name">
                 <span>اسم الطالب</span>
                 <input
                   ref={nameRef}
@@ -267,9 +268,11 @@ export default function EntryPage() {
                   aria-invalid={Boolean(nameError)}
                   aria-describedby={nameError ? "entry-name-error" : undefined}
                   onChange={(e) => {
-                    setGuest({ ...guest, name: e.target.value });
+                    const name = e.target.value;
+                    const known = avatarFor(name);
+                    setGuest({ ...guest, name, ...(known ? { avatar: known } : {}) });
                     setNameError("");
-                    if (!typed && e.target.value.trim()) {
+                    if (!typed && name.trim()) {
                       setTyped(true);
                       setPulse((n) => n + 1);
                     }
@@ -282,6 +285,19 @@ export default function EntryPage() {
                   {nameError}
                 </p>
               )}
+              <fieldset className="h4-avatars">
+                <legend>اختر صورتك</legend>
+                {[
+                  ["boy", "ولد"],
+                  ["girl", "بنت"],
+                ].map(([kind, label]) => (
+                  <label key={kind} className={avatar === kind ? "is-on" : ""}>
+                    <input type="radio" name="avatar" value={kind} checked={avatar === kind} onChange={() => chooseAvatar(kind)} />
+                    <Avatar kind={kind} small />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </fieldset>
               <button
                 type="button"
                 key={pulse}
@@ -290,88 +306,72 @@ export default function EntryPage() {
               >
                 <Play size={22} weight="fill" aria-hidden="true" /> {a.started ? "أكمل رحلتي" : "ابدأ المغامرة"}
               </button>
-            </div>
+            </>
           )}
-          <div className="hv-count">
-            <span
-              className={`hv-bar ${done ? "" : "is-empty"}`}
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={total}
-              aria-valuenow={done}
-              aria-label="الرحلات المكتملة"
-            >
-              <span style={{ width: `${(done / total) * 100}%` }} />
-            </span>
-            <p>
-              <b>{ar(done)}</b> من {ar(total)} رحلات مكتملة
-            </p>
-          </div>
-          <div className="hv-more">
+          <nav className="h4-links" aria-label="الحسابات">
             {user ? (
-              <Link
-                to={user.role === "student" ? "/journey" : user.role === "parent" ? "/parent" : "/admin"}
-                className="hv-link"
-              >
-                <User size={22} aria-hidden="true" /> حسابي
+              <Link to={user.role === "student" ? "/journey" : user.role === "parent" ? "/parent" : "/admin"}>
+                <User size={20} aria-hidden="true" /> حسابي
               </Link>
             ) : (
-              <button type="button" className="hv-link" onClick={() => setAccountOpen(true)}>
-                <User size={22} aria-hidden="true" /> حسابي
+              <button type="button" onClick={() => openAccount("student")}>
+                <User size={20} aria-hidden="true" /> حسابي
               </button>
             )}
-            <Link to="/parent" className="hv-link">
-              <Users size={22} aria-hidden="true" /> حساب ولي الأمر
+            <Link to="/parent">
+              <Users size={20} aria-hidden="true" /> حساب ولي الأمر
             </Link>
-            {!user && <p className="hv-note">دون حساب يُحفظ تقدمك على هذا الجهاز فقط · تجربة غير معتمدة</p>}
-          </div>
+            {user ? (
+              <Link to="/admin">
+                <GraduationCap size={20} aria-hidden="true" /> حساب المعلم
+              </Link>
+            ) : (
+              <button type="button" onClick={() => openAccount("teacher")}>
+                <GraduationCap size={20} aria-hidden="true" /> حساب المعلم
+              </button>
+            )}
+          </nav>
         </aside>
 
-        <nav className="hv-cards" aria-label="ابدأ من هنا">
+        <nav className="h4-cards" aria-label="ابدأ من هنا">
           {CARDS.map((c) => (
-            <Link key={c.id} to={c.href} className={`hv-card is-${c.id}`} title={c.text} onClick={enter(c.href)}>
-              <span className="hv-card-art" aria-hidden="true">
+            <Link key={c.id} to={c.href} className={`h4-card is-${c.id}`} title={c.text} onClick={enter(c.href)}>
+              <span className="h4-card-art" aria-hidden="true">
                 <c.Art />
               </span>
-              <strong className="hv-card-title">{c.title}</strong>
+              <strong>{c.title}</strong>
             </Link>
           ))}
         </nav>
 
-        <section className="hv-path" aria-labelledby="hv-path-title">
-          <header>
-            <h2 id="hv-path-title">
-              <Path size={28} weight="duotone" aria-hidden="true" /> رحلتي التعليمية
-            </h2>
-          </header>
-          <ol className="hv-road">
+        <section className="h4-path" aria-labelledby="hv-path-title" style={{ "--reach": nowIndex / total }}>
+          <h2 id="hv-path-title">
+            <Path size={24} weight="duotone" aria-hidden="true" /> رحلتي التعليمية
+          </h2>
+          <ol className="h4-road">
             {a.journeys.map((j, i) => {
-              const now = next?.id === j.id && next.href === j.href;
+              const now = i === nowIndex;
               return (
-                <li key={j.id} className={`is-${j.status} ${now ? "is-now" : ""}`} style={{ "--i": i }}>
+                <li key={j.id} className={`is-${j.status} ${now ? "is-now" : ""} ${i < nowIndex ? "is-passed" : ""}`}>
                   <Link to={j.href} onClick={enter(j.href)} aria-current={now ? "step" : undefined}>
-                    <span className="hv-stop" aria-hidden="true">
-                      {j.done && <Check size={16} weight="bold" />}
+                    <span className="h4-stop" aria-hidden="true">
+                      {j.done && <Check size={12} weight="bold" />}
                     </span>
-                    <span className="hv-stop-text">
-                      <b>{STOP_NAMES[i]}</b>
-                      <span className="hv-sr">
-                        {j.lesson}: {now && j.status === "new" ? "محطتك التالية" : STATUS[j.status]}
-                      </span>
+                    <b>{STOP_NAMES[i]}</b>
+                    <span className="hv-sr">
+                      {j.lesson}: {now && j.status === "new" ? "محطتك التالية" : STATUS[j.status]}
                     </span>
                   </Link>
                 </li>
               );
             })}
-            <li className={`is-flag ${done === total ? "is-done" : ""}`} style={{ "--i": 3 }}>
+            <li className={`is-flag ${done === total ? "is-now is-done" : ""}`}>
               <Link to="/achievements" onClick={enter("/achievements")}>
-                <span className="hv-stop" aria-hidden="true">
-                  {done === total && <Check size={16} weight="bold" />}
+                <span className="h4-stop" aria-hidden="true">
+                  {done === total && <Check size={12} weight="bold" />}
                 </span>
-                <span className="hv-stop-text">
-                  <b>شهاداتي</b>
-                  <span className="hv-sr">نهاية الوحدة: {done === total ? "مكتملة" : "شهادة لكل رحلة تكملها"}</span>
-                </span>
+                <b>شهاداتي</b>
+                <span className="hv-sr">نهاية الوحدة: {done === total ? "مكتملة" : "شهادة لكل رحلة تكملها"}</span>
               </Link>
             </li>
           </ol>
@@ -393,12 +393,13 @@ export default function EntryPage() {
               onKeyDown={(e) => e.key === "Escape" && setAccountOpen(false)}
             >
               <header className="entry-account-head">
-                <h2 id="entry-account-title">{mode === "login" ? "تسجيل الدخول" : "حساب مستكشف جديد"}</h2>
+                <h2 id="entry-account-title">{teacherLogin ? "دخول المعلم" : mode === "login" ? "تسجيل الدخول" : "حساب مستكشف جديد"}</h2>
                 <button type="button" className="entry-account-close" aria-label="إغلاق" onClick={() => setAccountOpen(false)}>
                   ×
                 </button>
               </header>
-              <div className="p-tabs" role="group" aria-label="نوع الدخول">
+              {teacherLogin && <p className="entry-privacy">حسابات المعلمين ينشئها مسؤول المنصة؛ ادخل باسم المستخدم أو البريد المسجّل.</p>}
+              <div className="p-tabs" role="group" aria-label="نوع الدخول" hidden={teacherLogin}>
                 <button
                   aria-pressed={mode === "login"}
                   onClick={() => {
@@ -505,43 +506,77 @@ export default function EntryPage() {
 // ------------------------------------------------------------ home pieces
 const STATUS = { new: "لم تبدأ", active: "قيد الاستكشاف", done: "مكتملة" };
 
-// The pointer moves the hero's scenery a little (fine pointers only, never
-// under reduced motion); cards lean slightly toward it.
-const calm = () =>
-  window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || !window.matchMedia?.("(pointer: fine)").matches;
-function parallax(e) {
-  if (calm()) return;
-  const r = e.currentTarget.getBoundingClientRect();
-  e.currentTarget.style.setProperty("--px", ((e.clientX - r.left) / r.width - 0.5).toFixed(3));
-  e.currentTarget.style.setProperty("--py", ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
-}
-function still(e) {
-  e.currentTarget.style.setProperty("--px", 0);
-  e.currentTarget.style.setProperty("--py", 0);
-}
-const ar = (n) => Number(n).toLocaleString("ar-EG");
 
-// Egypt behind the welcome: a light-blue sky, sand and the pyramids
-// (bottom right).
-function HeroScenery() {
+// The picture beside «مرحبًا يا …!»: the child picks a boy or a girl (a
+// name alone can be either: نور، ملك). The choice is kept on this device
+// with the name, so it comes back next time.
+const AVATARS = "lamis.avatars.v1";
+function rememberAvatar(name, kind) {
+  const key = nameKey(name);
+  if (!key) return;
+  try {
+    const all = JSON.parse(localStorage.getItem(AVATARS) || "{}");
+    all[key] = kind;
+    localStorage.setItem(AVATARS, JSON.stringify(all));
+  } catch {}
+}
+function avatarFor(name) {
+  const key = nameKey(name);
+  if (!key) return null;
+  try {
+    return JSON.parse(localStorage.getItem(AVATARS) || "{}")[key] || null;
+  } catch {
+    return null;
+  }
+}
+// The boy is the painted explorer. The girl uses /welcome/kid-girl.webp when
+// that painting is added; until then a simple drawing stands in for it.
+function Avatar({ kind, small }) {
+  const [painted, setPainted] = useState(true);
+  const cls = `h4-avatar ${small ? "is-small" : ""}`;
+  if (kind === "boy")
+    return <img className={cls} src="/welcome/kid-explorer.webp" alt="" width="84" height="84" loading="lazy" />;
+  return painted ? (
+    <img className={cls} src="/welcome/kid-girl.webp" alt="" width="84" height="84" loading="lazy" onError={() => setPainted(false)} />
+  ) : (
+    <span className={cls} aria-hidden="true">
+      <GirlDrawing />
+    </span>
+  );
+}
+const GirlDrawing = () => (
+  <svg viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="50" fill="#ffe7a3" />
+    <path d="M22 58 Q18 22 50 18 Q82 22 78 58 Q80 80 70 92 L30 92 Q20 80 22 58z" fill="#4a2a17" />
+    <path d="M26 100 Q28 78 50 76 Q72 78 74 100z" fill="#2c63c9" />
+    <path d="M44 70 h12 v8 h-12z" fill="#f2c29b" />
+    <ellipse cx="50" cy="52" rx="20" ry="22" fill="#f6cfaa" />
+    <path d="M30 46 Q34 26 52 28 Q68 30 70 46 Q60 36 46 38 Q36 40 30 46z" fill="#4a2a17" />
+    <circle cx="42" cy="53" r="3.2" fill="#2b1a10" />
+    <circle cx="58" cy="53" r="3.2" fill="#2b1a10" />
+    <circle cx="43" cy="52" r="1" fill="#fff" />
+    <circle cx="59" cy="52" r="1" fill="#fff" />
+    <path d="M43 63 Q50 69 57 63" stroke="#b5523b" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+    <circle cx="36" cy="60" r="3.5" fill="#f4a3a3" opacity="0.6" />
+    <circle cx="64" cy="60" r="3.5" fill="#f4a3a3" opacity="0.6" />
+    <circle cx="70" cy="34" r="5" fill="#ffc83d" />
+  </svg>
+);
+
+// An open atlas lying under the globe: two printed map pages with paper
+// edges and a soft fold, drawn here (no photograph).
+function AtlasBook() {
   return (
-    <svg className="hv-scene" viewBox="0 0 1200 360" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
-      <defs>
-        <linearGradient id="hv-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#bfe2ff" />
-          <stop offset="1" stopColor="#eef7ff" />
-        </linearGradient>
-      </defs>
-      <rect width="1200" height="360" fill="url(#hv-sky)" />
-      <g className="hv-mid">
-        <path d="M860 280 L960 150 L1060 280z" fill="#e9c27a" />
-        <path d="M960 150 L1060 280 H990z" fill="#d4a55a" />
-        <path d="M1010 280 L1090 180 L1170 280z" fill="#e2b66b" />
-        <path d="M1090 180 L1170 280 H1110z" fill="#c9974c" />
-        <path d="M790 280 L840 222 L890 280z" fill="#efcf90" />
-      </g>
-      <path d="M0 290 Q300 262 600 286 T1200 282 V360 H0z" fill="#f3dfb4" />
-    </svg>
+    <div className="h4-atlas" aria-hidden="true">
+      <div className="h4-atlas-book">
+        <div className="h4-page is-right">
+          <img src="/lesson-media/atlas-geography.svg" alt="" />
+        </div>
+        <div className="h4-page is-left">
+          <img src="/lesson-media/textbook-egypt-map.png" alt="" />
+        </div>
+      </div>
+    </div>
   );
 }
 

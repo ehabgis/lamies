@@ -298,46 +298,55 @@ export default function CitizenLab({ scenes }) {
             )}
           </figure>
 
-          <h4 className="cz-ask" ref={question} tabIndex={-1}>
-            {scene.ask}
-          </h4>
-          <div className="cz-options" role="group" aria-label="اختر تصرّفك">
-            {scene.options.map((o, i) => {
-              const mine = choice === i;
+          {/* The question and the result share one place under the picture:
+              every version is laid in the same cell and only one shows, so
+              the book's pages keep their height before and after a choice. */}
+          <div className="cz-zone">
+            <div className={`cz-askbox ${picked ? "is-off" : ""}`} {...(picked ? { inert: "", "aria-hidden": true } : {})}>
+              <h4 className="cz-ask" ref={question} tabIndex={-1}>
+                {scene.ask}
+              </h4>
+              <div className="cz-options" role="group" aria-label="اختر تصرّفك">
+                {scene.options.map((o, i) => (
+                  <button key={o.label} type="button" className="cz-option" onClick={() => choose(i)}>
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {["right", "wrong"].map((k) => {
+              const live = state === k;
+              const good = k === "right";
+              const label = live ? picked.label : scene.options.find((o) => Boolean(o.ok) === good)?.label;
               return (
-                <button
-                  key={o.label}
-                  type="button"
-                  className={`cz-option ${mine ? (o.ok ? "is-right" : "is-wrong") : ""}`}
-                  aria-pressed={mine}
-                  disabled={choice != null && !mine}
-                  aria-disabled={choice != null}
-                  onClick={() => choose(i)}
+                <div
+                  key={k}
+                  className={`cz-feedback ${good ? "is-good" : "is-bad"} ${live ? "is-live" : "is-off"}`}
+                  ref={live ? feedback : undefined}
+                  tabIndex={live ? -1 : undefined}
+                  role={live ? "status" : undefined}
+                  {...(live ? {} : { inert: "", "aria-hidden": true })}
                 >
-                  {mine && (o.ok ? <CheckCircle size={22} weight="fill" aria-hidden="true" /> : <XCircle size={22} weight="fill" aria-hidden="true" />)}
-                  {o.label}
-                </button>
+                  <p className="cz-picked">
+                    {good ? <CheckCircle size={22} weight="fill" aria-hidden="true" /> : <XCircle size={22} weight="fill" aria-hidden="true" />}
+                    {label}
+                  </p>
+                  <p className="cz-explain">
+                    <strong>{good ? CHEERS[at % CHEERS.length] : "فكّر مرة أخرى."}</strong> {scene[k].text}
+                    {good && <span className="cz-why"> {scene.right.why}</span>}
+                  </p>
+                  {good ? (
+                    <button type="button" className="cz-btn" onClick={next}>
+                      {at + 1 < scenes.length ? "الموقف التالي" : "أنهيت المواقف"} <ArrowLeft size={20} aria-hidden="true" />
+                    </button>
+                  ) : (
+                    <button type="button" className="cz-btn is-soft" onClick={retry}>
+                      <ArrowCounterClockwise size={20} aria-hidden="true" /> حاول مرة أخرى
+                    </button>
+                  )}
+                </div>
               );
             })}
-          </div>
-
-          <div className="cz-live" aria-live="polite">
-            {picked && (
-              <div className={`cz-feedback ${picked.ok ? "is-good" : "is-bad"}`} ref={feedback} tabIndex={-1}>
-                <strong>{picked.ok ? CHEERS[at % CHEERS.length] : "فكّر مرة أخرى"}</strong>
-                <p>{scene[state].text}</p>
-                {picked.ok && <p className="cz-why">{scene.right.why}</p>}
-                {picked.ok ? (
-                  <button type="button" className="cz-btn" onClick={next}>
-                    {at + 1 < scenes.length ? "الموقف التالي" : "أنهيت المواقف"} <ArrowLeft size={20} aria-hidden="true" />
-                  </button>
-                ) : (
-                  <button type="button" className="cz-btn is-soft" onClick={retry}>
-                    <ArrowCounterClockwise size={20} aria-hidden="true" /> حاول مرة أخرى
-                  </button>
-                )}
-              </div>
-            )}
           </div>
         </div>
       )}

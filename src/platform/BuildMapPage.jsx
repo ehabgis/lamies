@@ -408,7 +408,6 @@ export default function BuildMapPage() {
               )}
             </>
           )}
-          <small className="bm-note">التحقق من المكان يتم ببيانات الخريطة. التقدم محفوظ على هذا الجهاز فقط.</small>
         </aside>
       </div>
     </Frame>

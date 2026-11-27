@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { X, ArrowsClockwise, Pause, Cube } from "phosphor-react";
+import { X, ArrowsClockwise, Pause, Cube, Info } from "phosphor-react";
 
 // Tilted 3D view of a selected site: real Esri satellite imagery draped on
 // AWS terrain tiles, with OpenStreetMap buildings (via OpenFreeMap) extruded to
@@ -215,9 +215,7 @@ export default function Site3DView({ site, photo, onClose, inline = false, start
             {orbiting ? "إيقاف الدوران" : "اسحب لتدوير المشهد"}
           </button>
         )}
-        <p className="site-3d-inline-note">
-          صور أقمار صناعية وتضاريس حقيقية؛ المباني من OpenStreetMap وقد ينقص بعضها.
-        </p>
+        {!failed && <MapCredit />}
       </section>
     );
   return (
@@ -269,9 +267,20 @@ export default function Site3DView({ site, photo, onClose, inline = false, start
       ) : (
         <div ref={host} className="site-3d-map" hidden={showPhoto} />
       )}
-      <p className="site-3d-note" hidden={showPhoto}>
-        اسحب لتحريك المشهد، واستعمل إصبعين لتدويره. صور أقمار صناعية وتضاريس حقيقية؛ المباني من OpenStreetMap وقد ينقص بعضها.
-      </p>
+      {!failed && !showPhoto && <MapCredit />}
     </section>
+  );
+}
+
+// The map's sources stay one tap away behind an «i» over the scene, instead
+// of a strip of text under it.
+function MapCredit() {
+  return (
+    <details className="site-3d-credit">
+      <summary aria-label="مصادر الخريطة" title="مصادر الخريطة">
+        <Info size={18} weight="bold" aria-hidden="true" />
+      </summary>
+      <p>صور أقمار صناعية وتضاريس حقيقية؛ المباني من OpenStreetMap وقد ينقص بعضها.</p>
+    </details>
   );
 }

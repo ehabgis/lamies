@@ -1,5 +1,7 @@
 import L from "leaflet";
 import { prepareNileDraw } from "./nileDraw";
+import { rain, stopRain } from "./sfx";
+import * as narrator from "./narrator";
 
 // Lesson 2: what the map does for a few seconds after a water resource is
 // chosen — the Nile is drawn, rain falls, wells rise, seas and lakes ripple.
@@ -97,6 +99,7 @@ function addWavePattern(paneEl) {
 export function playWaterEffect(map, { id, river, seas, sites, color, reduced }) {
   const kind = KIND[id];
   if (!kind) return () => {};
+  let stopSound = () => {};
   const paneEl = pane(map);
   const group = L.layerGroup().addTo(map);
   const container = map.getContainer();
@@ -173,6 +176,17 @@ export function playWaterEffect(map, { id, river, seas, sites, color, reduced })
   // Rain keeps falling while the resource stays chosen (not only during the
   // first few seconds); under reduced motion the drops stay still.
   if (kind === "rain") {
+    // The sound starts with the drops and stops if the narration starts.
+    rain(5);
+    let was = narrator.getSettings().state;
+    const off = narrator.subscribe((st) => {
+      if (st.state === "speaking" && was !== "speaking") stopRain();
+      was = st.state;
+    });
+    stopSound = () => {
+      off();
+      stopRain();
+    };
     RAIN_BELT.forEach(([lat, lng], i) => {
       const drops = Array.from(
         { length: 6 },
@@ -208,6 +222,7 @@ export function playWaterEffect(map, { id, river, seas, sites, color, reduced })
     }, EFFECT_MS),
   );
   return () => {
+    stopSound();
     timers.forEach(clearTimeout);
     container.classList.remove("wfx-play", "wfx-wells");
     map.removeLayer(group);

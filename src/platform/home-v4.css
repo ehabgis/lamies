@@ -1,0 +1,691 @@
+/* The start page (2026-11-27): a big title with the logo, an open atlas with
+   the turning globe, the boy and the robot, the student's box beside it, four
+   short white shortcuts and a thin «رحلتي التعليمية» bar. Scoped to
+   .home-v4 (on top of the shared .home-v3 tokens). */
+.home-v4 {
+  padding: 0 clamp(12px, 2.4vw, 32px) 16px;
+  background:
+    radial-gradient(circle at 20% 10%, #f4f9ff 0, transparent 40%),
+    linear-gradient(180deg, #e3f1fd 0%, #d6eafb 100%);
+}
+
+/* ---- title ---- */
+.h4-top {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 12px 0 10px;
+}
+.h4-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  color: #0b1f4d;
+  font-size: clamp(28px, 3.6vw, 52px);
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+}
+.h4-brand svg,
+.h4-brand img {
+  flex: none;
+  width: clamp(46px, 4.6vw, 70px);
+  height: auto;
+}
+.h4-mute {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #c9dcf1;
+  border-radius: 50%;
+  background: #fff;
+  color: #1d4fc4;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+.h4-sr,
+.home-v4 .hv-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---- the page grid: box (right) beside the scene (left) ---- */
+.h4-main {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  grid-template-areas:
+    "me scene"
+    "cards cards"
+    "path path";
+  align-items: center;
+  gap: 16px 22px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.h4-scene {
+  grid-area: scene;
+}
+.h4-me {
+  grid-area: me;
+}
+.h4-cards {
+  grid-area: cards;
+}
+.h4-path {
+  grid-area: path;
+}
+
+/* ---- the atlas scene ---- */
+.h4-scene {
+  position: relative;
+  height: clamp(300px, 52vh, 560px);
+  overflow: hidden;
+  border-radius: 28px;
+  background:
+    radial-gradient(ellipse at 50% 35%, #f2f9ff 0, #d4e9fb 60%, #c4e0f8 100%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.6), 0 10px 26px rgb(11 47 87 / 0.1);
+}
+.h4-atlas {
+  position: absolute;
+  inset: auto 4% 4% 4%;
+  height: 46%;
+  perspective: 1100px;
+  perspective-origin: 50% 0%;
+}
+.h4-atlas-book {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: row-reverse;
+  padding: 10px 12px 16px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #23407a, #142a58);
+  box-shadow:
+    0 30px 40px -18px rgb(11 31 77 / 0.55),
+    0 6px 0 #0e2149;
+  transform: rotateX(48deg);
+  transform-origin: 50% 100%;
+}
+.h4-page {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  background: #f6efdc;
+  /* stacked paper at the outer edge */
+  box-shadow:
+    0 2px 0 #e9dfc3,
+    0 4px 0 #f3ead2,
+    0 6px 0 #e4d8b9;
+}
+.h4-page.is-right {
+  border-radius: 6px 2px 2px 6px;
+  box-shadow:
+    -2px 2px 0 #e9dfc3,
+    -4px 4px 0 #f3ead2,
+    -6px 6px 0 #e4d8b9;
+}
+.h4-page.is-left {
+  border-radius: 2px 6px 6px 2px;
+  box-shadow:
+    2px 2px 0 #e9dfc3,
+    4px 4px 0 #f3ead2,
+    6px 6px 0 #e4d8b9;
+}
+.h4-page img {
+  position: absolute;
+  inset: 6%;
+  width: 88%;
+  height: 88%;
+  object-fit: cover;
+  filter: saturate(0.9) sepia(0.12);
+}
+/* the fold in the middle */
+.h4-page.is-right::after,
+.h4-page.is-left::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 22%;
+  pointer-events: none;
+}
+.h4-page.is-right::after {
+  left: 0;
+  background: linear-gradient(90deg, rgb(60 40 10 / 0.28), transparent);
+}
+.h4-page.is-left::after {
+  right: 0;
+  background: linear-gradient(270deg, rgb(60 40 10 / 0.28), transparent);
+}
+.h4-art {
+  position: absolute;
+  bottom: 9%;
+  left: 50%;
+  width: min(86%, calc(clamp(300px, 52vh, 560px) * 0.92 * 1180 / 990));
+  transform: translateX(-50%);
+  filter: drop-shadow(0 18px 14px rgb(11 31 77 / 0.28));
+}
+.home-v4 .hv-say {
+  top: 2%;
+  left: 62%;
+}
+.home-v4 .hv-replay {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+}
+
+/* ---- the student's box ---- */
+.h4-me {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid #d3e3f4;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(11 47 87 / 0.12);
+}
+.h4-me-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.h4-me-head h2 {
+  margin: 0;
+  color: #0b1f4d;
+  font-size: clamp(22px, 2vw, 30px);
+  font-weight: 900;
+  line-height: 1.3;
+}
+.h4-avatar {
+  flex: none;
+  display: block;
+  width: 84px;
+  height: 84px;
+  overflow: hidden;
+  border: 4px solid #ffd34d;
+  border-radius: 50%;
+  background: #ffe7a3;
+  object-fit: cover;
+  object-position: top;
+}
+.h4-avatar svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.h4-avatar.is-small {
+  width: 46px;
+  height: 46px;
+  border-width: 3px;
+}
+.h4-me-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+}
+.h4-name {
+  display: grid;
+  gap: 6px;
+  font-size: 17px;
+  font-weight: 900;
+}
+.h4-name input {
+  min-height: 52px;
+  padding: 8px 16px;
+  border: 1.5px solid #b7cfe6;
+  border-radius: 14px;
+  background: #f9fcff;
+  color: #0b1f4d;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+}
+.h4-name input:focus-visible {
+  border-color: #1d4fc4;
+}
+.h4-avatars {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.h4-avatars legend {
+  float: right;
+  margin-inline-end: 4px;
+  color: #36506b;
+  font-size: 15px;
+  font-weight: 800;
+}
+.h4-avatars label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 4px;
+  border: 2px solid #d6e4f2;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.h4-avatars label.is-on {
+  border-color: #1d4fc4;
+  background: #eaf2ff;
+  color: #1d4fc4;
+}
+.h4-avatars input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.h4-avatars label:has(input:focus-visible) {
+  outline: 3px solid #c48b08;
+  outline-offset: 2px;
+}
+.home-v4 .hv-go {
+  width: 100%;
+  min-height: 58px;
+  border-radius: 18px;
+  font-size: 22px;
+}
+.h4-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 0;
+}
+.h4-links a,
+.h4-links button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 2px 10px;
+  border: 0;
+  background: none;
+  color: #0b1f4d;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.h4-links > * + * {
+  border-inline-start: 1.5px solid #d6e4f2;
+}
+.h4-links svg {
+  color: #1d4fc4;
+}
+
+/* ---- four shortcuts ---- */
+.h4-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.h4-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 84px;
+  padding: 8px 16px;
+  border: 2px solid #4f8fe0;
+  border-radius: 18px;
+  background: #fff;
+  color: #0b1f4d !important;
+  box-shadow: 0 6px 14px rgb(11 47 87 / 0.08);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.h4-card-art {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 62px;
+}
+.h4-card-art svg {
+  width: 100%;
+  height: 100%;
+}
+.h4-card strong {
+  font-size: clamp(16px, 1.45vw, 22px);
+  font-weight: 900;
+  line-height: 1.3;
+}
+.h4-card:active {
+  transform: scale(0.98);
+}
+.h4-card:focus-visible {
+  outline: 3px solid #1d4fc4;
+  outline-offset: 3px;
+}
+
+/* ---- thin journey bar ---- */
+.h4-path {
+  --stops: 4;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 8px 20px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 6px 16px rgb(11 47 87 / 0.07);
+}
+.h4-path h2 {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #0b1f4d;
+  font-size: 18px;
+  font-weight: 900;
+}
+.h4-path h2 svg {
+  color: #1d4fc4;
+}
+.h4-road {
+  position: relative;
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* grey line between the first and the last stop; blue up to the current one */
+.h4-road::before,
+.h4-road::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  right: 12.5%;
+  height: 4px;
+  border-radius: 999px;
+}
+.h4-road::before {
+  left: 12.5%;
+  background: #dbe3ec;
+}
+.h4-road::after {
+  width: calc(75% * var(--reach, 0));
+  background: #1d63d8;
+  transition: width 0.6s ease;
+}
+.h4-road a {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 0 4px 2px;
+  text-align: center;
+}
+.h4-stop {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 3px solid #c9d3de;
+  border-radius: 50%;
+  background: #fff;
+  color: #fff;
+}
+.h4-road .is-passed .h4-stop,
+.h4-road .is-done .h4-stop {
+  border-color: #1d63d8;
+  background: #1d63d8;
+}
+.h4-road .is-now .h4-stop {
+  width: 28px;
+  height: 28px;
+  margin-top: -3px;
+  border: 6px solid #1d63d8;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgb(29 99 216 / 0.18);
+}
+.h4-road .is-now.is-done .h4-stop {
+  background: #1d63d8;
+}
+.h4-road b {
+  color: #0b1f4d;
+  font-size: 14.5px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.h4-road .is-now b {
+  color: #1d4fc4;
+  font-weight: 900;
+}
+
+@media (hover: hover) {
+  .h4-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgb(11 47 87 / 0.14);
+  }
+  .h4-links a:hover,
+  .h4-links button:hover {
+    color: #1d4fc4;
+  }
+}
+
+/* ---- computers: one screen ---- */
+@media (min-width: 1181px) {
+  .h4-top {
+    padding: 8px 0 6px;
+  }
+  .h4-brand {
+    font-size: clamp(28px, 4.8vh, 50px);
+  }
+  .h4-brand svg,
+  .h4-brand img {
+    width: clamp(42px, 7vh, 70px);
+  }
+  .home-v4 {
+    padding-bottom: 8px;
+  }
+  .h4-main {
+    gap: clamp(10px, 1.6vh, 16px) 22px;
+  }
+  .h4-scene {
+    height: clamp(260px, 45vh, 560px);
+  }
+  .h4-art {
+    width: min(86%, calc(clamp(260px, 57vh, 640px) * 0.9 * 1180 / 990));
+  }
+  .h4-me {
+    gap: clamp(8px, 1.3vh, 12px);
+    padding: clamp(14px, 2vh, 20px);
+  }
+  .h4-card {
+    min-height: 0;
+    height: clamp(64px, 9.5vh, 92px);
+  }
+  .h4-card-art {
+    height: clamp(46px, 7vh, 62px);
+  }
+}
+@media (min-width: 1181px) and (max-height: 760px) {
+  .h4-avatar {
+    width: 64px;
+    height: 64px;
+  }
+  .h4-name input {
+    min-height: 44px;
+  }
+  .home-v4 .hv-go {
+    min-height: 50px;
+    font-size: 20px;
+  }
+}
+
+/* ---- tablets and phones: scene, box, cards in two rows, journey down ---- */
+@media (max-width: 1180px) {
+  .h4-main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "scene"
+      "me"
+      "cards"
+      "path";
+  }
+  .h4-scene {
+    height: clamp(280px, 60vw, 480px);
+  }
+  .h4-art {
+    width: min(86%, calc(clamp(280px, 60vw, 480px) * 0.92 * 1180 / 990));
+  }
+  .h4-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .h4-mute {
+    top: 14px;
+    transform: none;
+  }
+  .h4-top {
+    padding-inline: 48px;
+  }
+  .h4-brand {
+    gap: 8px;
+    font-size: 24px;
+  }
+  .h4-scene {
+    height: 300px;
+    border-radius: 22px;
+  }
+  .h4-art {
+    width: 88%;
+  }
+  .home-v4 .hv-say {
+    display: none;
+  }
+  .h4-card {
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    min-height: 120px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .h4-card strong {
+    font-size: 16px;
+  }
+  .h4-links {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .h4-links > * + * {
+    border-inline-start: 0;
+    border-top: 1px solid #e3ecf6;
+  }
+  .h4-path {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+  .h4-road {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .h4-road::before,
+  .h4-road::after {
+    top: 12px;
+    right: 11px;
+    left: auto;
+    width: 4px;
+  }
+  .h4-road::before {
+    bottom: 12px;
+    height: auto;
+  }
+  .h4-road::after {
+    height: calc((100% - 24px) * var(--reach, 0));
+  }
+  .h4-road a {
+    grid-template-columns: 28px 1fr;
+    justify-items: start;
+    align-items: center;
+    gap: 12px;
+    text-align: start;
+  }
+  .h4-road a .h4-stop {
+    justify-self: center;
+  }
+  .h4-road .is-now .h4-stop {
+    margin-top: 0;
+  }
+  .h4-road b {
+    font-size: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .h4-road::after,
+  .h4-card {
+    transition: none !important;
+  }
+}
+
+/* computers: the scene is as tall as the student's box beside it */
+@media (min-width: 1181px) {
+  .home-v4 .h4-main {
+    padding-block: 0;
+  }
+  .h4-scene {
+    align-self: stretch;
+    min-height: clamp(260px, 57vh, 640px);
+    height: auto;
+  }
+}
+@media (min-width: 1181px) and (max-height: 820px) {
+  .h4-me {
+    gap: 8px;
+    padding: 14px 16px;
+  }
+  .h4-avatar {
+    width: 60px;
+    height: 60px;
+  }
+  .h4-avatar.is-small {
+    width: 38px;
+    height: 38px;
+  }
+  .h4-name {
+    gap: 4px;
+  }
+  .h4-name input {
+    min-height: 44px;
+  }
+  .home-v4 .hv-go {
+    min-height: 48px;
+    font-size: 20px;
+  }
+  .h4-links a,
+  .h4-links button {
+    min-height: 34px;
+  }
+  .h4-card {
+    height: clamp(60px, 8.5vh, 92px);
+  }
+}

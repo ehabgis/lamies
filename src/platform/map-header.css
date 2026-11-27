@@ -1252,3 +1252,44 @@
   white-space: normal;
   line-height: 1.3;
 }
+
+/* the map's sources behind an «i» over the 3D scene (2026-11-27) */
+.map-shell .site-3d-credit {
+  position: absolute;
+  z-index: 5;
+  bottom: 10px;
+  left: 10px;
+  max-width: min(320px, calc(100% - 20px));
+  direction: rtl;
+}
+.map-shell .site-3d-credit summary {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.92);
+  box-shadow: 0 2px 8px rgb(11 47 87 / 0.2);
+  color: #0b2f57;
+  cursor: pointer;
+  list-style: none;
+}
+.map-shell .site-3d-credit summary::-webkit-details-marker {
+  display: none;
+}
+.map-shell .site-3d-credit p {
+  margin: 6px 0 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.95);
+  box-shadow: 0 4px 12px rgb(11 47 87 / 0.18);
+  color: #23384f;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.map-shell .site-3d-credit[open] {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-start;
+}

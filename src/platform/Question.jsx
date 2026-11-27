@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRef } from "react";
-import { ArrowUp, ArrowDown, Star, Lightbulb, Check, X, ArrowLeft, ArrowCounterClockwise, CheckCircle, WarningCircle } from "phosphor-react";
+import { ArrowUp, ArrowDown, Star, Lightbulb, Check, X, ArrowLeft, ArrowCounterClockwise, CheckCircle, WarningCircle, Trophy } from "phosphor-react";
 import { useQuestionHelp, HelpCard, helpHeaders } from "./QuestionHelp";
 import { ClassifyActivity, MatchActivity, OrderActivity } from "./ActivityKinds";
 
@@ -588,6 +588,14 @@ const RICH = {
   },
 };
 
+// The success line under a finished sort, match or order activity. A sort
+// names what was sorted («صنّف مصادر الطاقة» → «صنّفت كل مصادر الطاقة…»).
+function winLine(q) {
+  if (q.type !== "drag") return "أحسنت!";
+  const what = String(q.title || "").replace(/^صنّف\s+/, "").trim();
+  return what && what !== q.title ? `أحسنت! صنّفت كل ${what} بشكل صحيح.` : "أحسنت! صنّفت كل البطاقات بشكل صحيح.";
+}
+
 function RichActivity({ q, kind, answer, setAnswer, reset, move, missing, total, done, solved, busy, error, feedback, showHint, toggleHint, onNext, submit, resources, helpCard }) {
   const complete = q.type === "order" || !missing;
   const locked = done || busy;
@@ -616,16 +624,19 @@ function RichActivity({ q, kind, answer, setAnswer, reset, move, missing, total,
         {error ? (
           <p className="p-error">{error}</p>
         ) : feedback?.correct || (solved && !feedback) ? (
-          <p className="p-success">
-            <Star weight="fill" aria-hidden="true" />
-            {feedback ? `أحسنت! ${feedback.explanation || ""}` : "سبق أن أتقنت هذا النشاط. أحسنت!"}
+          <div className="ra-win">
+            <p className="ra-win-head">
+              <Trophy weight="fill" aria-hidden="true" />
+              {winLine(q)}
+            </p>
+            {q.type !== "drag" && feedback?.explanation && <p className="ra-win-text">{feedback.explanation}</p>}
             {onNext && (
               <button type="button" className="p-button feedback-next" onClick={onNext}>
                 التالي
                 <ArrowLeft aria-hidden="true" />
               </button>
             )}
-          </p>
+          </div>
         ) : feedback ? (
           <p className="p-feedback">
             <Lightbulb size={20} aria-hidden="true" />
@@ -641,11 +652,13 @@ function RichActivity({ q, kind, answer, setAnswer, reset, move, missing, total,
       </div>
       {helpCard}
       <footer className="ra-actions">
-        <button className="p-button ra-check" disabled={locked || !complete}>
-          {!busy && !done && <CheckCircle size={22} weight="fill" aria-hidden="true" />}
-          {busy ? "جارٍ التحقق…" : done ? "أتقنته ✓" : kind.check}
-        </button>
-        <small className="ra-note">{kind.note}</small>
+        {!done && (
+          <button className="p-button ra-check" disabled={locked || !complete}>
+            {!busy && <CheckCircle size={22} weight="fill" aria-hidden="true" />}
+            {busy ? "جارٍ التحقق…" : kind.check}
+          </button>
+        )}
+        {!done && <small className="ra-note">{kind.note}</small>}
         {/* In the sort activity these two sit in a side column (see CSS). */}
         <span className="ra-side">
           <button type="button" className="p-secondary ra-side-hint" onClick={toggleHint} aria-pressed={showHint} disabled={done}>

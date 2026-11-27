@@ -770,3 +770,76 @@
     transform: none;
   }
 }
+
+/* ---- one place for the question and the result (2026-11-27): all versions
+   sit in the same grid cell, so the pages keep their height. */
+.cz-zone {
+  display: grid;
+  flex: none;
+}
+.cz-zone > * {
+  grid-area: 1 / 1;
+  align-self: start;
+}
+.cz-zone > .is-off {
+  visibility: hidden;
+  animation: none;
+}
+.cz-askbox {
+  display: grid;
+  gap: 8px;
+}
+.cz-zone .cz-feedback {
+  gap: 4px;
+  padding: 8px 12px;
+}
+.cz-picked {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 16.5px;
+  font-weight: 900;
+}
+.cz-feedback.is-good .cz-picked {
+  color: #0f5f33;
+}
+.cz-feedback.is-bad .cz-picked {
+  color: #8a2c08;
+}
+.cz-feedback .cz-explain {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.cz-feedback .cz-explain strong {
+  font-size: 15.5px;
+}
+.cz-zone .cz-btn {
+  margin-top: 2px;
+}
+/* one height for every situation: the role on one line, the picture a little
+   shorter so the whole page fits a laptop screen */
+.cz-rolebar .cz-phases {
+  display: none;
+}
+.cz-role {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (min-width: 761px) {
+  .cz-scene {
+    flex: 1 1 150px;
+    min-height: 140px;
+  }
+}
+@media (min-width: 761px) and (max-height: 800px) {
+  .cz-head {
+    gap: 2px 12px;
+  }
+  .cz-sub {
+    display: none;
+  }
+}

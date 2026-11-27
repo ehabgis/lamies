@@ -833,3 +833,84 @@ button.ra-card:not(:disabled):hover {
     padding-inline-end: 52px;
   }
 }
+
+/* ---- success under a finished sort / match / order (2026-11-27):
+   «أحسنت!» in dark blue with a small gold cup, the lesson's sentence under
+   it on a light background, fully opaque. */
+.ra-message .ra-win {
+  display: grid;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1.5px solid #bcd6f3;
+  border-radius: 14px;
+  background: #eef6ff;
+  opacity: 1;
+}
+.p-question.ra .ra-message .ra-win p {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  color: #0b2a6b;
+  opacity: 1;
+}
+.p-question.ra .ra-message .ra-win-head {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.5;
+  align-items: center;
+}
+.ra-win-head svg {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  color: #e0a100;
+}
+.p-question.ra .ra-message .ra-win-text {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #fff;
+  color: #13305e;
+  font-size: 15.5px;
+  font-weight: 700;
+  line-height: 1.7;
+}
+.ra-win .feedback-next {
+  justify-self: end;
+}
+.ra-drag .ra-message .ra-win {
+  grid-column: 1;
+}
+
+/* ---- bigger energy icons in «صنّف مصادر الطاقة» (2026-11-27): one size
+   for the cards waiting, the dragged one and the placed ones. */
+.ra-drag .ra-classify-cards .ra-card {
+  gap: 8px;
+}
+.ra-drag .ra-classify-cards .ra-card-icon,
+.ra-classify-cards .ra-card-icon {
+  width: 54px;
+  height: 54px;
+}
+.ra-drag .ra-zone .ra-card.is-small {
+  min-height: 46px;
+  gap: 8px;
+  font-size: 14px;
+}
+.ra-drag .ra-zone .ra-card.is-small .ra-card-icon {
+  width: 38px;
+  height: 38px;
+}
+.ra-ghost svg,
+.ra-ghost img {
+  width: 44px;
+  height: 44px;
+}
+@media (max-height: 700px) and (min-width: 851px) {
+  .ra-drag .ra-classify-cards .ra-card-icon {
+    width: 46px;
+    height: 46px;
+  }
+}
